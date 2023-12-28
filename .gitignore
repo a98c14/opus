@@ -1,0 +1,3 @@
+dist/
+**/compile_commands.json
+.cache/
