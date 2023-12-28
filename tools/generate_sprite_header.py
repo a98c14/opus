@@ -23,8 +23,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Opus Sprite Header Generator")
     parser.add_argument("--data", nargs='+', type=str, help="List of texture packer output data files", required=True)
     parser.add_argument("--out", type=str, help="Output path", required=True)
+    parser.add_argument("--excluded-animations", nargs='+', type=str, help="List of animation prefixes to be excluded from generation", required=False)
     args = parser.parse_args()
 
+    exclude = [] if args.excluded_animations is None else args.excluded_animations
+    texture_exclude = list(filter(lambda x: x.startswith('TEXTURE'), exclude))
+    animation_exclude = list(filter(lambda x: x.startswith('ANIMATION'), exclude))
+    
     raw_texture_data_dict = {}
     for path in args.data:
         with open(path, 'r') as data_file:
@@ -38,14 +43,20 @@ if __name__ == "__main__":
             
     texture_data = {}
     for texture in raw_texture_data_dict:
+        texture_fullname = f"TEXTURE_{texture}"
         frames = raw_texture_data_dict[texture]['frames']
         
         texture_data[texture] = {}
         # parse animation
         animations = {}
-        for frame in frames:
-            animation_name = parse_animation_name(frame['filename'])
-            animations[animation_name] = animations.get(animation_name, 0) + 1
+        if not any(texture_fullname.startswith(s) for s in texture_exclude):
+            for frame in frames:
+                animation_name = parse_animation_name(frame['filename'])
+                animation_fullname = f"ANIMATION_{texture}_{animation_name}"
+                if any(animation_fullname.startswith(s) for s in animation_exclude): 
+                    continue
+                animations[animation_name] = animations.get(animation_name, 0) + 1
+                
         texture_data[texture]['animations'] = animations
 
         # parse sprites
