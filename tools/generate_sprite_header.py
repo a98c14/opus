@@ -1,8 +1,6 @@
 """
 Examples:
-python .\generate_sprite_header.py --data "C:\\Users\\selim\\source\\github\\greenrock\\assets\\_dist\\environment.json" "C:\\Users\\selim\\source\\github\\greenrock\\assets\\_dist\\creature.json" --out=".\\test_out.c"
-
-
+python .\generate_sprite_header.py --data "$HOME\\source\\github\\greenrock\\assets\\_dist\\environment.json" "$HOME\\source\\github\\greenrock\\assets\\_dist\\creature.json" --out=".\\test_out.c"
 """
 import json
 import os
