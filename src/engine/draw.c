@@ -1,4 +1,11 @@
 #include <engine/draw.h>
+#ifndef SHADER_PATH
+#define SHADER_PATH "..\\src\\shaders"
+#endif
+
+#ifndef ASSET_PATH
+#define ASSET_PATH "..\\assets"
+#endif
 
 internal DrawContext*
 draw_context_new(Arena* arena, Renderer* renderer)
@@ -11,69 +18,69 @@ draw_context_new(Arena* arena, Renderer* renderer)
 
     draw_context->material_basic = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\basic_instanced.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\basic_instanced.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\basic_instanced.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\basic_instanced.frag")),
         sizeof(ShaderDataBasic),
         true);
 
     draw_context->material_line = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\line.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\line.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\line.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\line.frag")),
         sizeof(ShaderDataLine),
         false);
 
     draw_context->material_basic_texture = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\basic_texture.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\basic_texture.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\basic_texture.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\basic_texture.frag")),
         sizeof(ShaderDataBasicTexture),
         false);
 
     draw_context->material_triangle = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\triangle.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\triangle.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\triangle.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\triangle.frag")),
         sizeof(ShaderDataTriangle),
         false);
 
     draw_context->material_rounded_rect = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\rect_rounded.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\rect_rounded.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\rect_rounded.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\rect_rounded.frag")),
         sizeof(ShaderDataRectRounded),
         false);
 
     draw_context->material_boid = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\boid_instanced.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\boid_instanced.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\boid_instanced.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\boid_instanced.frag")),
         sizeof(ShaderDataBoid),
         true);
 
     draw_context->material_circle = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\circle.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\circle.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\circle.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\circle.frag")),
         sizeof(ShaderDataCircle), 
         false);
 
     draw_context->material_circle_instanced = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\circle_instanced.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\circle_instanced.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\circle_instanced.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\circle_instanced.frag")),
         sizeof(ShaderDataCircle), 
         true);
 
     draw_context->material_text = material_new(
         renderer,
-        file_read_all_as_string(arena, string("..\\src\\shaders\\text.vert")),
-        file_read_all_as_string(arena, string("..\\src\\shaders\\text.frag")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\text.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH"\\text.frag")),
         sizeof(ShaderDataText), 
         true);
 
     /* Fonts */
-    TextureIndex font_texture = texture_new_from_file(renderer, string("..\\assets\\open_sans.png"), 0, 1);
+    TextureIndex font_texture = texture_new_from_file(renderer, string(ASSET_PATH"\\open_sans.png"), 0, 1);
     draw_context->font_open_sans =  glyph_atlas_load(
         arena,
         &FONT_OPEN_SANS_ATLAS_INFO,
