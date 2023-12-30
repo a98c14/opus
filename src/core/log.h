@@ -30,11 +30,9 @@ typedef enum
 internal void 
 log_output(LogLevel level, const char* message, ...);
 
-internal bool32
-logger_init();
+internal bool32 logger_init();
 
-internal void
-logger_flush();
+internal void logger_flush();
 
 #ifndef log_fatal
 #define log_fatal(message, ...) log_output(LogLevelFatal, message, ##__VA_ARGS__);
@@ -68,5 +66,4 @@ logger_flush();
 #define log_trace(message, ...)
 #endif
 
-internal void
-log_assertion_failure(const char* expr, const char* message, const char* file, int32 line);
+internal void log_assertion_failure(const char* expr, const char* message, const char* file, int32 line);

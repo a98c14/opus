@@ -16,5 +16,4 @@ typedef struct
     int32 isdst;     // daylight savings time flag
 } DateTime;
 
-internal DateTime
-date_now();
+internal DateTime date_now();

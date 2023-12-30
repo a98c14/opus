@@ -102,62 +102,44 @@ internal Rect rect_cut_right(Rect* r, float32 size);
 internal Rect rect_cut_top(Rect* r, float32 size);
 internal Rect rect_cut_bottom(Rect* r, float32 size);
 
-internal Rect
-rect_aligned(float32 x, float32 y, float32 w, float32 h, Alignment alignment);
+internal Rect rect_aligned(float32 x, float32 y, float32 w, float32 h, Alignment alignment);
 
-internal Rect
-rect_align(Rect rect, Alignment alignment);
+internal Rect rect_align(Rect rect, Alignment alignment);
 
-internal Rect
-rect_anchor(Rect child, Rect parent, Anchor anchor);
+internal Rect rect_anchor(Rect child, Rect parent, Anchor anchor);
 
 /** Similar to anchor but doesn't care about child x,y */
 internal Rect 
 rect_place(Rect child, Rect parent, Anchor anchor);
 
-internal Rect
-rect_place_under(Rect child, Rect parent);
+internal Rect rect_place_under(Rect child, Rect parent);
 
-internal Vec2
-rect_relative(Rect rect, Alignment alignment);
+internal Vec2 rect_relative(Rect rect, Alignment alignment);
 
-internal Rect
-rect_expand_f32(Rect rect, float32 v);
+internal Rect rect_expand_f32(Rect rect, float32 v);
 
-internal Rect
-rect_expand(Rect rect, Vec2 v);
+internal Rect rect_expand(Rect rect, Vec2 v);
 
-internal Rect
-rect_shrink_f32(Rect rect, float32 v);
+internal Rect rect_shrink_f32(Rect rect, float32 v);
 
-internal Rect
-rect_shrink(Rect rect, Vec2 v);
+internal Rect rect_shrink(Rect rect, Vec2 v);
 
-internal Rect
-rect_move(Rect rect, Vec2 v);
+internal Rect rect_move(Rect rect, Vec2 v);
 
-internal LayoutGrid
-layout_grid(Rect container, int32 columns, int32 rows, Vec2 padding);
+internal LayoutGrid layout_grid(Rect container, int32 columns, int32 rows, Vec2 padding);
 
-internal Rect
-layout_grid_container(LayoutGrid layout);
+internal Rect layout_grid_container(LayoutGrid layout);
 
-internal Rect
-layout_grid_cell(LayoutGrid layout, int32 column, int32 row);
+internal Rect layout_grid_cell(LayoutGrid layout, int32 column, int32 row);
 
-internal Rect
-layout_grid_multicell(LayoutGrid layout, int32 column, int32 row, int32 column_count, int32 row_count);
+internal Rect layout_grid_multicell(LayoutGrid layout, int32 column, int32 row, int32 column_count, int32 row_count);
 
-internal LayoutStack
-layout_stack(Rect container, float row_height, Vec2 padding, float32 spacing);
+internal LayoutStack layout_stack(Rect container, float row_height, Vec2 padding, float32 spacing);
 
-internal Rect
-layout_stack_push(LayoutStack* layout);
+internal Rect layout_stack_push(LayoutStack* layout);
 
-internal Rect
-layout_stack_push_scaled(LayoutStack* layout, float32 scale);
+internal Rect layout_stack_push_scaled(LayoutStack* layout, float32 scale);
 
-internal Rect
-layout_stack_container(LayoutStack* layout);
+internal Rect layout_stack_container(LayoutStack* layout);
 
 /** Rect Cut */

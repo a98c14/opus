@@ -36,8 +36,6 @@ typedef struct
 internal Engine*
 engine_init();
 
-internal void
-engine_frame_start(Engine* engine);
+internal void engine_frame_start(Engine* engine);
 
-internal void
-engine_render(Engine* engine);
+internal void engine_render(Engine* engine);

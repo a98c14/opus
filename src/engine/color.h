@@ -1,8 +1,7 @@
 #pragma once
 #include <gfx/base.h>
 
-internal Color
-lerp_color(Color Colora, Color Colorb, float32 t);
+internal Color lerp_color(Color Colora, Color Colorb, float32 t);
 
 global const Color ColorClear    = { .r = 0x0f, .g = 0x17, .b = 0x2a, .a = 0x00 };
 global const Color ColorBlack    = { .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xff };

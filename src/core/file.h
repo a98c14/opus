@@ -16,12 +16,7 @@
 #define get_current_directory_internal getcwd
 #endif
 
-internal String
-get_current_directory(Arena* arena);
-
-internal String
-get_working_directory(Arena* arena);
-
-internal String
-file_read_all_as_string(Arena* arena, String path);
+internal String get_current_directory(Arena* arena);
+internal String get_working_directory(Arena* arena);
+internal String file_read_all_as_string(Arena* arena, String path);
 

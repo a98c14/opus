@@ -4,5 +4,4 @@
 #include "app.h"
 
 
-internal void
-editor_draw_stats(Engine* engine);
+internal void editor_draw_stats(Engine* engine);

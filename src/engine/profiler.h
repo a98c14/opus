@@ -20,20 +20,14 @@ typedef struct
     float32 cached_avg;
 } Profiler;
 
-internal void
-profiler_begin(Profiler* profiler);
+internal void profiler_begin(Profiler* profiler);
 
-internal void
-profiler_end(Profiler* profiler);
+internal void profiler_end(Profiler* profiler);
 
-internal float32
-profiler_avg(Profiler* profiler);
+internal float32 profiler_avg(Profiler* profiler);
 
-internal float32
-profiler_min(Profiler* profiler);
+internal float32 profiler_min(Profiler* profiler);
 
-internal float32
-profiler_max(Profiler* profiler);
+internal float32 profiler_max(Profiler* profiler);
 
-internal void
-profiler_refresh_cache(Profiler* profiler);
+internal void profiler_refresh_cache(Profiler* profiler);

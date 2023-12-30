@@ -84,5 +84,4 @@ typedef struct
     StyleRect slider;
 } StyleSlider;
 
-internal StyleText
-font_style_override_size(StyleText style, float32 new_size);
+internal StyleText font_style_override_size(StyleText style, float32 new_size);

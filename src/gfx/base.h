@@ -281,53 +281,39 @@ renderer_new(Arena* arena, RendererConfiguration* configuration);
 internal RendererDrawState*
 renderer_draw_state_new(Arena* arena);
 
-internal Camera
-camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
+internal Camera camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
 
-internal uint32
-shader_load(String vertex_shader_text, String fragment_shader_text);
+internal uint32 shader_load(String vertex_shader_text, String fragment_shader_text);
 
-internal MaterialIndex
-material_new(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
+internal MaterialIndex material_new(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
 
-internal GeometryIndex
-geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object);
+internal GeometryIndex geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object);
 
-internal TextureIndex
-texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
+internal TextureIndex texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
 
 internal MaterialDrawBuffer*
 renderer_get_material_buffer(Renderer* renderer, ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, uint32 available_space);
 
-internal DrawBuffer
-renderer_buffer_request(Renderer* renderer, ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, uint32 count);
+internal DrawBuffer renderer_buffer_request(Renderer* renderer, ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, uint32 count);
 
 internal DrawBufferArray*
 renderer_buffer_request_batched(Arena* arena, Renderer* renderer, ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, uint32 count);
 
-internal bool32
-draw_buffer_insert(DrawBuffer* draw_buffer, Mat4 model, void* uniform_data);
+internal bool32 draw_buffer_insert(DrawBuffer* draw_buffer, Mat4 model, void* uniform_data);
 
-internal void
-draw_buffer_array_insert(DrawBufferArray* draw_buffer_array, Mat4 model, void* uniform_data);
+internal void draw_buffer_array_insert(DrawBufferArray* draw_buffer_array, Mat4 model, void* uniform_data);
 
-internal void
-frame_buffer_begin(FrameBuffer* frame_buffer);
+internal void frame_buffer_begin(FrameBuffer* frame_buffer);
 
-internal FrameBufferIndex
-renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color);
+internal FrameBufferIndex renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color);
 
-internal Vec4
-color_to_vec4(Color color);
+internal Vec4 color_to_vec4(Color color);
 
-internal Color
-vec4_to_color(Vec4 c);
+internal Color vec4_to_color(Vec4 c);
 
-internal void
-renderer_render(Renderer* renderer, float32 dt);
+internal void renderer_render(Renderer* renderer, float32 dt);
 
-internal void
-texture_shader_data_set(Renderer* renderer, const Texture* texture);
+internal void texture_shader_data_set(Renderer* renderer, const Texture* texture);
 
 /* converts the unit value to actual screen pixel*/
 internal float32 px(float32 u);

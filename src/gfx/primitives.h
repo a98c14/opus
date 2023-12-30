@@ -39,8 +39,6 @@ const uint32 shape_indices_triangle[] =
 	0, 1, 2
 };
 
-internal GeometryIndex
-geometry_quad_create(Renderer* renderer);
+internal GeometryIndex geometry_quad_create(Renderer* renderer);
 
-internal GeometryIndex
-geometry_triangle_create(Renderer* renderer);
+internal GeometryIndex geometry_triangle_create(Renderer* renderer);
