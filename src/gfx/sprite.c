@@ -46,6 +46,12 @@ sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip)
     return result;
 }
 
+internal inline Animation
+animation_from_atlas(SpriteAtlas* atlas, AnimationIndex index)
+{
+    return atlas->animations[index];
+}
+
 internal inline uint16
 animation_length(Animation animation)
 {
