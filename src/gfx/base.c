@@ -240,7 +240,8 @@ texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channe
 
     glGenTextures(1, &texture->gl_texture_id);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture->gl_texture_id);
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, texture->width, texture->height, layer_count);
+    // TODO: figure out if this is needed or not
+    // glTexStorage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, texture->width, texture->height, layer_count);
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, texture->width, texture->height, layer_count, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     for (int i = 0; i < layer_count; i++)
     {
@@ -248,7 +249,6 @@ texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channe
     }
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_GENERATE_MIPMAP, GL_FALSE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, filter);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, filter);
     renderer->texture_count++;
