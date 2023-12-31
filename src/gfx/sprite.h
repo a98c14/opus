@@ -1,5 +1,14 @@
+#pragma once
+
 #include <core/defines.h>
 #include <core/math.h>
+#include <core/memory.h>
+#include <gfx/base.h>
+
+#include "base.h"
+
+typedef uint32 SpriteIndex;
+typedef uint32 AnimationIndex;
 
 typedef struct
 {
@@ -11,6 +20,20 @@ typedef struct
 
 typedef struct
 {
-    int sprite_start_index;
-    int sprite_end_index;
-}  Animation;
+    SpriteIndex sprite_start_index;
+    SpriteIndex sprite_end_index;
+} Animation;
+
+typedef struct
+{
+    TextureIndex        texture;
+    const Sprite*       sprites;
+    const Animation*    animations;
+    const TextureIndex* sprite_texture_indices;
+
+    uint32 sprite_count;
+    uint32 animation_count;
+} SpriteAtlas;
+
+internal SpriteAtlas* sprite_atlas_new(Arena* arena, TextureIndex texture_index, const Animation* animations, const Sprite* sprites, const TextureIndex* texture_indices, uint32 animation_count, uint32 sprite_count);
+internal void         renderer_load_sprite_atlas(Renderer* renderer, SpriteAtlas* atlas);

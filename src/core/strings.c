@@ -1,10 +1,12 @@
 #include "strings.h"
+#include <core/memory.h>
+#include <core/strings.h>
 
-internal String 
+internal String
 string_new(Arena* arena, uint64 length)
 {
     String s = {0};
-    s.value = arena_push(arena, length); // +1 for null-terminator
+    s.value  = arena_push(arena, length); // +1 for null-terminator
     s.length = length;
     return s;
 }
@@ -12,30 +14,30 @@ string_new(Arena* arena, uint64 length)
 internal String
 string_null()
 {
-    return (String){ .value = NULL, .length = -1 };
+    return (String){.value = NULL, .length = -1};
 }
 
-internal String 
+internal String
 string_create(char* buffer, uint32 size)
 {
     String s = {0};
-    s.value = buffer;
+    s.value  = buffer;
     s.length = size;
     return s;
 }
 
-internal String 
+internal String
 string_pushfv(Arena* arena, const char* fmt, va_list args)
 {
     va_list args2;
     va_copy(args2, args);
 
     uint32 buffer_size = 32;
-    char* buffer = arena_push_array(arena, char, buffer_size);
+    char*  buffer      = arena_push_array(arena, char, buffer_size);
     uint32 actual_size = vsnprintf(buffer, buffer_size, fmt, args);
 
     String result = {0};
-    if (actual_size < buffer_size) 
+    if (actual_size < buffer_size)
     {
         arena_pop(arena, buffer_size - actual_size - 1);
         result = string_create(buffer, actual_size);
@@ -43,9 +45,9 @@ string_pushfv(Arena* arena, const char* fmt, va_list args)
     else
     {
         arena_pop(arena, buffer_size);
-        char* fixed_buffer  = arena_push_array(arena, char, actual_size);
-        uint32 final_size = vsnprintf(fixed_buffer, actual_size + 1, fmt, args2);
-        result = string_create(fixed_buffer, final_size);
+        char*  fixed_buffer = arena_push_array(arena, char, actual_size);
+        uint32 final_size   = vsnprintf(fixed_buffer, actual_size + 1, fmt, args2);
+        result              = string_create(fixed_buffer, final_size);
     }
 
     va_end(args2);
@@ -53,7 +55,7 @@ string_pushfv(Arena* arena, const char* fmt, va_list args)
     return result;
 }
 
-internal String 
+internal String
 string_pushf(Arena* arena, const char* fmt, ...)
 {
     va_list args;
@@ -61,4 +63,20 @@ string_pushf(Arena* arena, const char* fmt, ...)
     String result = string_pushfv(arena, fmt, args);
     va_end(args);
     return result;
+}
+
+/* Utility */
+internal void
+string_list_push(Arena* arena, StringList* list, String str)
+{
+    StringNode* node = arena_push_struct_zero(arena, StringNode);
+    node->value      = str;
+    if (list->last)
+        list->last->next = node;
+
+    if (!list->first)
+        list->first = node;
+
+    list->last = node;
+    list->count++;
 }
