@@ -111,7 +111,7 @@ typedef struct
 } ShaderDataBoid;
 
 internal DrawContext* draw_context_new(Arena* arena, Arena* temp_arena, Renderer* renderer);
-internal void         draw_context_load_sprite_atlas(DrawContext* context, SpriteAtlas* atlas);
+internal void         draw_context_activate_atlas(DrawContext* context, SpriteAtlas* atlas);
 
 /* Draw Functions */
 internal void draw_line(DrawContext* dc, Vec2 start, Vec2 end, Color color, float32 thickness);
@@ -131,4 +131,4 @@ internal void draw_triangle(DrawContext* dc, Vec2 position, float32 rotation, Co
 internal Rect draw_rect(DrawContext* dc, Rect rect, float32 rotation, SortLayerIndex sort_index, StyleRect style);
 
 /* Sprite */
-internal void draw_sprite(DrawContext* dc, Vec2 position, SpriteIndex sprite);
+internal void draw_sprite(DrawContext* dc, Vec2 position, float32 scale, SpriteIndex sprite);

@@ -91,7 +91,7 @@ draw_context_new(Arena* arena, Arena* temp_arena, Renderer* renderer)
         file_read_all_as_string(arena, string(SHADER_PATH "\\sprite.vert")),
         file_read_all_as_string(arena, string(SHADER_PATH "\\sprite.frag")),
         sizeof(ShaderDataSprite),
-        true);
+        false);
 
     /* Fonts */
     TextureIndex font_texture    = texture_new_from_file(renderer, string(ASSET_PATH "\\open_sans.png"), 0, 1);
@@ -107,7 +107,7 @@ draw_context_new(Arena* arena, Arena* temp_arena, Renderer* renderer)
 }
 
 internal void
-draw_context_load_sprite_atlas(DrawContext* context, SpriteAtlas* atlas)
+draw_context_activate_atlas(DrawContext* context, SpriteAtlas* atlas)
 {
     context->sprite_atlas = atlas;
 }
@@ -277,15 +277,16 @@ draw_boid(DrawContext* dc, Vec2 position, float32 rotation, float32 size, Color 
 }
 
 internal void
-draw_sprite(DrawContext* dc, Vec2 position, SpriteIndex sprite)
+draw_sprite(DrawContext* dc, Vec2 position, float32 scale, SpriteIndex sprite)
 {
     xassert(dc->sprite_atlas, "`dc->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
     DrawBuffer draw_buffer         = renderer_buffer_request(dc->renderer, ViewTypeWorld, SORT_LAYER_INDEX_DEFAULT, FRAME_BUFFER_INDEX_DEFAULT, dc->sprite_atlas->texture, dc->geometry_quad, dc->material_sprite, 1);
-    draw_buffer.model_buffer[0]    = transform_quad(position, vec2_one(), 0);
+    Sprite     sprite_data         = dc->sprite_atlas->sprites[sprite];
+    draw_buffer.model_buffer[0]    = transform_quad(position, mul_vec2_f32(vec2(sprite_data.size.w, sprite_data.size.h), scale), 0);
     ShaderDataSprite* model_buffer = (ShaderDataSprite*)draw_buffer.uniform_data_buffer;
 
     model_buffer[0].sprite_index        = sprite;
     model_buffer[0].texture_layer_index = dc->sprite_atlas->sprite_texture_indices[sprite];
     model_buffer[0].alpha               = 1;
-    model_buffer[0].color               = color_to_vec4(ColorWhite);
+    model_buffer[0].color               = color_to_vec4(ColorInvisible);
 }

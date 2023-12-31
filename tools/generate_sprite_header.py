@@ -91,15 +91,14 @@ if __name__ == "__main__":
         output_file.write("#include <engine/text.h>\n")
         
         # write textures
-        output_file.write("\ntypedef enum\n{\n")
-        output_file.write("\tTEXTURE_UNDEFINED = 0,\n")
+        output_file.write("\enum\n{\n")
         for texture in texture_data:
             output_file.write(f"\tTEXTURE_{texture},\n")
         output_file.write("\tTEXTURE_COUNT\n")
-        output_file.write("} TEXTURE_INDEX;\n")
+        output_file.write("};\n")
     
         # write animations enum
-        output_file.write("\ntypedef enum\n{\n")
+        output_file.write("\enum\n{\n")
         output_file.write("\tANIMATION_UNDEFINED = 0,\n")
         for texture in texture_data:
             animation_prefix = f"ANIMATION_{texture}"
@@ -107,10 +106,10 @@ if __name__ == "__main__":
             for animation in animations:
                 output_file.write(f"\t{animation_prefix}_{animation},\n")
         output_file.write("\tANIMATION_COUNT\n")
-        output_file.write("} ANIMATION_INDEX;\n")
+        output_file.write("};\n")
     
         # write sprites enum
-        output_file.write("\ntypedef enum\n{\n")
+        output_file.write("\enum\n{\n")
         output_file.write("\tSPRITE_UNDEFINED = 0,\n")
         for texture in texture_data:
             sprite_prefix = f"SPRITE_{texture}"
@@ -118,11 +117,11 @@ if __name__ == "__main__":
             for sprite in sprites:
                 output_file.write(f"\t{sprite_prefix}_{sprite},\n")
         output_file.write("\tSPRITE_COUNT\n")
-        output_file.write("} SPRITE_INDEX;\n")
+        output_file.write("};\n")
         
         # write texture indices        
-        output_file.write(f"\ninternal const TEXTURE_INDEX texture_index_map[{sprite_count+1}] = {{\n")
-        output_file.write("\tTEXTURE_UNDEFINED,\n")
+        output_file.write(f"\ninternal const TextureIndex texture_index_map[{sprite_count+1}] = {{\n")
+        output_file.write("\t-1,\n")
         for texture in texture_data:
             sprites = texture_data[texture]['sprites']
             for _ in sprites:

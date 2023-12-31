@@ -240,6 +240,7 @@ typedef struct
     uint32 global_uniform_buffer_id;
     uint32 texture_uniform_buffer_id;
     uint32 camera_uniform_buffer_id;
+    uint32 sprites_ssbo_id;
     uint32 mvp_ssbo_id;
 
     /* state */
