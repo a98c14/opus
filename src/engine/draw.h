@@ -131,4 +131,4 @@ internal void draw_triangle(DrawContext* dc, Vec2 position, float32 rotation, Co
 internal Rect draw_rect(DrawContext* dc, Rect rect, float32 rotation, SortLayerIndex sort_index, StyleRect style);
 
 /* Sprite */
-internal void draw_sprite(DrawContext* dc, Vec2 position, float32 scale, SpriteIndex sprite);
+internal void draw_sprite(DrawContext* dc, Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite);

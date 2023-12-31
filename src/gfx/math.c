@@ -30,8 +30,8 @@ transform_quad_around_pivot(Vec2 position, Vec2 scale, float32 rotation, Vec2 pi
     Mat4 pivot_mat       = mat4_translation(vec3_xy_z(pivot, 0));
 
     Mat4 model = translation_mat;
-    model      = mul_mat4(model, pivot_mat);
     model      = mul_mat4(model, rotation_mat);
+    model      = mul_mat4(model, pivot_mat);
     model      = mul_mat4(model, scale_mat);
     return model;
 }

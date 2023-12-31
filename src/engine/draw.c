@@ -278,14 +278,14 @@ draw_boid(DrawContext* dc, Vec2 position, float32 rotation, float32 size, Color 
 }
 
 internal void
-draw_sprite(DrawContext* dc, Vec2 position, float32 scale, SpriteIndex sprite)
+draw_sprite(DrawContext* dc, Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite)
 {
     xassert(dc->sprite_atlas, "`dc->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
     DrawBuffer draw_buffer = renderer_buffer_request(dc->renderer, ViewTypeWorld, SORT_LAYER_INDEX_DEFAULT, FRAME_BUFFER_INDEX_DEFAULT, dc->sprite_atlas->texture, dc->geometry_quad, dc->material_sprite, 1);
     Sprite     sprite_data = dc->sprite_atlas->sprites[sprite];
 
     Vec2 pivot                     = sprite_get_pivot(sprite_data, vec2(scale, scale), vec2_one());
-    draw_buffer.model_buffer[0]    = transform_quad_around_pivot(position, mul_vec2_f32(vec2(sprite_data.size.w, sprite_data.size.h), scale), 0, pivot);
+    draw_buffer.model_buffer[0]    = transform_quad_around_pivot(position, mul_vec2_f32(vec2(sprite_data.size.w, sprite_data.size.h), scale), rotation, pivot);
     ShaderDataSprite* model_buffer = (ShaderDataSprite*)draw_buffer.uniform_data_buffer;
 
     model_buffer[0].sprite_index        = sprite;
