@@ -36,3 +36,12 @@ renderer_load_sprite_atlas(Renderer* renderer, SpriteAtlas* atlas)
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     arena_end_temp(temp);
 }
+
+internal inline Vec2
+sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip)
+{
+    Vec2 result;
+    result.x = (sprite.size.w / 2.0 + sprite.size.x - sprite.pivot.x) * flip.x * scale.x;
+    result.y = -(sprite.size.h / 2.0 + sprite.size.y - sprite.pivot.y) * flip.y * scale.y;
+    return result;
+}

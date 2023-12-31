@@ -91,14 +91,14 @@ if __name__ == "__main__":
         output_file.write("#include <engine/text.h>\n")
         
         # write textures
-        output_file.write("\enum\n{\n")
+        output_file.write("\nenum\n{\n")
         for texture in texture_data:
             output_file.write(f"\tTEXTURE_{texture},\n")
         output_file.write("\tTEXTURE_COUNT\n")
         output_file.write("};\n")
     
         # write animations enum
-        output_file.write("\enum\n{\n")
+        output_file.write("\nenum\n{\n")
         output_file.write("\tANIMATION_UNDEFINED = 0,\n")
         for texture in texture_data:
             animation_prefix = f"ANIMATION_{texture}"
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         output_file.write("};\n")
     
         # write sprites enum
-        output_file.write("\enum\n{\n")
+        output_file.write("\nenum\n{\n")
         output_file.write("\tSPRITE_UNDEFINED = 0,\n")
         for texture in texture_data:
             sprite_prefix = f"SPRITE_{texture}"
@@ -149,10 +149,12 @@ if __name__ == "__main__":
                 source_size = sprites[sprite]['source_size']
                 sprite_source_size = sprites[sprite]['sprite_source_size']
                 pivot = sprites[sprite]['pivot']
+                pivot['x'] = round(pivot['x'] * source_size['w'])
+                pivot['y'] = round(pivot['y'] * source_size['h'])
                 output_file.write("\t{ ")
                 output_file.write(f".rect = {{ .x = {frame['x']:4}, .y = {frame['y']:4}, .w = {frame['w']:4}, .h = {frame['h']:4} }}, ")
                 output_file.write(f".size = {{ .x = {sprite_source_size['x']:4}, .y = {sprite_source_size['y']:4}, .w = {sprite_source_size['w']:4}, .h = {sprite_source_size['h']:4} }}, ")
-                output_file.write(f".pivot = {{ .x = {pivot['x']:6.3f}, .y = {pivot['y']:6.3f} }},")
+                output_file.write(f".pivot = {{ .x = {pivot['x']:3}, .y = {pivot['y']:3} }},")
                 output_file.write(f".source_size = {{ .x = {source_size['w']:4}, .y = {source_size['h']:4} }}")
                 output_file.write("},\n")
         output_file.write("};\n")
