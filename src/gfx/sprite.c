@@ -45,3 +45,9 @@ sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip)
     result.y = -(sprite.size.h / 2.0 + sprite.size.y - sprite.pivot.y) * flip.y * scale.y;
     return result;
 }
+
+internal inline uint16
+animation_length(Animation animation)
+{
+    return animation.sprite_end_index - animation.sprite_start_index;
+}
