@@ -31,7 +31,7 @@ input_mouse_get(Window* window, Camera camera, InputMouse prev_state)
 internal bool32
 input_mouse_pressed(InputMouse mouse, MouseButtonState state)
 {
-    return (mouse.button_state & state) > 0;
+    return (mouse.button_state & state) > 0 && (mouse.prev_button_state & state) == 0;
 }
 
 internal bool32
