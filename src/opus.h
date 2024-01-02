@@ -34,3 +34,7 @@
 #include <ui/base.h>
 #include <ui/components.h>
 #include <ui/debug.h>
+
+#include <ecs/component.h>
+#include <ecs/prefab.h>
+#include <ecs/world.h>

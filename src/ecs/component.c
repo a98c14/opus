@@ -11,8 +11,8 @@ internal ComponentTypeRegistrationRequest*
 component_type_register_begin(Arena* temp_arena)
 {
     ComponentTypeRegistrationRequest* request = arena_push_struct_zero(temp_arena, ComponentTypeRegistrationRequest);
-    request->component_type_capacity          = COMPONENT_TYPE_CAPACITY;
-    request->component_sizes                  = arena_push_array_zero(temp_arena, usize, COMPONENT_TYPE_CAPACITY);
+    request->component_type_capacity          = COMPONENT_CAPACITY;
+    request->component_sizes                  = arena_push_array_zero(temp_arena, usize, COMPONENT_CAPACITY);
     return request;
 }
 
@@ -40,7 +40,7 @@ internal ComponentTypeField*
 component_type_field_new(Arena* arena, ComponentTypeManager* manager)
 {
     ComponentTypeField* result = arena_push_struct(arena, ComponentTypeField);
-    result->value              = arena_push_array_zero(arena, uint32, COMPONENT_TYPE_FIELD_LENGTH);
+    result->value              = arena_push_array_zero(arena, uint32, COMPONENT_BITFIELD_LENGTH);
     return result;
 }
 
@@ -48,7 +48,7 @@ internal uint32
 component_type_field_count(ComponentTypeField a)
 {
     uint32 type_count = 0;
-    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
+    for (int i = 0; i < COMPONENT_BITFIELD_LENGTH; i++)
         type_count += __popcnt(a.value[i]);
     return type_count;
 }
@@ -57,7 +57,7 @@ internal bool32
 component_type_field_is_same(ComponentTypeField a, ComponentTypeField b)
 {
     bool32 is_same = true;
-    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
+    for (int i = 0; i < COMPONENT_BITFIELD_LENGTH; i++)
     {
         if (a.value[i] - b.value[i] != 0)
         {
@@ -72,7 +72,7 @@ internal ComponentTypeField
 component_type_field_add_internal(ComponentTypeField field, ComponentIndex type_index)
 {
     ComponentTypeField result = field;
-    result.value[type_index / COMPONENT_TYPE_FIELD_SIZE] |= 1 << (type_index % COMPONENT_TYPE_FIELD_SIZE);
+    result.value[type_index / COMPONENT_BITFIELD_SIZE] |= 1 << (type_index % COMPONENT_BITFIELD_SIZE);
     return result;
 }
 
@@ -80,6 +80,6 @@ internal ComponentTypeField
 component_type_field_remove_internal(ComponentTypeField field, ComponentIndex type_index)
 {
     ComponentTypeField result = field;
-    result.value[type_index / COMPONENT_TYPE_FIELD_SIZE] &= ~(1 << (type_index % COMPONENT_TYPE_FIELD_SIZE));
+    result.value[type_index / COMPONENT_BITFIELD_SIZE] &= ~(1 << (type_index % COMPONENT_BITFIELD_SIZE));
     return result;
 }

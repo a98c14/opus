@@ -1,5 +1,4 @@
 #include "world.h"
-#include <ecs/world.h>
 
 internal EntityAddress
 entity_address_null()
@@ -37,8 +36,8 @@ archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
     archetype->byte_per_entity = 0;
     for (int i = 0; i < COMPONENT_COUNT; i++)
     {
-        int32 type_location       = i / COMPONENT_TYPE_FIELD_SIZE;
-        int32 type_location_index = i % COMPONENT_TYPE_FIELD_SIZE;
+        int32 type_location       = i / COMPONENT_BITFIELD_SIZE;
+        int32 type_location_index = i % COMPONENT_BITFIELD_SIZE;
 
         archetype->component_buffer_index_map[i] = -1;
         if (components.value[type_location] & (1 << type_location_index))

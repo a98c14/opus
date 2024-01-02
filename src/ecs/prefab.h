@@ -2,13 +2,12 @@
 
 #include <core/defines.h>
 
-#include "component_type.h"
-#include "entity.h"
+#include "component.h"
 #include "world.h"
 
 typedef struct
 {
-    Entity entiy;
+    Entity entity;
 } Prefab;
 
 internal Prefab
