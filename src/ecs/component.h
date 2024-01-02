@@ -50,17 +50,17 @@ typedef struct
 typedef struct
 {
     uint32* value;
-} ComponentTypeField;
+} ComponentBitField;
 
 internal ComponentTypeManager*             component_type_manager_new(Arena* arena);
 internal ComponentTypeRegistrationRequest* component_type_register_begin(Arena* temp_arena);
 internal void                              component_type_register_add(ComponentTypeRegistrationRequest* request, ComponentIndex type_index, usize component_size, ComponentType component_type);
 internal void                              component_type_register_complete(ComponentTypeManager* manager, ComponentTypeRegistrationRequest* request);
 
-internal ComponentTypeField* component_type_field_new(Arena* arena, ComponentTypeManager* manager);
-internal uint32              component_type_field_count(ComponentTypeField a);
-internal bool32              component_type_field_is_same(ComponentTypeField a, ComponentTypeField b);
-internal ComponentTypeField  component_type_field_add_internal(ComponentTypeField field, ComponentIndex type_index);
-internal ComponentTypeField  component_type_field_remove_internal(ComponentTypeField field, ComponentIndex type_index);
+internal ComponentBitField* component_type_field_new(Arena* arena, ComponentTypeManager* manager);
+internal uint32             component_type_field_count(ComponentBitField a);
+internal bool32             component_type_field_is_same(ComponentBitField a, ComponentBitField b);
+internal ComponentBitField  component_type_field_add_internal(ComponentBitField field, ComponentIndex type_index);
+internal ComponentBitField  component_type_field_remove_internal(ComponentBitField field, ComponentIndex type_index);
 #define component_type_field_add(field, type)    component_type_field_add_internal(field, CI_##type);
 #define component_type_field_remove(field, type) component_type_field_remove_internal(field, CI_##type);

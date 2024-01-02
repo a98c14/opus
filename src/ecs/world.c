@@ -1,4 +1,6 @@
 #include "world.h"
+#include <ecs/component.h>
+#include <ecs/world.h>
 
 internal EntityAddress
 entity_address_null()
@@ -16,7 +18,7 @@ entity_address_is_null(EntityAddress address)
 }
 
 internal ArchetypeIndex
-archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
+archetype_get_or_create(EntityManager* manager, ComponentBitField components)
 {
     World* world = manager->world;
     for (int i = 0; i < world->archetype_count; i++)
@@ -59,7 +61,7 @@ chunk_has_space(Chunk* chunk, uint32 count)
 }
 
 internal ChunkIndex
-chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint32 space_required, uint32 capacity)
+chunk_get_or_create(EntityManager* manager, ComponentBitField components, uint32 space_required, uint32 capacity)
 {
     World* world = manager->world;
     for (int i = 0; i < world->chunk_count; i++)
@@ -96,7 +98,7 @@ chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint3
 }
 
 internal Entity
-entity_create(EntityManager* manager, ComponentTypeField components)
+entity_create(EntityManager* manager, ComponentBitField components)
 {
     World*     world       = manager->world;
     ChunkIndex chunk_index = chunk_get_or_create(manager, components, 1, DEFAULT_CHUNK_CAPACITY);
@@ -157,4 +159,36 @@ entity_destroy(EntityManager* manager, Entity entity)
     last_entity_address->chunk_index                              = current_address.chunk_index;
     last_entity_address->chunk_internal_index                     = current_address.chunk_internal_index;
     current_chunk->entity_count--;
+}
+
+internal World*
+world_new(Arena* arena)
+{
+    World* world                = arena_push_struct_zero(arena, World);
+    world->archetype_components = arena_push_array_zero(arena, ComponentBitField, ARCHETYPE_CAPACITY);
+    world->archetypes           = arena_push_array_zero(arena, Archetype, ARCHETYPE_CAPACITY);
+
+    world->chunk_components = arena_push_array_zero(arena, ComponentBitField, CHUNK_CAPACITY);
+    world->chunks           = arena_push_array_zero(arena, Chunk, CHUNK_CAPACITY);
+
+    world->entity_addresses = arena_push_array_zero(arena, EntityAddress, ENTITY_CAPACITY);
+    world->entities         = arena_push_array_zero(arena, Entity, ENTITY_CAPACITY);
+
+    for (int i = 0; i < ENTITY_CAPACITY; i++)
+    {
+        world->entity_addresses[i] = entity_address_null();
+        world->entities[i].index   = i;
+    }
+    return world;
+}
+
+internal EntityManager*
+entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager)
+{
+    EntityManager* manager    = arena_push_struct_zero(persistent_arena, EntityManager);
+    manager->persistent_arena = persistent_arena;
+    manager->temp_arena       = temp_arena;
+    manager->world            = world_new(persistent_arena);
+    manager->type_manager     = type_manager;
+    return manager;
 }

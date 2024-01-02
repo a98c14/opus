@@ -36,16 +36,16 @@ component_type_register_complete(ComponentTypeManager* manager, ComponentTypeReg
     log_info("component registration completed. %d components registered", request->component_type_count);
 }
 
-internal ComponentTypeField*
+internal ComponentBitField*
 component_type_field_new(Arena* arena, ComponentTypeManager* manager)
 {
-    ComponentTypeField* result = arena_push_struct(arena, ComponentTypeField);
-    result->value              = arena_push_array_zero(arena, uint32, COMPONENT_BITFIELD_LENGTH);
+    ComponentBitField* result = arena_push_struct(arena, ComponentBitField);
+    result->value             = arena_push_array_zero(arena, uint32, COMPONENT_BITFIELD_LENGTH);
     return result;
 }
 
 internal uint32
-component_type_field_count(ComponentTypeField a)
+component_type_field_count(ComponentBitField a)
 {
     uint32 type_count = 0;
     for (int i = 0; i < COMPONENT_BITFIELD_LENGTH; i++)
@@ -54,7 +54,7 @@ component_type_field_count(ComponentTypeField a)
 }
 
 internal bool32
-component_type_field_is_same(ComponentTypeField a, ComponentTypeField b)
+component_type_field_is_same(ComponentBitField a, ComponentBitField b)
 {
     bool32 is_same = true;
     for (int i = 0; i < COMPONENT_BITFIELD_LENGTH; i++)
@@ -68,18 +68,18 @@ component_type_field_is_same(ComponentTypeField a, ComponentTypeField b)
     return is_same;
 }
 
-internal ComponentTypeField
-component_type_field_add_internal(ComponentTypeField field, ComponentIndex type_index)
+internal ComponentBitField
+component_type_field_add_internal(ComponentBitField field, ComponentIndex type_index)
 {
-    ComponentTypeField result = field;
+    ComponentBitField result = field;
     result.value[type_index / COMPONENT_BITFIELD_SIZE] |= 1 << (type_index % COMPONENT_BITFIELD_SIZE);
     return result;
 }
 
-internal ComponentTypeField
-component_type_field_remove_internal(ComponentTypeField field, ComponentIndex type_index)
+internal ComponentBitField
+component_type_field_remove_internal(ComponentBitField field, ComponentIndex type_index)
 {
-    ComponentTypeField result = field;
+    ComponentBitField result = field;
     result.value[type_index / COMPONENT_BITFIELD_SIZE] &= ~(1 << (type_index % COMPONENT_BITFIELD_SIZE));
     return result;
 }

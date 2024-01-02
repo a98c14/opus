@@ -30,3 +30,7 @@
 
 #include <ui/base.c>
 #include <ui/components.c>
+
+#include <ecs/component.c>
+#include <ecs/prefab.c>
+#include <ecs/world.c>

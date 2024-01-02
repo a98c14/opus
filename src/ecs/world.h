@@ -6,6 +6,8 @@
 
 #define DEFAULT_CHUNK_CAPACITY 2048
 #define ENTITY_CAPACITY        65536
+#define CHUNK_CAPACITY         512
+#define ARCHETYPE_CAPACITY     256
 
 typedef int32 ArchetypeIndex;
 typedef int32 ChunkIndex;
@@ -54,13 +56,13 @@ typedef struct
 
 typedef struct
 {
-    uint32              archetype_count;
-    ComponentTypeField* archetype_components;
-    Archetype*          archetypes;
+    uint32             archetype_count;
+    ComponentBitField* archetype_components;
+    Archetype*         archetypes;
 
-    uint32              chunk_count;
-    ComponentTypeField* chunk_components;
-    Chunk*              chunks;
+    uint32             chunk_count;
+    ComponentBitField* chunk_components;
+    Chunk*             chunks;
 
     uint32         entity_count;
     Entity*        entities;
@@ -79,10 +81,13 @@ typedef struct
 internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);
 
-internal ArchetypeIndex archetype_get_or_create(EntityManager* manager, ComponentTypeField types);
+internal ArchetypeIndex archetype_get_or_create(EntityManager* manager, ComponentBitField types);
 
 internal bool32     chunk_has_space(Chunk* chunk, uint32 count);
-internal ChunkIndex chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint32 space_required, uint32 capacity);
+internal ChunkIndex chunk_get_or_create(EntityManager* manager, ComponentBitField components, uint32 space_required, uint32 capacity);
 
-internal Entity entity_create(EntityManager* manager, ComponentTypeField types);
+internal Entity entity_create(EntityManager* manager, ComponentBitField types);
 internal void   entity_destroy(EntityManager* manager, Entity entity);
+
+internal World*         world_new(Arena* arena);
+internal EntityManager* entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);
