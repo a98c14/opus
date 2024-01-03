@@ -104,6 +104,7 @@ internal Entity entity_create(EntityManager* manager, ComponentTypeField types);
 internal void   entity_destroy(EntityManager* manager, Entity entity);
 internal void*  component_data_ref_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type);
 #define component_data_ref(entity_manager, entity, component_type) (component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type)
+#define component_data_get(entity_manager, entity, component_type) *((component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type))
 
 internal World*         world_new(Arena* arena);
 internal EntityManager* entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);

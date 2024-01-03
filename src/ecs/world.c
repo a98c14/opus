@@ -84,9 +84,14 @@ chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint3
 
     for (int i = 0; i < archetype->component_count; i++)
     {
-        ComponentType component_index        = archetype->components[i];
-        usize         component_size         = manager->type_manager->component_sizes[component_index];
-        int32         component_buffer_index = archetype->component_buffer_index_map[component_index];
+        ComponentType component_index = archetype->components[i];
+
+        ComponentDataType data_type = manager->type_manager->component_data_types[component_index];
+        if (data_type != ComponentDataTypeDefault)
+            continue;
+
+        usize component_size         = manager->type_manager->component_sizes[component_index];
+        int32 component_buffer_index = archetype->component_buffer_index_map[component_index];
 
         chunk->data_buffers[component_buffer_index].type = component_index;
         chunk->data_buffers[component_buffer_index].data = arena_push_zero(manager->persistent_arena, component_size * capacity);
