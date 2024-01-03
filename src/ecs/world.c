@@ -194,6 +194,19 @@ entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeMana
     return manager;
 }
 
+internal void*
+component_data_ref_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type)
+{
+    World*        world     = entity_manager->world;
+    EntityAddress address   = world->entity_addresses[entity.index];
+    Chunk*        chunk     = &world->chunks[address.chunk_index];
+    Archetype*    archetype = &world->archetypes[chunk->archetype_index];
+
+    xassert(chunk->entities[address.chunk_internal_index].version == entity.version, "given entity is not the same as the one in chunk");
+    void* component_data = (void*)((uint8*)chunk->data_buffers[archetype->component_buffer_index_map[component_type]].data + entity_manager->type_manager->component_sizes[component_type] * address.chunk_internal_index);
+    return component_data;
+}
+
 /** Entity Query */
 internal EntityQueryResult
 entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query)
@@ -221,12 +234,12 @@ entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query)
     }
 
     EntityQueryResult result = {0};
-    result.entity_count      = 0;
+    result.count             = 0;
     result.entities          = arena_push_array(arena, Entity, entity_count);
     for (int i = 0; i < chunk_count; i++)
     {
-        memcpy(result.entities + result.entity_count, chunks[i].entities, sizeof(Entity) * chunks[i].entity_count);
-        result.entity_count += chunks[i].entity_count;
+        memcpy(result.entities + result.count, chunks[i].entities, sizeof(Entity) * chunks[i].entity_count);
+        result.count += chunks[i].entity_count;
     }
     arena_end_temp(temp);
     return result;
