@@ -253,3 +253,10 @@ entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query)
     arena_end_temp(temp);
     return result;
 }
+
+internal bool32
+entity_is_alive(EntityManager* entity_manager, Entity entity)
+{
+    World* world = entity_manager->world;
+    return !entity_address_is_null(world->entity_addresses[entity.index]);
+}

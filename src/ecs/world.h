@@ -110,5 +110,5 @@ internal World*         world_new(Arena* arena);
 internal EntityManager* entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);
 
 /** Entity Query */
-internal EntityQueryResult
-entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query);
+internal EntityQueryResult entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query);
+internal bool32            entity_is_alive(EntityManager* entity_manager, Entity entity);
