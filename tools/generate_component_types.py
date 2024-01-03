@@ -54,8 +54,8 @@ if __name__ == "__main__":
         header_file.write("\nenum\n{\n")
         header_file.write(f"\tCI_{component_types[0]} = CI_RESERVE_COUNT,\n")
         for component_type in component_types[1:]:
-            header_file.write("CI_{component_type};\n")
-        header_file.write("};\n")
+            header_file.write(f"\tCI_{component_type},\n")
+        header_file.write("\tCI_COUNT\n};\n")
         header_file.write("\ninternal void register_components(Arena* temp_arena, ComponentTypeManager* type_manager);")
             
         source_file.write("#include \"component_types.h\"\n")

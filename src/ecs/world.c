@@ -143,7 +143,7 @@ entity_destroy(EntityManager* manager, Entity entity)
         return;
     }
 
-    // if the entity is NOT the last entity on the chunk swap the entity wit the last entity
+    // if the entity is NOT the last entity on the chunk swap the entity with the last entity
     // and decrement entity count by 1;
     Entity         last_entity         = current_chunk->entities[last_entity_internal_index];
     EntityAddress* last_entity_address = &world->entity_addresses[last_entity.index];
