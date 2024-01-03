@@ -6,61 +6,69 @@
 #include <core/defines.h>
 #include <core/log.h>
 #include <core/memory.h>
+#include <core/strings.h>
 
 #ifndef COMPONENT_COUNT
 #define COMPONENT_COUNT 1
 #endif
-#define COMPONENT_BITFIELD_SIZE   32
-#define COMPONENT_BITFIELD_LENGTH ((COMPONENT_COUNT / COMPONENT_BITFIELD_SIZE) + 1)
+#define COMPONENT_TYPE_FIELD_SIZE   32
+#define COMPONENT_TYPE_FIELD_LENGTH ((COMPONENT_COUNT / COMPONENT_TYPE_FIELD_SIZE) + 1)
 
 #define COMPONENT_CAPACITY 8192
-typedef uint16 ComponentIndex;
+typedef uint16 ComponentType;
+
+/** Used by component code-generation script.
+ * Define the tag component as follows
+ * `typedef TagComponent EnemyComponent;` */
+typedef uint32 TagComponent;
 
 enum
 {
-    CI_Undefined = 0,
-    CI_Prefab    = 1,
-    CI_RESERVE_COUNT
+    CT_Undefined = 0,
+    CT_Prefab    = 1,
+    CT_RESERVE_COUNT
 };
 
 typedef enum
 {
-    ComponentTypeTag,
-    ComponentTypeData,
-    ComponentTypeChunk,
-} ComponentType;
+    ComponentDataTypeDefault,
+    ComponentDataTypeTag,
+    ComponentDataTypeChunk,
+} ComponentDataType;
 
 typedef struct
 {
     Arena* arena;
 
-    usize*         component_sizes;
-    ComponentType* component_types;
-    uint16         component_type_count;
+    usize*             component_sizes;
+    ComponentDataType* component_data_types;
+    uint16             component_type_count;
 } ComponentTypeManager;
 
 typedef struct
 {
-    ComponentType* component_types;
-    usize*         component_sizes;
-    uint16         component_type_count;
-    uint16         component_type_capacity;
+    ComponentType*     component_indices;
+    ComponentDataType* component_data_types;
+    usize*             component_sizes;
+    uint16             component_type_count;
+    uint16             component_type_capacity;
 } ComponentTypeRegistrationRequest;
 
 typedef struct
 {
-    uint32* value;
-} ComponentBitField;
+    uint32 value[COMPONENT_TYPE_FIELD_LENGTH];
+} ComponentTypeField;
 
 internal ComponentTypeManager*             component_type_manager_new(Arena* arena);
 internal ComponentTypeRegistrationRequest* component_type_register_begin(Arena* temp_arena);
-internal void                              component_type_register_add(ComponentTypeRegistrationRequest* request, ComponentIndex type_index, usize component_size, ComponentType component_type);
+internal void                              component_type_register_add(ComponentTypeRegistrationRequest* request, ComponentType type_index, usize component_size, ComponentDataType component_type);
 internal void                              component_type_register_complete(ComponentTypeManager* manager, ComponentTypeRegistrationRequest* request);
 
-internal ComponentBitField* component_type_field_new(Arena* arena, ComponentTypeManager* manager);
-internal uint32             component_type_field_count(ComponentBitField a);
-internal bool32             component_type_field_is_same(ComponentBitField a, ComponentBitField b);
-internal ComponentBitField  component_type_field_add_internal(ComponentBitField field, ComponentIndex type_index);
-internal ComponentBitField  component_type_field_remove_internal(ComponentBitField field, ComponentIndex type_index);
-#define component_type_field_add(field, type)    component_type_field_add_internal(field, CI_##type);
-#define component_type_field_remove(field, type) component_type_field_remove_internal(field, CI_##type);
+internal uint32             component_type_field_count(ComponentTypeField a);
+internal bool32             component_type_field_is_same(ComponentTypeField a, ComponentTypeField b);
+internal ComponentTypeField component_type_field_or(ComponentTypeField a, ComponentTypeField b);
+internal ComponentTypeField component_type_field_add(ComponentTypeField field, ComponentType type_index);
+internal ComponentTypeField component_type_field_remove(ComponentTypeField field, ComponentType type_index);
+
+internal void component_type_field_set(ComponentTypeField* field, ComponentType type_index);
+internal void component_type_field_set_group(ComponentTypeField* field, ComponentTypeField b);

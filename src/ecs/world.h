@@ -17,7 +17,7 @@ typedef struct
     int32 component_count;
 
     // stores the available component for archetype
-    ComponentIndex* components;
+    ComponentType* components;
 
     // stores the buffer indices of components for archetype
     int32* component_buffer_index_map;
@@ -35,8 +35,8 @@ typedef struct
 
 typedef struct
 {
-    ComponentIndex type;
-    void*          data;
+    ComponentType type;
+    void*         data;
 } DataBuffer;
 
 typedef struct
@@ -56,13 +56,13 @@ typedef struct
 
 typedef struct
 {
-    uint32             archetype_count;
-    ComponentBitField* archetype_components;
-    Archetype*         archetypes;
+    uint32              archetype_count;
+    ComponentTypeField* archetype_components;
+    Archetype*          archetypes;
 
-    uint32             chunk_count;
-    ComponentBitField* chunk_components;
-    Chunk*             chunks;
+    uint32              chunk_count;
+    ComponentTypeField* chunk_components;
+    Chunk*              chunks;
 
     uint32         entity_count;
     Entity*        entities;
@@ -81,12 +81,12 @@ typedef struct
 internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);
 
-internal ArchetypeIndex archetype_get_or_create(EntityManager* manager, ComponentBitField types);
+internal ArchetypeIndex archetype_get_or_create(EntityManager* manager, ComponentTypeField types);
 
 internal bool32     chunk_has_space(Chunk* chunk, uint32 count);
-internal ChunkIndex chunk_get_or_create(EntityManager* manager, ComponentBitField components, uint32 space_required, uint32 capacity);
+internal ChunkIndex chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint32 space_required, uint32 capacity);
 
-internal Entity entity_create(EntityManager* manager, ComponentBitField types);
+internal Entity entity_create(EntityManager* manager, ComponentTypeField types);
 internal void   entity_destroy(EntityManager* manager, Entity entity);
 
 internal World*         world_new(Arena* arena);

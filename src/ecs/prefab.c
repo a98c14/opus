@@ -1,6 +1,6 @@
 #include "prefab.h"
 
 internal Prefab
-prefab_create(ComponentBitField types)
+prefab_create(ComponentTypeField types)
 {
 }

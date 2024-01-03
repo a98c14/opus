@@ -1,6 +1,4 @@
 #include "world.h"
-#include <ecs/component.h>
-#include <ecs/world.h>
 
 internal EntityAddress
 entity_address_null()
@@ -18,7 +16,7 @@ entity_address_is_null(EntityAddress address)
 }
 
 internal ArchetypeIndex
-archetype_get_or_create(EntityManager* manager, ComponentBitField components)
+archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
 {
     World* world = manager->world;
     for (int i = 0; i < world->archetype_count; i++)
@@ -32,14 +30,14 @@ archetype_get_or_create(EntityManager* manager, ComponentBitField components)
 
     archetype->component_count            = component_type_field_count(components);
     archetype->component_buffer_index_map = arena_push_array_zero(manager->persistent_arena, int32, COMPONENT_COUNT);
-    archetype->components                 = arena_push_array_zero(manager->persistent_arena, ComponentIndex, archetype->component_count);
+    archetype->components                 = arena_push_array_zero(manager->persistent_arena, ComponentType, archetype->component_count);
 
     int32 current_index        = 0;
     archetype->byte_per_entity = 0;
     for (int i = 0; i < COMPONENT_COUNT; i++)
     {
-        int32 type_location       = i / COMPONENT_BITFIELD_SIZE;
-        int32 type_location_index = i % COMPONENT_BITFIELD_SIZE;
+        int32 type_location       = i / COMPONENT_TYPE_FIELD_SIZE;
+        int32 type_location_index = i % COMPONENT_TYPE_FIELD_SIZE;
 
         archetype->component_buffer_index_map[i] = -1;
         if (components.value[type_location] & (1 << type_location_index))
@@ -61,7 +59,7 @@ chunk_has_space(Chunk* chunk, uint32 count)
 }
 
 internal ChunkIndex
-chunk_get_or_create(EntityManager* manager, ComponentBitField components, uint32 space_required, uint32 capacity)
+chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint32 space_required, uint32 capacity)
 {
     World* world = manager->world;
     for (int i = 0; i < world->chunk_count; i++)
@@ -83,9 +81,9 @@ chunk_get_or_create(EntityManager* manager, ComponentBitField components, uint32
 
     for (int i = 0; i < archetype->component_count; i++)
     {
-        ComponentIndex component_index        = archetype->components[i];
-        usize          component_size         = manager->type_manager->component_sizes[component_index];
-        int32          component_buffer_index = archetype->component_buffer_index_map[component_index];
+        ComponentType component_index        = archetype->components[i];
+        usize         component_size         = manager->type_manager->component_sizes[component_index];
+        int32         component_buffer_index = archetype->component_buffer_index_map[component_index];
 
         chunk->data_buffers[component_buffer_index].type = component_index;
         chunk->data_buffers[component_buffer_index].data = arena_push_zero(manager->persistent_arena, component_size * capacity);
@@ -98,7 +96,7 @@ chunk_get_or_create(EntityManager* manager, ComponentBitField components, uint32
 }
 
 internal Entity
-entity_create(EntityManager* manager, ComponentBitField components)
+entity_create(EntityManager* manager, ComponentTypeField components)
 {
     World*     world       = manager->world;
     ChunkIndex chunk_index = chunk_get_or_create(manager, components, 1, DEFAULT_CHUNK_CAPACITY);
@@ -165,10 +163,10 @@ internal World*
 world_new(Arena* arena)
 {
     World* world                = arena_push_struct_zero(arena, World);
-    world->archetype_components = arena_push_array_zero(arena, ComponentBitField, ARCHETYPE_CAPACITY);
+    world->archetype_components = arena_push_array_zero(arena, ComponentTypeField, ARCHETYPE_CAPACITY);
     world->archetypes           = arena_push_array_zero(arena, Archetype, ARCHETYPE_CAPACITY);
 
-    world->chunk_components = arena_push_array_zero(arena, ComponentBitField, CHUNK_CAPACITY);
+    world->chunk_components = arena_push_array_zero(arena, ComponentTypeField, CHUNK_CAPACITY);
     world->chunks           = arena_push_array_zero(arena, Chunk, CHUNK_CAPACITY);
 
     world->entity_addresses = arena_push_array_zero(arena, EntityAddress, ENTITY_CAPACITY);

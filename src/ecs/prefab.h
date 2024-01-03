@@ -11,4 +11,4 @@ typedef struct
 } Prefab;
 
 internal Prefab
-prefab_create(ComponentBitField types);
+prefab_create(ComponentTypeField types);
