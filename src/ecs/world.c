@@ -1,4 +1,7 @@
 #include "world.h"
+#include <core/memory.h>
+#include <ecs/component.h>
+#include <ecs/world.h>
 
 internal EntityAddress
 entity_address_null()
@@ -189,4 +192,42 @@ entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeMana
     manager->world            = world_new(persistent_arena);
     manager->type_manager     = type_manager;
     return manager;
+}
+
+/** Entity Query */
+internal EntityQueryResult
+entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query)
+{
+    World* world = entity_manager->world;
+
+    // TODO(selim): cache query results (invalidate on chunk add/remove)
+    ArenaTemp temp         = arena_begin_temp(entity_manager->temp_arena);
+    Chunk*    chunks       = arena_push_array(temp.arena, Chunk, 128);
+    bool32    chunk_count  = 0;
+    uint32    entity_count = 0;
+
+    for (int i = 0; i < world->chunk_count; i++)
+    {
+        bool32 all     = component_type_field_contains(world->chunk_components[i], query.all);
+        bool32 any     = component_type_field_none(world->chunk_components[i], query.any);
+        bool32 exclude = component_type_field_none(world->chunk_components[i], query.none);
+
+        if (all && any && exclude)
+        {
+            chunks[chunk_count] = world->chunks[i];
+            chunk_count++;
+            entity_count += world->chunks[i].entity_count;
+        }
+    }
+
+    EntityQueryResult result = {0};
+    result.entity_count      = 0;
+    result.entities          = arena_push_array(arena, Entity, entity_count);
+    for (int i = 0; i < chunk_count; i++)
+    {
+        memcpy(result.entities + result.entity_count, chunks[i].entities, sizeof(Entity) * chunks[i].entity_count);
+        result.entity_count += chunks[i].entity_count;
+    }
+    arena_end_temp(temp);
+    return result;
 }

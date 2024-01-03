@@ -53,21 +53,6 @@ component_type_field_count(ComponentTypeField a)
     return type_count;
 }
 
-internal bool32
-component_type_field_is_same(ComponentTypeField a, ComponentTypeField b)
-{
-    bool32 is_same = true;
-    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
-    {
-        if (a.value[i] - b.value[i] != 0)
-        {
-            is_same = false;
-            break;
-        }
-    }
-    return is_same;
-}
-
 internal ComponentTypeField
 component_type_field_or(ComponentTypeField a, ComponentTypeField b)
 {
@@ -104,4 +89,50 @@ component_type_field_set_group(ComponentTypeField* field, ComponentTypeField b)
 {
     for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
         field->value[i] = field->value[i] | b.value[i];
+}
+
+/** A is same as B */
+internal bool32
+component_type_field_is_same(ComponentTypeField a, ComponentTypeField b)
+{
+    bool32 is_same = true;
+    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
+    {
+        if (a.value[i] - b.value[i] != 0)
+        {
+            is_same = false;
+            break;
+        }
+    }
+    return is_same;
+}
+
+/** A contains all components from B */
+internal bool32
+component_type_field_contains(ComponentTypeField a, ComponentTypeField b)
+{
+    bool32 result = true;
+    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
+        result = result && ((a.value[i] | b.value[i]) <= a.value[i]);
+    return result;
+}
+
+/** A contains at least one component from B */
+internal bool32
+component_type_field_any(ComponentTypeField a, ComponentTypeField b)
+{
+    bool32 result = false;
+    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
+        result = result || ((a.value[i] & b.value[i]) > 0);
+    return result;
+}
+
+/** A contains none of the component from B */
+internal bool32
+component_type_field_none(ComponentTypeField a, ComponentTypeField b)
+{
+    bool32 result = true;
+    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
+        result = result && ((a.value[i] & b.value[i]) == 0);
+    return result;
 }

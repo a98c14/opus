@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/defines.h>
+#include <ecs/component.h>
 
 #include "component.h"
 
@@ -78,6 +79,19 @@ typedef struct
     World*                world;
 } EntityManager;
 
+typedef struct
+{
+    ComponentTypeField all;
+    ComponentTypeField any;
+    ComponentTypeField none;
+} EntityQuery;
+
+typedef struct
+{
+    Entity* entities;
+    uint32  entity_count;
+} EntityQueryResult;
+
 internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);
 
@@ -91,3 +105,7 @@ internal void   entity_destroy(EntityManager* manager, Entity entity);
 
 internal World*         world_new(Arena* arena);
 internal EntityManager* entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);
+
+/** Entity Query */
+internal EntityQueryResult
+entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query);
