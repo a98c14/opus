@@ -432,7 +432,7 @@ angle_between_vec2(Vec2 a, Vec2 b)
 internal Vec2
 heading_to_vec2(Vec2 start, Vec2 end)
 {
-    return norm_vec2(sub_vec2(end, start));
+    return norm_vec2_safe(sub_vec2(end, start));
 }
 
 internal Vec2
