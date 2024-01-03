@@ -26,6 +26,7 @@ enum
 {
     CT_Undefined = 0,
     CT_Prefab    = 1,
+    CT_Parent    = 2,
     CT_RESERVE_COUNT
 };
 

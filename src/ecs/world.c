@@ -52,6 +52,8 @@ archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
         }
     }
 
+    world->archetype_components[archtype_index] = components;
+    world->archetype_count++;
     return archtype_index;
 }
 
@@ -99,7 +101,6 @@ chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint3
 
     world->chunk_components[chunk_index] = components;
     world->chunk_count++;
-
     return chunk_index;
 }
 
@@ -206,9 +207,12 @@ component_data_ref_internal(EntityManager* entity_manager, Entity entity, Compon
     EntityAddress address   = world->entity_addresses[entity.index];
     Chunk*        chunk     = &world->chunks[address.chunk_index];
     Archetype*    archetype = &world->archetypes[chunk->archetype_index];
-
     xassert(chunk->entities[address.chunk_internal_index].version == entity.version, "given entity is not the same as the one in chunk");
-    void* component_data = (void*)((uint8*)chunk->data_buffers[archetype->component_buffer_index_map[component_type]].data + entity_manager->type_manager->component_sizes[component_type] * address.chunk_internal_index);
+
+    int32 component_index = archetype->component_buffer_index_map[component_type];
+    xassert(component_index >= 0, "component doesn't exist on the entity");
+    usize component_size = entity_manager->type_manager->component_sizes[component_type];
+    void* component_data = (void*)((uint8*)chunk->data_buffers[component_index].data + component_size * address.chunk_internal_index);
     return component_data;
 }
 
