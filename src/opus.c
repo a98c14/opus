@@ -1,4 +1,5 @@
 
+#include <core/bitfield.c>
 #include <core/datetime.c>
 #include <core/file.c>
 #include <core/hash.c>
@@ -6,6 +7,7 @@
 #include <core/math.c>
 #include <core/memory.c>
 #include <core/strings.c>
+
 
 #include <gfx/base.c>
 #include <gfx/debug.c>

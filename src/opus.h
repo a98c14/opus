@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/asserts.h>
+#include <core/bitfield.h>
 #include <core/datetime.h>
 #include <core/defines.h>
 #include <core/file.h>
@@ -38,4 +39,3 @@
 #include <ecs/component.h>
 #include <ecs/prefab.h>
 #include <ecs/world.h>
-

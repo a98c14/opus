@@ -739,3 +739,14 @@ b32_flip(bool32* b)
 {
     *b = !(*b);
 }
+
+internal Bounds
+bounds_from_circle(Circle c)
+{
+    Bounds result;
+    result.bl.x = c.center.x - c.radius / 2.0f;
+    result.bl.y = c.center.y - c.radius / 2.0f;
+    result.tr.x = c.center.x + c.radius / 2.0f;
+    result.tr.y = c.center.y + c.radius / 2.0f;
+    return result;
+}
