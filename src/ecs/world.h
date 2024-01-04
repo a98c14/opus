@@ -34,6 +34,24 @@ typedef struct
     uint32 version;
 } Entity;
 
+typedef struct EntityNode EntityNode;
+
+struct EntityNode
+{
+    Entity value;
+
+    EntityNode* next;
+};
+
+typedef struct EntityList EntityList;
+
+struct EntityList
+{
+    uint16      count;
+    EntityNode* first;
+    EntityNode* last;
+};
+
 typedef struct
 {
     ComponentType type;
@@ -91,6 +109,11 @@ typedef struct
     Entity* entities;
     uint32  count;
 } EntityQueryResult;
+
+typedef struct
+{
+    Entity value;
+} Parent;
 
 internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);

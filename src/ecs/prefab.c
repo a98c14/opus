@@ -1,6 +1,4 @@
 #include "prefab.h"
-#include <ecs/component.h>
-#include <ecs/world.h>
 
 internal Prefab
 prefab_create(EntityManager* entity_manager, ComponentTypeField types)
@@ -21,4 +19,19 @@ prefab_instantiate(EntityManager* entity_manager, Prefab prefab)
     Entity new_entity = entity_create(entity_manager, types);
     entity_copy_data(entity_manager, prefab.entity, new_entity);
     return new_entity;
+}
+
+internal void
+prefab_add_child(EntityManager* entity_manager, Prefab parent, Prefab child)
+{
+    PrefabNode* node = arena_push_struct(entity_manager->persistent_arena, PrefabNode);
+    node->value      = child;
+
+    if (!parent.first_child)
+        parent.first_child = node;
+
+    if (parent.last_child)
+        parent.last_child->next = node;
+
+    parent.last_child = node;
 }
