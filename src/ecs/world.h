@@ -107,6 +107,8 @@ internal void               entity_remove_component(EntityManager* manager, Enti
 internal ComponentTypeField entity_get_types(EntityManager* manager, Entity entity);
 internal void               entity_copy_data(EntityManager* manager, Entity src, Entity dst);
 
+internal bool32 component_data_exists_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type);
+#define component_data_exists(entity_manager, entity, component_type) component_data_exists_internal(entity_manager, entity, CT_##component_type)
 internal void* component_data_ref_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type);
 #define component_data_ref(entity_manager, entity, component_type) (component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type)
 #define component_data_get(entity_manager, entity, component_type) *((component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type))
