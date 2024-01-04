@@ -11,4 +11,7 @@ typedef struct
 } Prefab;
 
 internal Prefab
-prefab_create(ComponentTypeField types);
+prefab_create(EntityManager* entity_manager, ComponentTypeField types);
+
+internal Entity
+prefab_instantiate(EntityManager* entity_manager, Prefab prefab);

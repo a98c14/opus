@@ -85,6 +85,12 @@ component_type_field_set(ComponentTypeField* field, ComponentType type_index)
 }
 
 internal void
+component_type_field_unset(ComponentTypeField* field, ComponentType type_index)
+{
+    field->value[type_index / COMPONENT_TYPE_FIELD_SIZE] &= ~(1 << (type_index % COMPONENT_TYPE_FIELD_SIZE));
+}
+
+internal void
 component_type_field_set_group(ComponentTypeField* field, ComponentTypeField b)
 {
     for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)

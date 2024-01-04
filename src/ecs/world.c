@@ -168,6 +168,58 @@ entity_destroy(EntityManager* manager, Entity entity)
     current_chunk->entity_count--;
 }
 
+internal ComponentTypeField
+entity_get_types(EntityManager* manager, Entity entity)
+{
+    World* world = manager->world;
+
+    EntityAddress current_address = world->entity_addresses[entity.index];
+    xassert(!entity_address_is_null(current_address), "given entity does not exist");
+    return world->chunk_components[current_address.chunk_index];
+}
+
+/** Copies all matching components from source entity to destination entity */
+internal void
+entity_copy_data(EntityManager* manager, Entity src, Entity dst)
+{
+    World*                world        = manager->world;
+    ComponentTypeManager* type_manager = manager->type_manager;
+
+    EntityAddress src_address = world->entity_addresses[src.index];
+    EntityAddress dst_address = world->entity_addresses[dst.index];
+    xassert(!entity_address_is_null(src_address) && !entity_address_is_null(dst_address), "invalid entity during copy");
+
+    Chunk* src_chunk = &world->chunks[src_address.chunk_index];
+    Chunk* dst_chunk = &world->chunks[dst_address.chunk_index];
+
+    Archetype* src_archetype = &world->archetypes[src_chunk->archetype_index];
+    Archetype* dst_archetype = &world->archetypes[dst_chunk->archetype_index];
+
+    for (int i = 0; i < dst_archetype->component_count; i++)
+    {
+        ComponentType dst_type = dst_archetype->components[i];
+
+        // TODO(selim): figure out what to do about chunk components (we don't have those yet)
+        if (type_manager->component_data_types[dst_type] != ComponentDataTypeDefault)
+            continue;
+
+        int32 dst_buffer_index = dst_archetype->component_buffer_index_map[dst_type];
+        int32 src_buffer_index = src_archetype->component_buffer_index_map[dst_type];
+
+        // if type doesn't exist in the source entity, skip the component
+        if (src_buffer_index == -1)
+            continue;
+
+        usize       component_size = type_manager->component_sizes[dst_type];
+        uint32      src_index      = src_address.chunk_internal_index;
+        uint32      dst_index      = dst_address.chunk_internal_index;
+        DataBuffer* src_buffer     = &dst_chunk->data_buffers[src_buffer_index];
+        DataBuffer* dst_buffer     = &dst_chunk->data_buffers[dst_buffer_index];
+
+        memcpy((uint8*)dst_buffer->data + dst_index * component_size, (uint8*)src_buffer->data + src_index * component_size, component_size);
+    }
+}
+
 internal World*
 world_new(Arena* arena)
 {
@@ -217,6 +269,14 @@ component_data_ref_internal(EntityManager* entity_manager, Entity entity, Compon
 }
 
 /** Entity Query */
+internal EntityQuery
+entity_query_default()
+{
+    EntityQuery result = {0};
+    component_type_field_set(&result.none, CT_Prefab);
+    return result;
+}
+
 internal EntityQueryResult
 entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query)
 {
