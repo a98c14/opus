@@ -122,7 +122,7 @@ typedef struct
     Entity value;
 } Parent;
 
-internal Entity        entity_null();
+internal Entity        entity_get_parent(EntityManager* entity_manager, Entity entity);
 internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);
 
@@ -152,3 +152,4 @@ internal EntityManager* entity_manager_new(Arena* persistent_arena, Arena* temp_
 internal EntityQuery       entity_query_default();
 internal EntityQueryResult entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query);
 internal bool32            entity_is_alive(EntityManager* entity_manager, Entity entity);
+internal Entity            entity_get_parent(EntityManager* entity_manager, Entity entity);

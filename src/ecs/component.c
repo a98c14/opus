@@ -35,12 +35,19 @@ component_type_register_complete(ComponentTypeManager* manager, ComponentTypeReg
     manager->component_type_count = request->component_type_count;
     manager->component_sizes      = arena_push_array_zero(manager->arena, usize, COMPONENT_COUNT);
     manager->component_data_types = arena_push_array_zero(manager->arena, ComponentDataType, COMPONENT_COUNT);
+
+    // reserved components
+    manager->component_data_types[CTT_Prefab] = ComponentDataTypeTag;
+    manager->component_data_types[CTT_Parent] = ComponentDataTypeTag;
+
+    // requested components
     for (int i = 0; i < request->component_type_count; i++)
     {
         ComponentType type                  = request->component_indices[i];
         manager->component_sizes[type]      = request->component_sizes[i];
         manager->component_data_types[type] = request->component_data_types[i];
     }
+
     log_info("component registration completed. %d components registered", request->component_type_count);
 }
 

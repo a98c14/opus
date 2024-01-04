@@ -341,7 +341,7 @@ internal EntityQuery
 entity_query_default()
 {
     EntityQuery result = {0};
-    component_type_field_set(&result.none, CT_Prefab);
+    component_type_field_set(&result.none, CTT_Prefab);
     return result;
 }
 
@@ -387,4 +387,10 @@ entity_is_alive(EntityManager* entity_manager, Entity entity)
 {
     World* world = entity_manager->world;
     return !entity_address_is_null(world->entity_addresses[entity.index]);
+}
+
+internal Entity
+entity_get_parent(EntityManager* entity_manager, Entity entity)
+{
+    return entity_manager->world->entity_parents[entity.index];
 }

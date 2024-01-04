@@ -25,8 +25,8 @@ typedef uint32 TagComponent;
 enum
 {
     CT_Undefined = 0,
-    CT_Prefab    = 1,
-    CT_Parent    = 2,
+    CTT_Prefab   = 1,
+    CTT_Parent   = 2,
     CT_RESERVE_COUNT
 };
 
