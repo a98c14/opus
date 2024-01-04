@@ -1,7 +1,9 @@
 #pragma once
 
 #include <core/defines.h>
+#include <core/memory.h>
 #include <ecs/component.h>
+#include <ecs/world.h>
 
 #include "component.h"
 
@@ -31,7 +33,7 @@ typedef struct
 typedef struct
 {
     uint32 index;
-    uint32 version;
+    int32  version;
 } Entity;
 
 typedef struct EntityNode EntityNode;
@@ -48,6 +50,7 @@ typedef struct EntityList EntityList;
 struct EntityList
 {
     uint16      count;
+    uint16      capacity;
     EntityNode* first;
     EntityNode* last;
 };
@@ -86,6 +89,10 @@ typedef struct
     uint32         entity_count;
     Entity*        entities;
     EntityAddress* entity_addresses;
+
+    // relations
+    Entity*     entity_parents;
+    EntityList* entity_children;
 } World;
 
 typedef struct
@@ -115,6 +122,7 @@ typedef struct
     Entity value;
 } Parent;
 
+internal Entity        entity_null();
 internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);
 
@@ -125,6 +133,7 @@ internal ChunkIndex chunk_get_or_create(EntityManager* manager, ComponentTypeFie
 
 internal Entity             entity_create(EntityManager* manager, ComponentTypeField types);
 internal void               entity_destroy(EntityManager* manager, Entity entity);
+internal void               entity_add_child(EntityManager* manager, Entity parent, Entity child);
 internal void               entity_add_component(EntityManager* manager, Entity entity, ComponentType component);
 internal void               entity_remove_component(EntityManager* manager, Entity entity, ComponentType component);
 internal ComponentTypeField entity_get_types(EntityManager* manager, Entity entity);

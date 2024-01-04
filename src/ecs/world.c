@@ -1,7 +1,15 @@
 #include "world.h"
 #include <core/memory.h>
-#include <ecs/component.h>
 #include <ecs/world.h>
+
+internal Entity
+entity_null()
+{
+    Entity result;
+    result.index   = 0;
+    result.version = -1;
+    return result;
+}
 
 internal EntityAddress
 entity_address_null()
@@ -166,6 +174,51 @@ entity_destroy(EntityManager* manager, Entity entity)
     last_entity_address->chunk_index                              = current_address.chunk_index;
     last_entity_address->chunk_internal_index                     = current_address.chunk_internal_index;
     current_chunk->entity_count--;
+
+    /** Destroy children.
+     * NOTE: children list isn't being deallocated, only the entities are getting set to null */
+    EntityList* children = &world->entity_children[entity.index];
+    EntityNode* child    = children->first;
+    while (child->value.version >= 0)
+    {
+        entity_destroy(manager, child->value);
+        world->entity_parents[child->value.index] = entity_null();
+        child->value                              = entity_null();
+        child                                     = child->next;
+    }
+
+    children->count                     = 0;
+    world->entity_parents[entity.index] = entity_null();
+}
+
+internal void
+entity_add_child(EntityManager* manager, Entity parent, Entity child)
+{
+    World* world = manager->world;
+
+    world->entity_parents[child.index] = parent;
+
+    EntityList* children = &world->entity_children[parent.index];
+
+    if (children->count < children->capacity)
+    {
+        EntityNode* node = children->last->next;
+        node->value      = child;
+        children->last   = node;
+        children->count++;
+        return;
+    }
+
+    EntityNode* new_node = arena_push_struct_zero(manager->persistent_arena, EntityNode);
+    if (!children->first)
+        children->first = new_node;
+
+    if (children->last)
+        children->last->next = new_node;
+
+    children->last = new_node;
+    children->count++;
+    children->capacity++;
 }
 
 internal ComponentTypeField
@@ -233,9 +286,13 @@ world_new(Arena* arena)
     world->entity_addresses = arena_push_array_zero(arena, EntityAddress, ENTITY_CAPACITY);
     world->entities         = arena_push_array_zero(arena, Entity, ENTITY_CAPACITY);
 
+    world->entity_parents  = arena_push_array_zero(arena, Entity, ENTITY_CAPACITY);
+    world->entity_children = arena_push_array_zero(arena, EntityList, ENTITY_CAPACITY);
+
     for (int i = 0; i < ENTITY_CAPACITY; i++)
     {
         world->entity_addresses[i] = entity_address_null();
+        world->entity_parents[i]   = entity_null();
         world->entities[i].index   = i;
     }
     return world;
