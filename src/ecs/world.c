@@ -213,7 +213,7 @@ entity_copy_data(EntityManager* manager, Entity src, Entity dst)
         usize       component_size = type_manager->component_sizes[dst_type];
         uint32      src_index      = src_address.chunk_internal_index;
         uint32      dst_index      = dst_address.chunk_internal_index;
-        DataBuffer* src_buffer     = &dst_chunk->data_buffers[src_buffer_index];
+        DataBuffer* src_buffer     = &src_chunk->data_buffers[src_buffer_index];
         DataBuffer* dst_buffer     = &dst_chunk->data_buffers[dst_buffer_index];
 
         memcpy((uint8*)dst_buffer->data + dst_index * component_size, (uint8*)src_buffer->data + src_index * component_size, component_size);
