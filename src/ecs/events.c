@@ -29,7 +29,7 @@ event_manager_fire(EventManager* event_manager, EntityEventType type, ComponentT
     usize              event_data_size = event_manager->event_data_sizes[type];
 
     event_buffer->component_types[event_buffer->count] = types;
-    memcpy(event_buffer->data + event_buffer->count * event_data_size, data, event_data_size);
+    memcpy((uint8*)event_buffer->data + event_buffer->count * event_data_size, data, event_data_size);
     event_buffer->count++;
 }
 

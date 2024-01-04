@@ -8,7 +8,6 @@
 #include <core/memory.c>
 #include <core/strings.c>
 
-
 #include <gfx/base.c>
 #include <gfx/debug.c>
 #include <gfx/math.c>
@@ -34,5 +33,6 @@
 #include <ui/components.c>
 
 #include <ecs/component.c>
+#include <ecs/events.c>
 #include <ecs/prefab.c>
 #include <ecs/world.c>

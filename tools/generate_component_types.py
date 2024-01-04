@@ -71,7 +71,7 @@ if __name__ == "__main__":
         header_file.write("#pragma once\n\n")
 
         header_file.write("#include <core/defines.h>\n")
-        header_file.write("#include <ecs/component.h>\n")
+        header_file.write("#include <ecs/component.h>\n\n")
         header_file.write(f"#include \"{os.path.relpath(args.data, args.out)}\"\n")
 
         if len(component_types) == 0:
@@ -96,8 +96,6 @@ if __name__ == "__main__":
         for component_type in tag_component_types:
             source_file.write(f"\tcomponent_type_register_add(request, CTT_{component_type}, 0, ComponentDataTypeTag);\n")
         source_file.write("\tcomponent_type_register_complete(type_manager, request);\n}")
-
-        source_file.write("}")
     
             
     if len(event_types) > 0:
@@ -116,13 +114,13 @@ if __name__ == "__main__":
             for event_type in event_types[1:]:
                 header_file.write(f"\tET_{event_types},\n")
             header_file.write("\tET_COUNT\n};\n")
-            header_file.write("\ninternal void register_events(Arena* temp_arena, EventManager* event_manager);\n\n")
+            header_file.write("\ninternal void register_events(EventManager* event_manager);\n\n")
             for event_type in event_types:
                 header_file.write(f"internal inline void fire_{camel_to_snake(event_type)}(EventManager* event_manager, ComponentTypeField types, {event_type} data);\n")            
                 
             source_file.write("#include \"events.h\"\n")
             source_file.write("\ninternal void")
-            source_file.write("\nregister_events(Arena* temp_arena, EventManager* event_manager)\n{\n")
+            source_file.write("\nregister_events(EventManager* event_manager)\n{\n")
             for event_type in event_types:
                 source_file.write(f"\tevent_manager_initialize_event_type(event_manager, ET_{event_type}, sizeof({event_type}));\n")
             source_file.write("}\n")
