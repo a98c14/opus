@@ -1,4 +1,6 @@
 #include "events.h"
+#include <ecs/component.h>
+#include <ecs/events.h>
 
 internal EventManager*
 event_manager_new(Arena* arena, uint32 event_type_count)
@@ -38,4 +40,10 @@ event_manager_clear(EventManager* event_manager)
 {
     for (int i = ET_Undefined; i < event_manager->event_type_count; i++)
         event_manager->event_buffers[i].count = 0;
+}
+
+internal EntityEventBuffer*
+event_manager_get_event_buffer(Arena* arena, EventManager* event_manager, EntityEventType event_type)
+{
+    return &event_manager->event_buffers[event_type];
 }

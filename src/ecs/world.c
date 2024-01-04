@@ -150,45 +150,43 @@ entity_destroy(EntityManager* manager, Entity entity)
     Chunk*     current_chunk              = &world->chunks[current_address.chunk_index];
     Archetype* archetype                  = &world->archetypes[current_chunk->archetype_index];
 
-    // if the entity is the last entity on the chunk we don't need to move any data
+    // if the entity is not the last entity swap it with the last entity
     uint32 last_entity_internal_index = current_chunk->entity_count - 1;
-    if (current_address.chunk_internal_index == last_entity_internal_index)
+    if (current_address.chunk_internal_index != last_entity_internal_index)
     {
-        current_chunk->entity_count--;
-        return;
+        Entity         last_entity         = current_chunk->entities[last_entity_internal_index];
+        EntityAddress* last_entity_address = &world->entity_addresses[last_entity.index];
+
+        for (int i = 0; i < archetype->component_count; i++)
+        {
+            DataBuffer* data_buffer    = &current_chunk->data_buffers[i];
+            usize       component_size = manager->type_manager->component_sizes[data_buffer->type];
+            memcpy(((uint8*)data_buffer->data) + (component_size * current_address.chunk_internal_index), ((uint8*)data_buffer->data) + (component_size * last_entity_address->chunk_internal_index), component_size);
+        }
+
+        current_chunk->entities[current_address.chunk_internal_index] = last_entity;
+        last_entity_address->chunk_index                              = current_address.chunk_index;
+        last_entity_address->chunk_internal_index                     = current_address.chunk_internal_index;
     }
 
-    // if the entity is NOT the last entity on the chunk swap the entity with the last entity
-    // and decrement entity count by 1;
-    Entity         last_entity         = current_chunk->entities[last_entity_internal_index];
-    EntityAddress* last_entity_address = &world->entity_addresses[last_entity.index];
-
-    for (int i = 0; i < archetype->component_count; i++)
-    {
-        DataBuffer* data_buffer    = &current_chunk->data_buffers[i];
-        usize       component_size = manager->type_manager->component_sizes[data_buffer->type];
-        memcpy(((uint8*)data_buffer->data) + (component_size * current_address.chunk_internal_index), ((uint8*)data_buffer->data) + (component_size * last_entity_address->chunk_internal_index), component_size);
-    }
-
-    current_chunk->entities[current_address.chunk_internal_index] = last_entity;
-    last_entity_address->chunk_index                              = current_address.chunk_index;
-    last_entity_address->chunk_internal_index                     = current_address.chunk_internal_index;
     current_chunk->entity_count--;
+    world->entity_parents[entity.index] = entity_null();
 
     /** Destroy children.
      * NOTE: children list isn't being deallocated, only the entities are getting set to null */
     EntityList* children = &world->entity_children[entity.index];
-    EntityNode* child    = children->first;
-    while (child->value.version >= 0)
+    if (children->count > 0)
     {
-        entity_destroy(manager, child->value);
-        world->entity_parents[child->value.index] = entity_null();
-        child->value                              = entity_null();
-        child                                     = child->next;
-    }
+        EntityNode* child = children->first;
+        while (child && child->value.version > 0)
+        {
+            entity_destroy(manager, child->value);
+            child->value = entity_null();
+            child        = child->next;
+        }
 
-    children->count                     = 0;
-    world->entity_parents[entity.index] = entity_null();
+        children->count = 0;
+    }
 }
 
 internal void
@@ -210,6 +208,7 @@ entity_add_child(EntityManager* manager, Entity parent, Entity child)
     }
 
     EntityNode* new_node = arena_push_struct_zero(manager->persistent_arena, EntityNode);
+    new_node->value      = child;
     if (!children->first)
         children->first = new_node;
 
