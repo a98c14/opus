@@ -29,4 +29,4 @@ internal Entity
 prefab_instantiate(EntityManager* entity_manager, Prefab prefab);
 
 internal void
-prefab_add_child(EntityManager* entity_manager, Prefab parent, Prefab child);
+prefab_add_child(EntityManager* entity_manager, Prefab* parent, Prefab child);
