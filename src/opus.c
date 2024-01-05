@@ -6,6 +6,7 @@
 #include <core/log.c>
 #include <core/math.c>
 #include <core/memory.c>
+#include <core/random.c>
 #include <core/strings.c>
 
 #include <gfx/base.c>

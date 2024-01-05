@@ -9,6 +9,7 @@
 #include <core/log.h>
 #include <core/math.h>
 #include <core/memory.h>
+#include <core/random.h>
 #include <core/strings.h>
 
 #include <gfx/base.h>
@@ -40,4 +41,3 @@
 #include <ecs/events.h>
 #include <ecs/prefab.h>
 #include <ecs/world.h>
-
