@@ -155,7 +155,7 @@ if __name__ == "__main__":
     core_type_defs['float32'] = { "type": "number" }
     core_type_defs['AnimationIndex'] = { "type": "string" }
     core_type_defs['Vec2'] = { "type": "array", "minItems": 2, "maxItems": 2 }
-    core_type_defs['Vec3'] = { "type": "array", "minItems": 3, "maxItems": 3 }
+    core_type_defs['Vec3'] = { "type": "array", "minItems": 3, "maxItems": 3 }    
 
     if args.out_schema is not None:
         schema = {}

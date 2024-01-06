@@ -26,6 +26,12 @@ entity_address_is_null(EntityAddress address)
     return address.chunk_index == -1 || address.chunk_internal_index == -1;
 }
 
+internal bool32
+entity_is_same(Entity a, Entity b)
+{
+    return a.index == b.index && a.version == b.version;
+}
+
 internal ArchetypeIndex
 archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
 {

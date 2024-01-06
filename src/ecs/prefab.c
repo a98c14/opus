@@ -49,3 +49,10 @@ prefab_add_child(EntityManager* entity_manager, Prefab* parent, Prefab child)
 
     parent->last_child = node;
 }
+
+internal void
+prefab_copy_data(EntityManager* entity_manager, Prefab src, Prefab dst)
+{
+    xassert(!entity_is_same(src.entity, dst.entity), "cannot copy prefab to itself");
+    entity_copy_data(entity_manager, src.entity, dst.entity);
+}
