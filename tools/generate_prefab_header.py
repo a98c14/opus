@@ -1,8 +1,9 @@
 """
 Examples:
-python .\opus\tools\generate_prefab_header.py --data "$HOME\source\github\enginefire\docs\prefabs.txt" --component-data "$HOME\source\github\enginefire\docs\component_template.txt" --out "$HOME\source\github\enginefire\src\generated"
+python .\opus\tools\generate_prefab_header.py --data "$HOME\source\github\enginefire\docs\prefabs.txt" --component-data "$HOME\source\github\enginefire\docs\component_template.txt" --out "$HOME\source\github\enginefire\src\generated" --out-schema "c:\.ignore\prefab_schema.json"
 """
 import os
+import json
 import argparse
 import re
 
@@ -22,6 +23,7 @@ if __name__ == "__main__":
     parser.add_argument("--data", type=str, help="Prefab data file", required=True)
     parser.add_argument("--component-data", type=str, help="Component data file", required=True)
     parser.add_argument("--out", type=str, help="Output folder path", required=True)
+    parser.add_argument("--out-schema", type=str, help="JSON Schema output path")
     args = parser.parse_args()
     
     out_header = os.path.join(args.out, 'entity_types.h')
@@ -75,17 +77,18 @@ if __name__ == "__main__":
 
     if current_struct is not None:
         definitions[current_struct['name']] = current_struct
-    
-    prefabs = list(filter(lambda x: x['type'] == 'prefab', definitions.values()))        
-    groups = list(filter(lambda x: x['type'] == 'group', definitions.values()))
-    
+
     # find type names automatically
     for definition in definitions:
         for field in definitions[definition]['fields']:
             if 'type' not in field or field['type'] is None:
                 field['type'] = definitions[field['name']]['type']
             if field['type'] == 'component' or field['type'] == 'tag_component':
+                field['pretty_name'] = field['name']
                 field['name'] = definitions[field['name']]['component_name']
+            
+    prefabs = list(filter(lambda x: x['type'] == 'prefab', definitions.values()))        
+    groups = list(filter(lambda x: x['type'] == 'group', definitions.values()))
     
     # TODO(selim): validate data file, check if given components/groups exist in the file
     
@@ -145,6 +148,54 @@ if __name__ == "__main__":
         source_file.write("\treturn storage;\n")
         source_file.write("}")
         
+        
+    
+    default_type_def = { "type": "string" }
+    core_type_defs = {}
+    core_type_defs['float32'] = { "type": "number" }
+    core_type_defs['AnimationIndex'] = { "type": "string" }
+    core_type_defs['Vec2'] = { "type": "array", "minItems": 2, "maxItems": 2 }
+    core_type_defs['Vec3'] = { "type": "array", "minItems": 3, "maxItems": 3 }
+
+    if args.out_schema is not None:
+        schema = {}
+        schema['$schema'] = "http://json-schema.org/draft-07/schema#"
+        schema['type'] = "object"
+        schema['definitions'] = {}
+        schema['properties'] = {}
+        
+        for definition in definitions.values():
+            if definition['type'] == 'component':
+                component_type_definition = {}
+                component_type_definition['type'] = "object"
+                component_type_definition['properties'] = {}
+                for field in definition['fields']:
+                    component_type_definition['properties'][field['name']] = core_type_defs[field['type']] if field['type'] in core_type_defs else default_type_def
+                schema['definitions'][definition['name']] = component_type_definition
+            elif definition['type'] == 'prefab':
+                prefab_properties = {}
+                prefab_properties['type'] = "object"
+                prefab_properties['properties'] = {}
+                prefab_components = []
+                processing_queue = definition['fields'].copy()
+                while len(processing_queue) > 0:
+                    field = processing_queue.pop()
+                    if(field['type'] == 'component'):
+                        prefab_components.append(field['pretty_name']) # sorry
+                    if(field['type'] == 'group'):
+                        processing_queue.extend(definitions[field['name']]['fields'])
+                
+                prefab_components = list(set(prefab_components))
+                for component in prefab_components:        
+                    prefab_properties['properties'][component] = { "$ref": f"#/definitions/{component}"}
+                    
+                schema['properties'][definition['name']] = prefab_properties
+        
+        with open(args.out_schema, 'w') as schema_file:
+            json.dump(schema, schema_file, indent=4)
+            
+        
+    
     print(f"[info] generated source successfully at {out_source}")    
 
     
