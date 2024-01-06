@@ -25,6 +25,7 @@ if __name__ == "__main__":
         lines = component_file.readlines()
 
     components = []
+    tag_components = []
     current_struct = None
     for line in lines:
         # check for struct start
@@ -34,8 +35,13 @@ if __name__ == "__main__":
                 current_struct = {}
                 current_struct['name'] = 'UNKNOWN'
                 current_struct['fields'] = []
-            continue
-
+                continue
+            
+            match = re.match(r"typedef TagComponent\s*(?P<struct_name>\w+);\s*$", line)
+            if match is not None:
+                tag_components.append({'name': match.groups()[0], 'fields': []})
+                continue
+            
         struct_end_match = re.match(r"}\s+(?P<struct_name>\w+);\s*$", line)
         if struct_end_match is not None:
             current_struct['name'] = struct_end_match.groups()[0]
@@ -51,14 +57,27 @@ if __name__ == "__main__":
         os.remove(args.out_template)
 
     with open(args.out_template, 'w') as template_file:
-        template_file.write("# components\n")
-        for component in components:
+        template_file.write("# tag_component\n")
+        for component in tag_components:
             component_name = camel_to_snake(component['name'])
             component_name = "_".join(component_name.split('_')[:-1])
-            template_file.write(f"[{component_name}]")
+            template_file.write(f"[{component_name}] : {component['name']}")
             for field in component['fields']:
                 template_file.write(f"\n\t({field['name']} : {field['type']})")
             template_file.write("\n")
+            
+        if len(tag_components) > 0:
+            template_file.write("\n")
+            
+        template_file.write("# component\n")
+        for component in components:
+            component_name = camel_to_snake(component['name'])
+            component_name = "_".join(component_name.split('_')[:-1])
+            template_file.write(f"[{component_name}] : {component['name']}")
+            for field in component['fields']:
+                template_file.write(f"\n\t({field['name']} : {field['type']})")
+            template_file.write("\n")
+
 
     print(f"[info] generated template successfully at {args.out_template}")
 

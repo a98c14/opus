@@ -39,7 +39,7 @@ if __name__ == "__main__":
     with  open(args.data, 'r') as prefab_file:
         lines += prefab_file.readlines()
 
-    definitions = []
+    definitions = {}
     current_struct = None
     mode = None
     
@@ -49,26 +49,42 @@ if __name__ == "__main__":
             mode = match.groups()[0]
         
         # check for struct start
-        match = re.match(r"\[(?P<struct_name>\w+)\]$", line)
+        match = re.match(r"\[(?P<struct_name>\w+)\]( : (?P<component_code_name>\w+))?", line)
         if match is not None and current_struct is not None:
-            definitions.append(current_struct)
+            definitions[current_struct['name']] = current_struct
             
         if match is not None:
+            groups = match.groups()
             current_struct = {}
-            current_struct['name'] = match.groups()[0]
+            current_struct['name'] = groups[0]
             current_struct['type'] = mode
             current_struct['fields'] = []
+            if len(groups) > 1:
+                current_struct['component_name'] = groups[2]
 
-        field_match = re.match(r"\s+\((?P<field_name>\w+) : (?P<field_type>[\w\d]+)\)\s*$", line)
+        field_match = re.match(r"\s+\((?P<field_name>\w+)( : (?P<field_type>[\w\d]+))?\)\s*$", line)
+        field_info = {}
         if field_match is not None:
-            current_struct['fields'].append((field_match.groups()[0],field_match.groups()[1]))
+            field_info['name'] = field_match.groups()[0]
+            if len(field_match.groups()) > 1:
+                field_info['type'] = field_match.groups()[2]
+                
+            current_struct['fields'].append(field_info)
+            
 
     if current_struct is not None:
-        definitions.append(current_struct)
+        definitions[current_struct['name']] = current_struct
     
-    components = list(filter(lambda x: x['type'] == 'components', definitions))
-    prefabs = list(filter(lambda x: x['type'] == 'prefab', definitions))        
-    groups = list(filter(lambda x: x['type'] == 'group', definitions))
+    prefabs = list(filter(lambda x: x['type'] == 'prefab', definitions.values()))        
+    groups = list(filter(lambda x: x['type'] == 'group', definitions.values()))
+    
+    for definition in definitions:
+        for field in definitions[definition]['fields']:
+            if 'type' not in field or field['type'] is None:
+                field['type'] = definitions[field['name']]['type']
+            if field['type'] == 'component' or field['type'] == 'tag_component':
+                field['name'] = definitions[field['name']]['component_name']
+    
     # TODO(selim): validate data file, check if given components/groups exist in the file
     
     if os.path.exists(out_header):
@@ -106,18 +122,24 @@ if __name__ == "__main__":
         source_file.write("\n\t/** groups */\n")
         for group in groups:
             for field in group['fields']:
-                if field[1] == 'component':
-                    source_file.write(f"\tcomponent_type_field_set(&storage->{group['name']}, CT_{snake_to_pascal(field[0])}Component);\n")
+                if field['type'] == 'component':
+                    source_file.write(f"\tcomponent_type_field_set(&storage->{group['name']}, CT_{field['name']});\n")
+                elif field['type'] == 'tag_component':
+                    source_file.write(f"\tcomponent_type_field_set(&storage->{group['name']}, CTT_{field['name']});\n")
                 else:
-                    source_file.write(f"\tcomponent_type_field_set(&storage->{group['name']}, storage->{field[0]});\n")
+                    source_file.write(f"\tcomponent_type_field_set_group(&storage->{group['name']}, storage->{field['name']});\n")
+            source_file.write(f"\n")
                     
-        source_file.write("\n\t/** prefabs */\n")
+        source_file.write("\t/** prefabs */\n")
         for prefab in prefabs:
             for field in prefab['fields']:
-                if field[1] == 'component':
-                    source_file.write(f"\tcomponent_type_field_set(&storage->{prefab['name']}, CT_{snake_to_pascal(field[0])}Component);\n")
+                if field['type'] == 'component':
+                    source_file.write(f"\tcomponent_type_field_set(&storage->{prefab['name']}, CT_{field['name']});\n")
+                elif field['type'] == 'tag_component':
+                    source_file.write(f"\tcomponent_type_field_set(&storage->{prefab['name']}, CTT_{field['name']});\n")
                 else:
-                    source_file.write(f"\tcomponent_type_field_set_group(&storage->{prefab['name']}, storage->{field[0]});\n")
+                    source_file.write(f"\tcomponent_type_field_set_group(&storage->{prefab['name']}, storage->{field['name']});\n")
+            source_file.write(f"\n")
         source_file.write("\treturn storage;\n")
         source_file.write("}")
         
