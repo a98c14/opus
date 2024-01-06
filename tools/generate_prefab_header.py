@@ -43,6 +43,7 @@ if __name__ == "__main__":
     current_struct = None
     mode = None
     
+    # read definitions from file
     for line in lines:
         match = re.match(r"^#\s*(?P<mode_name>\w+)\s+$", line)
         if match is not None:
@@ -78,6 +79,7 @@ if __name__ == "__main__":
     prefabs = list(filter(lambda x: x['type'] == 'prefab', definitions.values()))        
     groups = list(filter(lambda x: x['type'] == 'group', definitions.values()))
     
+    # find type names automatically
     for definition in definitions:
         for field in definitions[definition]['fields']:
             if 'type' not in field or field['type'] is None:
