@@ -112,7 +112,7 @@ if __name__ == "__main__":
             header_file.write("\nenum\n{\n")
             header_file.write(f"\tET_{event_types[0]} = ET_RESERVE_COUNT,\n")
             for event_type in event_types[1:]:
-                header_file.write(f"\tET_{event_types},\n")
+                header_file.write(f"\tET_{event_type},\n")
             header_file.write("\tET_COUNT\n};\n")
             header_file.write("\ninternal void register_events(EventManager* event_manager);\n\n")
             for event_type in event_types:
