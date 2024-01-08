@@ -352,6 +352,17 @@ lerp_vec4(Vec4 a, Vec4 b, float32 t)
     return result;
 }
 
+internal Rect
+lerp_rect(Rect a, Rect b, float32 t)
+{
+    Rect result;
+    result.x = (a.x * (1 - t)) + (b.x * t);
+    result.y = (a.y * (1 - t)) + (b.y * t);
+    result.w = (a.w * (1 - t)) + (b.w * t);
+    result.h = (a.h * (1 - t)) + (b.h * t);
+    return result;
+}
+
 /* Vector Operations */
 internal float32
 dot_vec2(Vec2 a, Vec2 b)

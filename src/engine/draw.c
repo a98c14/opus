@@ -302,10 +302,10 @@ draw_boid(Vec2 position, float32 rotation, float32 size, Color color)
 }
 
 internal void
-draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip)
+draw_sprite_sorted(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, int8 sort_offset)
 {
     xassert(g_draw_context->sprite_atlas, "`g_draw_context->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
-    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, SORT_LAYER_INDEX_DEFAULT, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->sprite_atlas->texture, g_draw_context->geometry_quad, g_draw_context->material_sprite, 1);
+    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, SORT_LAYER_INDEX_DEFAULT + sort_offset, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->sprite_atlas->texture, g_draw_context->geometry_quad, g_draw_context->material_sprite, 1);
     Sprite     sprite_data = g_draw_context->sprite_atlas->sprites[sprite];
 
     Vec2 pivot                     = sprite_get_pivot(sprite_data, vec2(scale, scale), vec2_one());
@@ -316,4 +316,10 @@ draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, 
     model_buffer[0].texture_layer_index = g_draw_context->sprite_atlas->sprite_texture_indices[sprite];
     model_buffer[0].alpha               = 1;
     model_buffer[0].color               = color_to_vec4(ColorInvisible);
+}
+
+internal void
+draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip)
+{
+    draw_sprite_sorted(position, scale, rotation, sprite, flip, 0);
 }

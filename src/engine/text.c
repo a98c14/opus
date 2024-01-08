@@ -30,6 +30,7 @@ glyph_atlas_load(Arena* arena, const GlyphAtlasInfo* atlas_info, const Glyph* gl
     return atlas;
 }
 
+// TODO(selim): Go over each of these functions at some point. Currently we calculate glyph bounds multiple times for each string.
 internal Rect
 text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, String str, float32 size)
 {

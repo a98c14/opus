@@ -229,6 +229,7 @@ internal Vec2 div_vec2_f32(Vec2 a, float32 b);
 internal float32 lerp_f32(float32 a, float32 b, float32 t);
 internal Vec2    lerp_vec2(Vec2 a, Vec2 b, float32 t);
 internal Vec4    lerp_vec4(Vec4 a, Vec4 b, float32 t);
+internal Rect    lerp_rect(Rect a, Rect b, float32 t);
 
 /* Vector Operations */
 internal float32 dot_vec2(Vec2 a, Vec2 b);

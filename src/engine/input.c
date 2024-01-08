@@ -1,7 +1,20 @@
 #include "input.h"
+#include <core/math.h>
 
 internal Vec2
 mouse_world_position(Vec2 raw_mouse_pos, Camera camera)
+{
+    Vec2 mouse_world = vec2(-raw_mouse_pos.x / camera.window_width, raw_mouse_pos.y / camera.window_height);
+    // TODO(selim): multiply with view matrix
+    mouse_world = sub_vec2(vec2(0, 1), mouse_world);
+    mouse_world = add_vec2_f32(mouse_world, -0.5);
+    mouse_world.x *= camera.world_width;
+    mouse_world.y *= camera.world_height;
+    return mouse_world;
+}
+
+internal Vec2
+mouse_screen_position(Vec2 raw_mouse_pos, Camera camera)
 {
     Vec2 mouse_world = vec2(-raw_mouse_pos.x / camera.window_width, raw_mouse_pos.y / camera.window_height);
     mouse_world      = sub_vec2(vec2(0, 1), mouse_world);
@@ -23,8 +36,7 @@ input_mouse_get(Window* window, Camera camera, InputMouse prev_state)
 
     Vec2 mouse_raw = vec2(result.raw_x, result.raw_y);
     result.world   = mouse_world_position(mouse_raw, camera);
-    // TODO: calculate mouse screen position
-    result.screen = vec2_zero();
+    result.screen  = mouse_screen_position(mouse_raw, camera);
     return result;
 }
 
