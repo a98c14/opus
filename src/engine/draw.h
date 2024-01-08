@@ -42,6 +42,8 @@ typedef struct
     SpriteAtlas* sprite_atlas;
 } DrawContext;
 
+global DrawContext* g_draw_context;
+
 /* Shader Data */
 typedef struct
 {
@@ -110,25 +112,25 @@ typedef struct
     Vec4 color;
 } ShaderDataBoid;
 
-internal DrawContext* draw_context_new(Arena* arena, Arena* temp_arena, Renderer* renderer);
-internal void         draw_context_activate_atlas(DrawContext* context, SpriteAtlas* atlas);
+internal void draw_context_initialize(Arena* arena, Arena* temp_arena, Renderer* renderer);
+internal void draw_context_activate_atlas(SpriteAtlas* atlas);
 
 /* Draw Functions */
-internal void draw_line(DrawContext* dc, Vec2 start, Vec2 end, Color color, float32 thickness);
-internal void draw_line_fixed(DrawContext* dc, Vec2 position, float32 length, float32 rotation, Color color, float32 thickness);
-internal void draw_arrow(DrawContext* dc, Vec2 position, float32 length, float32 angle, Color color, float32 thickness);
-internal void draw_debug_line(DrawContext* dc, Vec2 start, Vec2 end, Color color);
-internal void draw_texture_aligned(DrawContext* dc, Vec3 pos, Vec2 scale, TextureIndex texture);
-internal void draw_bounds(DrawContext* dc, float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
+internal void draw_line(Vec2 start, Vec2 end, Color color, float32 thickness);
+internal void draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness);
+internal void draw_arrow(Vec2 position, float32 length, float32 angle, Color color, float32 thickness);
+internal void draw_debug_line(Vec2 start, Vec2 end, Color color);
+internal void draw_texture_aligned(Vec3 pos, Vec2 scale, TextureIndex texture);
+internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
 
 // Draws given string to screen and returns the bounding box for the while string
-internal Rect draw_text(DrawContext* dc, Vec2 pos, String str, Alignment alignment, StyleText style);
-internal void draw_circle(DrawContext* dc, Vec2 position, float32 radius, Color color);
-internal void draw_circle_filled(DrawContext* dc, Circle circle, Color color);
-internal void draw_circle_partially_filled(DrawContext* dc, Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle);
-internal void draw_boid(DrawContext* dc, Vec2 position, float32 rotation, float32 size, Color color);
-internal void draw_triangle(DrawContext* dc, Vec2 position, float32 rotation, Color color, float32 size, SortLayerIndex sort_index);
-internal Rect draw_rect(DrawContext* dc, Rect rect, float32 rotation, SortLayerIndex sort_index, StyleRect style);
+internal Rect draw_text(Vec2 pos, String str, Alignment alignment, StyleText style);
+internal void draw_circle(Vec2 position, float32 radius, Color color);
+internal void draw_circle_filled(Circle circle, Color color);
+internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle);
+internal void draw_boid(Vec2 position, float32 rotation, float32 size, Color color);
+internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLayerIndex sort_index);
+internal Rect draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, StyleRect style);
 
 /* Sprite */
-internal void draw_sprite(DrawContext* dc, Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
+internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
