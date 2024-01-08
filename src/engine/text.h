@@ -43,6 +43,14 @@ typedef struct
     TextureIndex          texture;
 } GlyphAtlas;
 
+typedef struct
+{
+    Rect text_bounds;
+
+    uint32 glyph_count;
+    Rect*  glyph_rects;
+} TextGlyphPositionResult;
+
 internal GlyphAtlas* glyph_atlas_load(Arena* arena, const GlyphAtlasInfo* atlas_info, const Glyph* glyphs, uint32 glyph_count, TextureIndex texture);
 
 internal Glyph   glyph_get(GlyphAtlas* atlas, char c);
@@ -51,3 +59,4 @@ internal float32 glyph_height(Glyph glyph, float32 size);
 
 internal Rect text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, String str, float32 size);
 internal Rect text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, Mat4* dst_matrices, uint32 dst_index);
+internal Rect text_calculate_transforms_v2(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, float32 max_width, Mat4* dst_matrices, uint32 dst_index);

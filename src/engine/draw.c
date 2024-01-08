@@ -3,6 +3,7 @@
 #include <core/strings.h>
 #include <engine/color.h>
 #include <engine/draw.h>
+#include <engine/layout.h>
 #include <gfx/base.h>
 #include <gfx/sprite.h>
 #include <gfx/utils.h>
@@ -212,7 +213,7 @@ draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color colo
 }
 
 internal Rect
-draw_text(Vec2 pos, String str, Alignment alignment, StyleText style)
+draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style)
 {
     pos.y += style.base_line;
     ShaderDataText shader_data         = {0};
@@ -231,6 +232,30 @@ draw_text(Vec2 pos, String str, Alignment alignment, StyleText style)
         memcpy(&shader_data_buffer[i], &shader_data, sizeof(ShaderDataText));
     }
     return bounds;
+}
+
+internal void
+draw_text(Rect rect, String str, Anchor anchor, StyleText style)
+{
+    Vec2 position = rect_get(rect, anchor.parent);
+    position.y += style.base_line;
+    DrawBuffer db = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, SORT_LAYER_INDEX_DEFAULT, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text, str.length);
+    text_calculate_transforms_v2(g_draw_context->font_open_sans, str, style.font_size, position, anchor.child, rect.w, db.model_buffer, 0);
+
+    ShaderDataText shader_data    = {0};
+    shader_data.color             = style.color;
+    shader_data.outline_color     = style.outline_color;
+    shader_data.thickness         = style.thickness;
+    shader_data.softness          = style.softness;
+    shader_data.outline_thickness = style.outline_thickness;
+
+    ShaderDataText* shader_data_buffer = (ShaderDataText*)db.uniform_data_buffer;
+    for (int i = 0; i < str.length; i++)
+    {
+        Glyph glyph              = glyph_get(g_draw_context->font_open_sans, str.value[i]);
+        shader_data.glyph_bounds = glyph.atlas_bounds.v;
+        memcpy(&shader_data_buffer[i], &shader_data, sizeof(ShaderDataText));
+    }
 }
 
 internal void

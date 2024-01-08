@@ -124,7 +124,8 @@ internal void draw_texture_aligned(Vec3 pos, Vec2 scale, TextureIndex texture);
 internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
 
 // Draws given string to screen and returns the bounding box for the while string
-internal Rect draw_text(Vec2 pos, String str, Alignment alignment, StyleText style);
+internal Rect draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style);
+internal void draw_text(Rect rect, String str, Anchor anchor, StyleText style);
 internal void draw_circle(Vec2 position, float32 radius, Color color);
 internal void draw_circle_filled(Circle circle, Color color);
 internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle);
