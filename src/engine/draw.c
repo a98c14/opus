@@ -24,6 +24,7 @@ draw_context_initialize(Arena* arena, Arena* temp_arena, Renderer* renderer)
     g_draw_context->renderer          = renderer;
     g_draw_context->geometry_quad     = geometry_quad_create(renderer);
     g_draw_context->geometry_triangle = geometry_triangle_create(renderer);
+    g_draw_context->camera            = &renderer->camera;
 
     g_draw_context->material_basic = material_new(
         renderer,
@@ -322,4 +323,34 @@ internal void
 draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip)
 {
     draw_sprite_sorted(position, scale, rotation, sprite, flip, 0);
+}
+
+internal float32
+screen_top()
+{
+    return g_draw_context->camera->world_height / 2.0f;
+}
+
+internal float32
+screen_left()
+{
+    return -g_draw_context->camera->world_width / 2.0f;
+}
+
+internal float32
+screen_right()
+{
+    return g_draw_context->camera->world_width / 2.0f;
+}
+
+internal float32
+screen_bottom()
+{
+    return -g_draw_context->camera->world_height / 2.0f;
+}
+
+internal float32
+screen_height()
+{
+    return g_draw_context->camera->world_height;
 }

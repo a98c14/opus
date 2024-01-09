@@ -136,3 +136,11 @@ internal Rect draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, 
 /* Sprite */
 internal void draw_sprite_sorted(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, int8 sort_offset);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
+
+/** Utility */
+// TODO(selim): Move these to renderer (make renderer global as well)
+internal float32 screen_top();
+internal float32 screen_left();
+internal float32 screen_right();
+internal float32 screen_bottom();
+internal float32 screen_height();
