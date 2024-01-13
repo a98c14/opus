@@ -1,8 +1,6 @@
 #pragma once
 
 #include "base.h"
-#include <core/defines.h>
-#include <engine/draw.h>
 
 typedef struct
 {

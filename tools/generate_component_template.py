@@ -1,6 +1,6 @@
 """
 Examples:
-python .\opus\tools\generate_component_template.py --data "$HOME\source\github\enginefire\src\components.h" --out-template "$HOME\source\github\enginefire\docs\component_template.txt"
+python .\opus\tools\generate_component_template.py --data "$HOME\source\github\enginefire\src\game_components.h" --out-template "$HOME\source\github\enginefire\docs\component_template.txt"
 """
 import yaml
 import os

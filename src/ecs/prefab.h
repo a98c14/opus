@@ -11,6 +11,7 @@ typedef struct
 {
     Entity entity;
 
+    // TODO(selim): Prefab should not contain any pointers! Use prefab index instead?
     PrefabNode* first_child;
     PrefabNode* last_child;
 } Prefab;

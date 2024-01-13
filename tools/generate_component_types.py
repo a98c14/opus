@@ -1,6 +1,6 @@
 """
 Examples:
-python .\opus\tools\generate_component_types.py --data "$HOME\source\github\enginefire\src\components.h" --out="$HOME\source\github\enginefire\src\generated"
+python .\opus\tools\generate_component_types.py --data "$HOME\source\github\enginefire\src\game_components.h" --out="$HOME\source\github\enginefire\src\generated"
 """
 import sys
 import os
