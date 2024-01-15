@@ -263,8 +263,39 @@ entity_add_components(EntityManager* manager, Entity entity, ComponentTypeField 
 }
 
 internal void
-entity_remove_component(EntityManager* manager, Entity entity, ComponentType component)
+entity_add_component(EntityManager* manager, Entity entity, ComponentType type)
 {
+    ComponentTypeField field = {0};
+    component_type_field_set(&field, type);
+    entity_add_components(manager, entity, field);
+}
+
+internal void
+entity_remove_components(EntityManager* manager, Entity entity, ComponentTypeField components)
+{
+    World*        world           = manager->world;
+    EntityAddress current_address = world->entity_addresses[entity.index];
+
+    xassert(!entity_address_is_null(current_address), "entity address is not valid");
+
+    ComponentTypeField current_components = world->chunk_components[current_address.chunk_index];
+    ComponentTypeField new_components     = component_type_field_not(current_components, components);
+    if (component_type_field_is_same(current_components, new_components))
+    {
+        log_warn("trying to remove a component that is already removed! entity id %d", entity.index);
+        return;
+    }
+
+    ChunkIndex new_chunk_index = chunk_get_or_create(manager, new_components, 1, DEFAULT_CHUNK_CAPACITY);
+    entity_move(manager, entity, new_chunk_index);
+}
+
+internal void
+entity_remove_component(EntityManager* manager, Entity entity, ComponentType type)
+{
+    ComponentTypeField field = {0};
+    component_type_field_set(&field, type);
+    entity_remove_components(manager, entity, field);
 }
 
 internal void
@@ -409,7 +440,8 @@ internal EntityQuery
 entity_query_default()
 {
     EntityQuery result = {0};
-    component_type_field_set(&result.none, CTT_Prefab);
+    component_type_field_set(&result.none, CTT_PrefabComponent);
+    component_type_field_set(&result.none, CTT_InactiveComponent);
     return result;
 }
 

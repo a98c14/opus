@@ -37,8 +37,8 @@ component_type_register_complete(ComponentTypeManager* manager, ComponentTypeReg
     manager->component_data_types = arena_push_array_zero(manager->arena, ComponentDataType, COMPONENT_COUNT);
 
     // reserved components
-    manager->component_data_types[CTT_Prefab] = ComponentDataTypeTag;
-    manager->component_data_types[CTT_Parent] = ComponentDataTypeTag;
+    manager->component_data_types[CTT_PrefabComponent] = ComponentDataTypeTag;
+    manager->component_data_types[CTT_ParentComponent] = ComponentDataTypeTag;
 
     // requested components
     for (int i = 0; i < request->component_type_count; i++)
@@ -66,6 +66,15 @@ component_type_field_or(ComponentTypeField a, ComponentTypeField b)
     ComponentTypeField result = {0};
     for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
         result.value[i] = a.value[i] | b.value[i];
+    return result;
+}
+
+internal ComponentTypeField
+component_type_field_not(ComponentTypeField a, ComponentTypeField b)
+{
+    ComponentTypeField result = {0};
+    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
+        result.value[i] = a.value[i] & ~(b.value[i]);
     return result;
 }
 

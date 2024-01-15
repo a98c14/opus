@@ -1,6 +1,6 @@
 """
 Examples:
-python .\opus\tools\generate_component_template.py --data "$HOME\source\github\enginefire\src\game_components.h" --out-template "$HOME\source\github\enginefire\docs\component_template.txt"
+python .\opus\tools\generate_component_template.py --data "$HOME\source\github\enginefire\src\game_components.h" "$HOME\source\github\enginefire\opus\src\ecs\reserved_components.h" --out-template "$HOME\source\github\enginefire\docs\component_template.txt"
 """
 import yaml
 import os
@@ -16,13 +16,14 @@ def camel_to_snake(name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Opus Component Header Generator")
-    parser.add_argument("--data", type=str, help="Component header file", required=True)
+    parser.add_argument("--data", nargs='+', type=str, help="Component header file", required=True)
     parser.add_argument("--out-template", type=str, help="Template file path", required=True)
     args = parser.parse_args()
 
     lines = []
-    with  open(args.data, 'r') as component_file:
-        lines = component_file.readlines()
+    for path in args.data:
+        with open(path, 'r') as component_file:
+            lines.extend(component_file.readlines())
 
     components = []
     tag_components = []

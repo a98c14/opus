@@ -24,9 +24,10 @@ typedef uint32 TagComponent;
 
 enum
 {
-    CT_Undefined = 0,
-    CTT_Prefab   = 1,
-    CTT_Parent   = 2,
+    CT_Undefined          = 0,
+    CTT_InactiveComponent = 1, // Hides the entity from all systems
+    CTT_PrefabComponent   = 2,
+    CTT_ParentComponent   = 3,
     CT_RESERVE_COUNT
 };
 
@@ -67,6 +68,7 @@ internal void                              component_type_register_complete(Comp
 
 internal uint32             component_type_field_count(ComponentTypeField a);
 internal ComponentTypeField component_type_field_or(ComponentTypeField a, ComponentTypeField b);
+internal ComponentTypeField component_type_field_not(ComponentTypeField a, ComponentTypeField b);
 internal ComponentTypeField component_type_field_add(ComponentTypeField field, ComponentType type_index);
 internal ComponentTypeField component_type_field_remove(ComponentTypeField field, ComponentType type_index);
 internal ComponentTypeField component_type_field_union(ComponentTypeField a, ComponentTypeField b);
