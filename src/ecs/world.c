@@ -1,5 +1,7 @@
 #include "world.h"
+#include <core/log.h>
 #include <core/memory.h>
+#include <ecs/component.h>
 #include <ecs/world.h>
 
 internal Entity
@@ -118,6 +120,73 @@ chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint3
     return chunk_index;
 }
 
+/** Deletes the entity data at the given internal index. Does not handle parent/child relationships or entity addresses.  */
+internal void
+chunk_delete_entity_data(EntityManager* manager, EntityAddress address)
+{
+    World*     world     = manager->world;
+    Chunk*     chunk     = &world->chunks[address.chunk_index];
+    Archetype* archetype = &world->archetypes[chunk->archetype_index];
+
+    // if the entity is not the last entity swap it with the last entity
+    uint32 last_entity_internal_index = chunk->entity_count - 1;
+    if (address.chunk_internal_index != last_entity_internal_index)
+    {
+        Entity         last_entity         = chunk->entities[last_entity_internal_index];
+        EntityAddress* last_entity_address = &world->entity_addresses[last_entity.index];
+
+        for (int i = 0; i < archetype->component_count; i++)
+        {
+            DataBuffer* data_buffer    = &chunk->data_buffers[i];
+            usize       component_size = manager->type_manager->component_sizes[data_buffer->type];
+            memcpy(((uint8*)data_buffer->data) + (component_size * address.chunk_internal_index), ((uint8*)data_buffer->data) + (component_size * last_entity_address->chunk_internal_index), component_size);
+        }
+
+        chunk->entities[address.chunk_internal_index] = last_entity;
+        last_entity_address->chunk_index              = address.chunk_index;
+        last_entity_address->chunk_internal_index     = address.chunk_internal_index;
+    }
+
+    chunk->entity_count--;
+}
+
+internal void
+chunk_copy_data(EntityManager* manager, EntityAddress src, EntityAddress dst)
+{
+    World*                world        = manager->world;
+    ComponentTypeManager* type_manager = manager->type_manager;
+
+    Chunk* src_chunk = &world->chunks[src.chunk_index];
+    Chunk* dst_chunk = &world->chunks[dst.chunk_index];
+
+    Archetype* src_archetype = &world->archetypes[src_chunk->archetype_index];
+    Archetype* dst_archetype = &world->archetypes[dst_chunk->archetype_index];
+
+    for (int i = 0; i < dst_archetype->component_count; i++)
+    {
+        ComponentType dst_type = dst_archetype->components[i];
+
+        // TODO(selim): figure out what to do about chunk components (we don't have those yet)
+        if (type_manager->component_data_types[dst_type] != ComponentDataTypeDefault)
+            continue;
+
+        int32 dst_buffer_index = dst_archetype->component_buffer_index_map[dst_type];
+        int32 src_buffer_index = src_archetype->component_buffer_index_map[dst_type];
+
+        // if type doesn't exist in the source entity, skip the component
+        if (src_buffer_index == -1)
+            continue;
+
+        usize       component_size = type_manager->component_sizes[dst_type];
+        uint32      src_index      = src.chunk_internal_index;
+        uint32      dst_index      = dst.chunk_internal_index;
+        DataBuffer* src_buffer     = &src_chunk->data_buffers[src_buffer_index];
+        DataBuffer* dst_buffer     = &dst_chunk->data_buffers[dst_buffer_index];
+
+        memcpy((uint8*)dst_buffer->data + dst_index * component_size, (uint8*)src_buffer->data + src_index * component_size, component_size);
+    }
+}
+
 internal Entity
 entity_create(EntityManager* manager, ComponentTypeField components)
 {
@@ -152,31 +221,9 @@ entity_destroy(EntityManager* manager, Entity entity)
     if (entity_address_is_null(current_address))
         return;
 
+    chunk_delete_entity_data(manager, current_address);
     world->entity_addresses[entity.index] = entity_address_null();
-    Chunk*     current_chunk              = &world->chunks[current_address.chunk_index];
-    Archetype* archetype                  = &world->archetypes[current_chunk->archetype_index];
-
-    // if the entity is not the last entity swap it with the last entity
-    uint32 last_entity_internal_index = current_chunk->entity_count - 1;
-    if (current_address.chunk_internal_index != last_entity_internal_index)
-    {
-        Entity         last_entity         = current_chunk->entities[last_entity_internal_index];
-        EntityAddress* last_entity_address = &world->entity_addresses[last_entity.index];
-
-        for (int i = 0; i < archetype->component_count; i++)
-        {
-            DataBuffer* data_buffer    = &current_chunk->data_buffers[i];
-            usize       component_size = manager->type_manager->component_sizes[data_buffer->type];
-            memcpy(((uint8*)data_buffer->data) + (component_size * current_address.chunk_internal_index), ((uint8*)data_buffer->data) + (component_size * last_entity_address->chunk_internal_index), component_size);
-        }
-
-        current_chunk->entities[current_address.chunk_internal_index] = last_entity;
-        last_entity_address->chunk_index                              = current_address.chunk_index;
-        last_entity_address->chunk_internal_index                     = current_address.chunk_internal_index;
-    }
-
-    current_chunk->entity_count--;
-    world->entity_parents[entity.index] = entity_null();
+    world->entity_parents[entity.index]   = entity_null();
 
     /** Destroy children.
      * NOTE: children list isn't being deallocated, only the entities are getting set to null */
@@ -193,6 +240,31 @@ entity_destroy(EntityManager* manager, Entity entity)
 
         children->count = 0;
     }
+}
+
+internal void
+entity_add_components(EntityManager* manager, Entity entity, ComponentTypeField components)
+{
+    World*        world           = manager->world;
+    EntityAddress current_address = world->entity_addresses[entity.index];
+
+    xassert(!entity_address_is_null(current_address), "entity address is not valid");
+
+    ComponentTypeField current_components = world->chunk_components[current_address.chunk_index];
+    ComponentTypeField new_components     = component_type_field_union(current_components, components);
+    if (component_type_field_is_same(current_components, new_components))
+    {
+        log_warn("trying to add a component that is already added! entity id %d", entity.index);
+        return;
+    }
+
+    ChunkIndex new_chunk_index = chunk_get_or_create(manager, new_components, 1, DEFAULT_CHUNK_CAPACITY);
+    entity_move(manager, entity, new_chunk_index);
+}
+
+internal void
+entity_remove_component(EntityManager* manager, Entity entity, ComponentType component)
+{
 }
 
 internal void
@@ -240,42 +312,33 @@ entity_get_types(EntityManager* manager, Entity entity)
 internal void
 entity_copy_data(EntityManager* manager, Entity src, Entity dst)
 {
-    World*                world        = manager->world;
-    ComponentTypeManager* type_manager = manager->type_manager;
+    World* world = manager->world;
 
     EntityAddress src_address = world->entity_addresses[src.index];
     EntityAddress dst_address = world->entity_addresses[dst.index];
     xassert(!entity_address_is_null(src_address) && !entity_address_is_null(dst_address), "invalid entity during copy");
+    chunk_copy_data(manager, src_address, dst_address);
+}
 
-    Chunk* src_chunk = &world->chunks[src_address.chunk_index];
-    Chunk* dst_chunk = &world->chunks[dst_address.chunk_index];
+internal void
+entity_move(EntityManager* manager, Entity entity, ChunkIndex destination)
+{
+    World* world = manager->world;
 
-    Archetype* src_archetype = &world->archetypes[src_chunk->archetype_index];
-    Archetype* dst_archetype = &world->archetypes[dst_chunk->archetype_index];
+    EntityAddress src_address = world->entity_addresses[entity.index];
+    xassert(!entity_address_is_null(src_address), "invalid entity during copy");
 
-    for (int i = 0; i < dst_archetype->component_count; i++)
-    {
-        ComponentType dst_type = dst_archetype->components[i];
+    Chunk*        dst_chunk          = &world->chunks[destination];
+    EntityAddress dst_address        = {0};
+    dst_address.chunk_index          = destination;
+    dst_address.chunk_internal_index = dst_chunk->entity_count;
 
-        // TODO(selim): figure out what to do about chunk components (we don't have those yet)
-        if (type_manager->component_data_types[dst_type] != ComponentDataTypeDefault)
-            continue;
+    dst_chunk->entities[dst_address.chunk_internal_index] = entity;
+    dst_chunk->entity_count++;
+    world->entity_addresses[entity.index] = dst_address;
 
-        int32 dst_buffer_index = dst_archetype->component_buffer_index_map[dst_type];
-        int32 src_buffer_index = src_archetype->component_buffer_index_map[dst_type];
-
-        // if type doesn't exist in the source entity, skip the component
-        if (src_buffer_index == -1)
-            continue;
-
-        usize       component_size = type_manager->component_sizes[dst_type];
-        uint32      src_index      = src_address.chunk_internal_index;
-        uint32      dst_index      = dst_address.chunk_internal_index;
-        DataBuffer* src_buffer     = &src_chunk->data_buffers[src_buffer_index];
-        DataBuffer* dst_buffer     = &dst_chunk->data_buffers[dst_buffer_index];
-
-        memcpy((uint8*)dst_buffer->data + dst_index * component_size, (uint8*)src_buffer->data + src_index * component_size, component_size);
-    }
+    chunk_copy_data(manager, src_address, dst_address);
+    chunk_delete_entity_data(manager, src_address);
 }
 
 internal World*

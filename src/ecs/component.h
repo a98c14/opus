@@ -69,6 +69,7 @@ internal uint32             component_type_field_count(ComponentTypeField a);
 internal ComponentTypeField component_type_field_or(ComponentTypeField a, ComponentTypeField b);
 internal ComponentTypeField component_type_field_add(ComponentTypeField field, ComponentType type_index);
 internal ComponentTypeField component_type_field_remove(ComponentTypeField field, ComponentType type_index);
+internal ComponentTypeField component_type_field_union(ComponentTypeField a, ComponentTypeField b);
 internal void               component_type_field_set(ComponentTypeField* field, ComponentType type_index);
 internal void               component_type_field_unset(ComponentTypeField* field, ComponentType type_index);
 internal void               component_type_field_set_group(ComponentTypeField* field, ComponentTypeField b);
@@ -77,3 +78,4 @@ internal bool32 component_type_field_contains(ComponentTypeField a, ComponentTyp
 internal bool32 component_type_field_is_same(ComponentTypeField a, ComponentTypeField b);
 internal bool32 component_type_field_any(ComponentTypeField a, ComponentTypeField b);
 internal bool32 component_type_field_none(ComponentTypeField a, ComponentTypeField b);
+internal bool32 component_type_field_is_set(ComponentTypeField* field, ComponentType type);
