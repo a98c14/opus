@@ -34,6 +34,12 @@ entity_is_same(Entity a, Entity b)
     return a.index == b.index && a.version == b.version;
 }
 
+internal bool32
+entity_is_null(Entity a)
+{
+    return a.index <= 0 && a.version <= 0;
+}
+
 internal ArchetypeIndex
 archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
 {
