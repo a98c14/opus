@@ -2,8 +2,6 @@
 
 #include <core/defines.h>
 
-#include "component.h"
-
 typedef uint16 EntityEventType;
 #define ENTITY_EVENT_BUFFER_CAPACITY 256
 

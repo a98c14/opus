@@ -72,7 +72,6 @@ if __name__ == "__main__":
 
         header_file.write("#include <core/defines.h>\n")
         header_file.write("#include <ecs/component.h>\n\n")
-        header_file.write(f"#include \"{os.path.relpath(args.data, args.out)}\"\n")
 
         if len(component_types) == 0:
             sys.exit()
@@ -88,6 +87,8 @@ if __name__ == "__main__":
         header_file.write("\ninternal void register_components(Arena* temp_arena, ComponentTypeManager* type_manager);")
             
         source_file.write("#include \"component_types.h\"\n")
+        source_file.write(f"#include \"{os.path.relpath(args.data, args.out)}\"\n")
+        
         source_file.write("\ninternal void")
         source_file.write("\nregister_components(Arena* temp_arena, ComponentTypeManager* type_manager)\n{\n")
         source_file.write("\tComponentTypeRegistrationRequest* request = component_type_register_begin(temp_arena);\n")
@@ -106,8 +107,8 @@ if __name__ == "__main__":
             header_file.write("#include <core/defines.h>\n")
             header_file.write("#include <ecs/component.h>\n")
             header_file.write("#include <ecs/events.h>\n\n")
-        
             header_file.write(f"#include \"{os.path.relpath(args.event_data, args.out)}\"\n")
+    
                             
             header_file.write("\nenum\n{\n")
             header_file.write(f"\tET_{event_types[0]} = ET_RESERVE_COUNT,\n")
@@ -119,6 +120,7 @@ if __name__ == "__main__":
                 header_file.write(f"internal inline void fire_{camel_to_snake(event_type)}(EventManager* event_manager, ComponentTypeField types, {event_type} data);\n")            
                 
             source_file.write("#include \"events.h\"\n")
+            
             source_file.write("\ninternal void")
             source_file.write("\nregister_events(EventManager* event_manager)\n{\n")
             for event_type in event_types:

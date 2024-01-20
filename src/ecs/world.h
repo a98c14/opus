@@ -127,6 +127,7 @@ internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);
 internal bool32        entity_is_same(Entity a, Entity b);
 internal bool32        entity_is_null(Entity a);
+internal Entity        entity_null();
 
 internal ArchetypeIndex archetype_get_or_create(EntityManager* manager, ComponentTypeField types);
 
