@@ -11,6 +11,14 @@ prefab_create(EntityManager* entity_manager, ComponentTypeField types)
     return result;
 }
 
+internal Prefab
+prefab_create_as_child(EntityManager* entity_manager, Prefab* parent, ComponentTypeField types)
+{
+    Prefab result = prefab_create(entity_manager, types);
+    prefab_add_child(entity_manager, parent, result);
+    return result;
+}
+
 internal Entity
 prefab_instantiate(EntityManager* entity_manager, Prefab prefab)
 {
