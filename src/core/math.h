@@ -266,6 +266,7 @@ internal Mat3 mat3_transpose(Mat3 m);
 
 internal Mat4 mat4_identity(void);
 internal Mat4 mat4_translation(Vec3 v);
+internal Mat4 mat4_inverse(Mat4 m);
 internal Mat4 mat4_scale(Vec3 v);
 internal Mat4 mat4_rotation(float angle);
 internal Mat4 mat4_transform(Mat4 translation, Mat4 rotation, Mat4 scale);

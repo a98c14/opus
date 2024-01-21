@@ -54,12 +54,6 @@ typedef int16 MaterialDrawBufferIndex;
 
 typedef struct
 {
-    Mat3 projection;
-    Mat3 view;
-} Camera2D;
-
-typedef struct
-{
     Mat4 projection;
     Mat4 view;
 
@@ -284,7 +278,6 @@ typedef struct
 
 internal Renderer*          renderer_new(Arena* arena, RendererConfiguration* configuration);
 internal RendererDrawState* renderer_draw_state_new(Arena* arena);
-internal Camera             camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
 internal MaterialIndex      material_new(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
 internal GeometryIndex      geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object);
 internal TextureIndex       texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
@@ -302,6 +295,10 @@ internal Vec4                color_to_vec4(Color color);
 internal Color               vec4_to_color(Vec4 c);
 internal void                renderer_render(Renderer* renderer, float32 dt);
 internal void                texture_shader_data_set(Renderer* renderer, const Texture* texture);
+
+/** camera */
+internal Camera camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
+internal void   camera_move(Renderer* renderer, Vec2 position);
 
 /* converts the unit value to actual screen pixel*/
 internal float32 px(float32 u);

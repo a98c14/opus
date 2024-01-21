@@ -581,6 +581,21 @@ mat4_translation(Vec3 v)
 }
 
 internal Mat4
+mat4_inverse(Mat4 m)
+{
+    Mat4 result    = {0};
+    result.m[0][0] = 1.0f / m.m[0][0];
+    result.m[1][1] = 1.0f / m.m[1][1];
+    result.m[2][2] = 1.0f / m.m[2][2];
+    result.m[3][3] = 1.0f;
+
+    result.m[3][0] = -m.m[3][0] * result.m[0][0];
+    result.m[3][1] = -m.m[3][1] * result.m[1][1];
+    result.m[3][2] = -m.m[3][2] * result.m[2][2];
+    return result;
+}
+
+internal Mat4
 mat4_scale(Vec3 v)
 {
     Mat4 result    = mat4_identity();

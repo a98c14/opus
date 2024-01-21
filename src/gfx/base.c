@@ -1,5 +1,6 @@
 #include "base.h"
 #include <core/log.h>
+#include <core/math.h>
 #include <core/memory.h>
 #include <core/strings.h>
 
@@ -656,6 +657,12 @@ texture_shader_data_set(Renderer* renderer, const Texture* texture)
     glBindBuffer(GL_UNIFORM_BUFFER, renderer->texture_uniform_buffer_id);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(TextureUniformData), &shader_data);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+internal void
+camera_move(Renderer* renderer, Vec2 position)
+{
+    renderer->camera.view = mat4_inverse(mat4_translation(vec3_xy_z(position, 0)));
 }
 
 internal float32
