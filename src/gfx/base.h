@@ -8,12 +8,11 @@
 #include <glad/gl.h>
 
 /* Constants */
-#define MATERIAL_CAPACITY        32
-#define TEXTURE_CAPACITY         32
-#define GEOMETRY_CAPACITY        32
-#define LAYER_CAPACITY           16
-#define SORTING_LAYER_CAPACITY   16
-#define SORT_LAYER_INDEX_DEFAULT 8
+#define MATERIAL_CAPACITY      32
+#define TEXTURE_CAPACITY       32
+#define GEOMETRY_CAPACITY      32
+#define LAYER_CAPACITY         16
+#define SORTING_LAYER_CAPACITY 16
 
 #define MATERIAL_DRAW_BUFFER_CAPACITY_PER_SETTING (16)
 #define MATERIAL_DRAW_BUFFER_CAPACITY             (1024)

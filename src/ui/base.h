@@ -12,6 +12,7 @@
 #define UI_DEBUG            1
 #define UI_FRAME_CAPACITY   256
 #define DEFAULT_LINE_HEIGHT 20
+#define SORT_LAYER_INDEX_UI 13
 
 typedef uint8 FrameIndex;
 

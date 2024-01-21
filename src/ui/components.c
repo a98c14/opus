@@ -1,4 +1,5 @@
 #include "components.h"
+#include <gfx/base.h>
 
 internal UIWindow
 ui_window(UIContext* ctx, Rect* container, UIID id, String name, bool32* is_expanded, StyleWindow style)
@@ -11,8 +12,8 @@ ui_window(UIContext* ctx, Rect* container, UIID id, String name, bool32* is_expa
 
     bool32    hover        = intersects_rect_point(header, ctx->mouse.world);
     StyleRect header_style = hover ? style.header_background_hover : style.header_background;
-    draw_rect(header, 0, SORT_LAYER_INDEX_DEFAULT, header_style);
-    draw_text_deprecated(rect_cl(header_inner), name, AlignmentLeft, style.header_font);
+    draw_rect(header, 0, SORT_LAYER_INDEX_UI, ViewTypeScreen, header_style);
+    draw_text_deprecated(rect_cl(header_inner), name, AlignmentLeft, style.header_font, SORT_LAYER_INDEX_UI);
     if (!ui_is_active_any(ctx) && hover && input_mouse_pressed(ctx->mouse, MouseButtonStateLeft))
     {
         ui_activate(ctx, id);
@@ -43,7 +44,7 @@ ui_container(UIContext* ctx, Rect container, StyleContainer style)
     Rect outer = rect_shrink(container, style.margin);
     Rect inner = rect_shrink(container, style.padding);
     if (style.background.color.a > 0)
-        draw_rect(outer, 0, SORT_LAYER_INDEX_DEFAULT, style.background);
+        draw_rect(outer, 0, SORT_LAYER_INDEX_UI, ViewTypeScreen, style.background);
     return inner;
 }
 
@@ -52,8 +53,8 @@ ui_label(UIContext* ctx, Rect container, String str, StyleLabel style)
 {
     Rect inner = rect_shrink(container, style.padding);
     if (style.background.color.a > 0 || style.background.border_color.a > 0)
-        draw_rect(container, 0, SORT_LAYER_INDEX_DEFAULT, style.background);
-    draw_text_deprecated(rect_relative(inner, style.alignment), str, style.alignment, style.font);
+        draw_rect(container, 0, SORT_LAYER_INDEX_UI, ViewTypeScreen, style.background);
+    draw_text_deprecated(rect_relative(inner, style.alignment), str, style.alignment, style.font, SORT_LAYER_INDEX_UI);
 }
 
 internal bool32
@@ -65,7 +66,7 @@ ui_slider(UIContext* ctx, Rect rect, UIID id, Range range, float32* value, Style
     // draw bar
     Rect bar = rect;
     bar.h    = em(0.5);
-    draw_rect(bar, 0, SORT_LAYER_INDEX_DEFAULT + 1, style.slider);
+    draw_rect(bar, 0, SORT_LAYER_INDEX_UI + 1, ViewTypeScreen, style.slider);
 
     // since handle is centered at the origin, this reduces the overflow
     // that happens when the handle is at max/min
@@ -94,7 +95,7 @@ ui_slider(UIContext* ctx, Rect rect, UIID id, Range range, float32* value, Style
     }
 
     Color c = hover ? ColorRed400 : ColorRed600;
-    draw_circle_filled(handle, c);
+    draw_circle_filled(handle, c, SORT_LAYER_INDEX_UI);
     return ui_is_active(ctx, id);
 }
 
@@ -117,8 +118,8 @@ ui_toggle(UIContext* ctx, Rect rect, UIID id, bool32* is_toggled, StyleToggleBut
     Rect      inner_row         = rect_shrink(rect, style.padding);
     Rect      toggle_box        = rect_anchor(rect_from_wh(em(1), em(1)), inner_row, ANCHOR_L_L);
     Rect      toggle_inside_box = rect_shrink(toggle_box, vec2(2, 2));
-    draw_rect(toggle_box, 0, SORT_LAYER_INDEX_DEFAULT, c);
-    draw_rect(toggle_inside_box, 0, SORT_LAYER_INDEX_DEFAULT, *is_toggled ? style.inner_background_active : style.inner_background);
+    draw_rect(toggle_box, 0, SORT_LAYER_INDEX_UI, ViewTypeScreen, c);
+    draw_rect(toggle_inside_box, 0, SORT_LAYER_INDEX_UI, ViewTypeScreen, *is_toggled ? style.inner_background_active : style.inner_background);
     return *is_toggled;
 }
 
@@ -127,7 +128,7 @@ ui_button(UIContext* ctx, Rect rect, UIID id, String label, StyleButton style)
 {
     Alignment alignment = AlignmentCenter;
     Rect      inner_row = rect_shrink(rect, style.padding);
-    draw_text_deprecated(rect_relative(inner_row, alignment), label, alignment, style.font);
+    draw_text_deprecated(rect_relative(inner_row, alignment), label, alignment, style.font, SORT_LAYER_INDEX_UI);
     bool32 hover   = intersects_rect_point(rect, ctx->mouse.world);
     bool32 clicked = ui_is_active(ctx, id) && input_mouse_released(ctx->mouse, MouseButtonStateLeft);
     if (hover && ui_is_free(ctx) && input_mouse_pressed(ctx->mouse, MouseButtonStateLeft))
@@ -140,6 +141,6 @@ ui_button(UIContext* ctx, Rect rect, UIID id, String label, StyleButton style)
     }
 
     StyleRect c = hover ? style.background_hover : style.background;
-    draw_rect(inner_row, 0, SORT_LAYER_INDEX_DEFAULT, c);
+    draw_rect(inner_row, 0, SORT_LAYER_INDEX_UI, ViewTypeScreen, c);
     return clicked;
 }

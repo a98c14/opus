@@ -116,26 +116,26 @@ internal void draw_context_initialize(Arena* arena, Arena* temp_arena, Renderer*
 internal void draw_context_activate_atlas(SpriteAtlas* atlas);
 
 /* Draw Functions */
-internal void draw_line(Vec2 start, Vec2 end, Color color, float32 thickness);
-internal void draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness);
-internal void draw_arrow(Vec2 position, float32 length, float32 angle, Color color, float32 thickness);
-internal void draw_debug_line(Vec2 start, Vec2 end, Color color);
-internal void draw_texture_aligned(Vec3 pos, Vec2 scale, TextureIndex texture);
-internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
+internal void draw_line(Vec2 start, Vec2 end, Color color, float32 thickness, SortLayerIndex layer);
+internal void draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness, SortLayerIndex layer);
+internal void draw_arrow(Vec2 position, float32 length, float32 angle, Color color, float32 thickness, SortLayerIndex layer);
+internal void draw_debug_line(Vec2 start, Vec2 end, Color color, SortLayerIndex layer);
+internal void draw_texture_aligned(Vec3 pos, Vec2 scale, TextureIndex texture, SortLayerIndex layer);
+internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness, SortLayerIndex layer);
 
 // Draws given string to screen and returns the bounding box for the while string
-internal Rect draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style);
-internal void draw_text(Rect rect, String str, Anchor anchor, StyleText style);
-internal void draw_circle(Vec2 position, float32 radius, Color color);
-internal void draw_circle_filled(Circle circle, Color color);
-internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle);
-internal void draw_boid(Vec2 position, float32 rotation, float32 size, Color color);
+internal Rect draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style, SortLayerIndex layer);
+internal void draw_text(Rect rect, String str, Anchor anchor, StyleText style, SortLayerIndex layer);
+internal void draw_circle(Vec2 position, float32 radius, Color color, SortLayerIndex layer);
+internal void draw_circle_filled(Circle circle, Color color, SortLayerIndex layer);
+internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle, SortLayerIndex layer);
+// TODO(selim): why is this here?
+internal void draw_boid(Vec2 position, float32 rotation, float32 size, Color color, SortLayerIndex layer);
 internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLayerIndex sort_index);
-internal Rect draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, StyleRect style);
+internal Rect draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
 
 /* Sprite */
-internal void draw_sprite_sorted(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, int8 sort_offset);
-internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
+internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, SortLayerIndex layer);
 
 /** Utility */
 // TODO(selim): Move these to renderer (make renderer global as well)
