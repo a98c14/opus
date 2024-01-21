@@ -214,7 +214,7 @@ draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color colo
 }
 
 internal Rect
-draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style, SortLayerIndex layer)
+draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style, ViewType view_type, SortLayerIndex layer)
 {
     pos.y += style.base_line;
     ShaderDataText shader_data         = {0};
@@ -223,7 +223,7 @@ draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style,
     shader_data.thickness              = style.thickness;
     shader_data.softness               = style.softness;
     shader_data.outline_thickness      = style.outline_thickness;
-    DrawBuffer      db                 = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text, str.length);
+    DrawBuffer      db                 = renderer_buffer_request(g_draw_context->renderer, view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text, str.length);
     Rect            bounds             = text_calculate_transforms(g_draw_context->font_open_sans, str, style.font_size, pos, alignment, db.model_buffer, 0);
     ShaderDataText* shader_data_buffer = (ShaderDataText*)db.uniform_data_buffer;
     for (int i = 0; i < str.length; i++)
@@ -236,11 +236,11 @@ draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style,
 }
 
 internal void
-draw_text(Rect rect, String str, Anchor anchor, StyleText style, SortLayerIndex layer)
+draw_text(Rect rect, String str, Anchor anchor, StyleText style, ViewType view_type, SortLayerIndex layer)
 {
     Vec2 position = rect_get(rect, anchor.parent);
     position.y += style.base_line;
-    DrawBuffer db = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text, str.length);
+    DrawBuffer db = renderer_buffer_request(g_draw_context->renderer, view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text, str.length);
     text_calculate_transforms_v2(g_draw_context->font_open_sans, str, style.font_size, position, anchor.child, rect.w, db.model_buffer, 0);
 
     ShaderDataText shader_data    = {0};
@@ -303,10 +303,10 @@ draw_boid(Vec2 position, float32 rotation, float32 size, Color color, SortLayerI
 }
 
 internal void
-draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, SortLayerIndex layer)
+draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer)
 {
     xassert(g_draw_context->sprite_atlas, "`g_draw_context->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
-    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->sprite_atlas->texture, g_draw_context->geometry_quad, g_draw_context->material_sprite, 1);
+    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->sprite_atlas->texture, g_draw_context->geometry_quad, g_draw_context->material_sprite, 1);
     Sprite     sprite_data = g_draw_context->sprite_atlas->sprites[sprite];
 
     Vec2 pivot                     = sprite_get_pivot(sprite_data, vec2(scale, scale), vec2_one());

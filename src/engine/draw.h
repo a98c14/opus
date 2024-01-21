@@ -124,8 +124,8 @@ internal void draw_texture_aligned(Vec3 pos, Vec2 scale, TextureIndex texture, S
 internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness, SortLayerIndex layer);
 
 // Draws given string to screen and returns the bounding box for the while string
-internal Rect draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style, SortLayerIndex layer);
-internal void draw_text(Rect rect, String str, Anchor anchor, StyleText style, SortLayerIndex layer);
+internal Rect draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style, ViewType view_type, SortLayerIndex layer);
+internal void draw_text(Rect rect, String str, Anchor anchor, StyleText style, ViewType view_type, SortLayerIndex layer);
 internal void draw_circle(Vec2 position, float32 radius, Color color, SortLayerIndex layer);
 internal void draw_circle_filled(Circle circle, Color color, SortLayerIndex layer);
 internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle, SortLayerIndex layer);
@@ -135,7 +135,7 @@ internal void draw_triangle(Vec2 position, float32 rotation, Color color, float3
 internal Rect draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
 
 /* Sprite */
-internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, SortLayerIndex layer);
+internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer);
 
 /** Utility */
 // TODO(selim): Move these to renderer (make renderer global as well)

@@ -13,7 +13,7 @@ ui_window(UIContext* ctx, Rect* container, UIID id, String name, bool32* is_expa
     bool32    hover        = intersects_rect_point(header, ctx->mouse.world);
     StyleRect header_style = hover ? style.header_background_hover : style.header_background;
     draw_rect(header, 0, SORT_LAYER_INDEX_UI, ViewTypeScreen, header_style);
-    draw_text_deprecated(rect_cl(header_inner), name, AlignmentLeft, style.header_font, SORT_LAYER_INDEX_UI);
+    draw_text_deprecated(rect_cl(header_inner), name, AlignmentLeft, style.header_font, ViewTypeScreen, SORT_LAYER_INDEX_UI);
     if (!ui_is_active_any(ctx) && hover && input_mouse_pressed(ctx->mouse, MouseButtonStateLeft))
     {
         ui_activate(ctx, id);
@@ -54,7 +54,7 @@ ui_label(UIContext* ctx, Rect container, String str, StyleLabel style)
     Rect inner = rect_shrink(container, style.padding);
     if (style.background.color.a > 0 || style.background.border_color.a > 0)
         draw_rect(container, 0, SORT_LAYER_INDEX_UI, ViewTypeScreen, style.background);
-    draw_text_deprecated(rect_relative(inner, style.alignment), str, style.alignment, style.font, SORT_LAYER_INDEX_UI);
+    draw_text_deprecated(rect_relative(inner, style.alignment), str, style.alignment, style.font, ViewTypeScreen, SORT_LAYER_INDEX_UI);
 }
 
 internal bool32
@@ -128,7 +128,7 @@ ui_button(UIContext* ctx, Rect rect, UIID id, String label, StyleButton style)
 {
     Alignment alignment = AlignmentCenter;
     Rect      inner_row = rect_shrink(rect, style.padding);
-    draw_text_deprecated(rect_relative(inner_row, alignment), label, alignment, style.font, SORT_LAYER_INDEX_UI);
+    draw_text_deprecated(rect_relative(inner_row, alignment), label, alignment, style.font, ViewTypeScreen, SORT_LAYER_INDEX_UI);
     bool32 hover   = intersects_rect_point(rect, ctx->mouse.world);
     bool32 clicked = ui_is_active(ctx, id) && input_mouse_released(ctx->mouse, MouseButtonStateLeft);
     if (hover && ui_is_free(ctx) && input_mouse_pressed(ctx->mouse, MouseButtonStateLeft))
