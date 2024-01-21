@@ -455,7 +455,7 @@ inverse_heading_to_vec2(Vec2 start, Vec2 end)
 internal Vec2
 direction_to_vec2(Vec2 start, Vec2 end, float32 scale)
 {
-    return mul_vec2_f32(heading_to_vec2(end, start), scale);
+    return mul_vec2_f32(heading_to_vec2(start, end), scale);
 }
 
 internal Vec2
