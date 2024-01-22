@@ -5,6 +5,7 @@ internal Color lerp_color(Color Colora, Color Colorb, float32 t);
 
 global const Color ColorClear                = {.r = 0x0f, .g = 0x17, .b = 0x2a, .a = 0x00};
 global const Color ColorBlack                = {.r = 0x00, .g = 0x00, .b = 0x00, .a = 0xff};
+global const Color ColorBlackA               = {.r = 0x00, .g = 0x00, .b = 0x00, .a = 0x88};
 global const Color ColorInvisible            = {.r = 0x00, .g = 0x00, .b = 0x00, .a = 0x00};
 global const Color ColorWhite                = {.r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff};
 global const Color ColorRedPastel            = {.r = 0xff, .g = 0x8a, .b = 0x8a, .a = 0xff};
