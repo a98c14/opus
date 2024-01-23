@@ -139,22 +139,23 @@ internal void       chunk_copy_data(EntityManager* manager, EntityAddress src, E
 
 internal Entity entity_create(EntityManager* manager, ComponentTypeField types);
 internal void   entity_destroy(EntityManager* manager, Entity entity);
-internal void   entity_add_component(EntityManager* manager, Entity entity, ComponentType type);
-internal void*  entity_add_component_ref_internal(EntityManager* manager, Entity entity, ComponentType type);
-#define entity_add_component_ref(entity_manager, entity, component_type) ((component_type*)entity_add_component_ref_internal(entity_manager, entity, CT_##component_type))
-internal void               entity_add_components(EntityManager* manager, Entity entity, ComponentTypeField components);
-internal void               entity_remove_components(EntityManager* manager, Entity entity, ComponentTypeField components);
-internal void               entity_remove_component(EntityManager* manager, Entity entity, ComponentType type);
+
 internal void               entity_add_child(EntityManager* manager, Entity parent, Entity child);
 internal ComponentTypeField entity_get_types(EntityManager* manager, Entity entity);
 internal void               entity_copy_data(EntityManager* manager, Entity src, Entity dst);
 internal void               entity_move(EntityManager* manager, Entity entity, ChunkIndex destination);
 
+internal void   component_add(EntityManager* manager, Entity entity, ComponentType type);
+internal void   component_add_many(EntityManager* manager, Entity entity, ComponentTypeField components);
+internal void*  component_add_ref_internal(EntityManager* manager, Entity entity, ComponentType type);
+internal void   component_remove(EntityManager* manager, Entity entity, ComponentType type);
+internal void   component_remove_many(EntityManager* manager, Entity entity, ComponentTypeField components);
 internal bool32 component_data_exists_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type);
+internal void*  component_data_ref_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type);
+#define component_add_ref(entity_manager, entity, component_type)     ((component_type*)component_add_ref_internal(entity_manager, entity, CT_##component_type))
 #define component_data_exists(entity_manager, entity, component_type) component_data_exists_internal(entity_manager, entity, CT_##component_type)
-internal void* component_data_ref_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type);
-#define component_data_get(entity_manager, entity, component_type) (*((component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type)))
-#define component_data_ref(entity_manager, entity, component_type) ((component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type))
+#define component_data_get(entity_manager, entity, component_type)    (*((component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type)))
+#define component_data_ref(entity_manager, entity, component_type)    ((component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type))
 
 internal World*         world_new(Arena* arena);
 internal EntityManager* entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);

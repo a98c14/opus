@@ -249,7 +249,7 @@ entity_destroy(EntityManager* manager, Entity entity)
 }
 
 internal void
-entity_add_components(EntityManager* manager, Entity entity, ComponentTypeField components)
+component_add_many(EntityManager* manager, Entity entity, ComponentTypeField components)
 {
     World*        world           = manager->world;
     EntityAddress current_address = world->entity_addresses[entity.index];
@@ -269,24 +269,24 @@ entity_add_components(EntityManager* manager, Entity entity, ComponentTypeField 
 }
 
 internal void
-entity_add_component(EntityManager* manager, Entity entity, ComponentType type)
+component_add(EntityManager* manager, Entity entity, ComponentType type)
 {
     ComponentTypeField field = {0};
     component_type_field_set(&field, type);
-    entity_add_components(manager, entity, field);
+    component_add_many(manager, entity, field);
 }
 
 internal void*
-entity_add_component_ref_internal(EntityManager* manager, Entity entity, ComponentType type)
+component_add_ref_internal(EntityManager* manager, Entity entity, ComponentType type)
 {
     ComponentTypeField field = {0};
     component_type_field_set(&field, type);
-    entity_add_components(manager, entity, field);
+    component_add_many(manager, entity, field);
     return component_data_ref_internal(manager, entity, type);
 }
 
 internal void
-entity_remove_components(EntityManager* manager, Entity entity, ComponentTypeField components)
+component_remove_many(EntityManager* manager, Entity entity, ComponentTypeField components)
 {
     World*        world           = manager->world;
     EntityAddress current_address = world->entity_addresses[entity.index];
@@ -306,11 +306,11 @@ entity_remove_components(EntityManager* manager, Entity entity, ComponentTypeFie
 }
 
 internal void
-entity_remove_component(EntityManager* manager, Entity entity, ComponentType type)
+component_remove(EntityManager* manager, Entity entity, ComponentType type)
 {
     ComponentTypeField field = {0};
     component_type_field_set(&field, type);
-    entity_remove_components(manager, entity, field);
+    component_remove_many(manager, entity, field);
 }
 
 internal void
