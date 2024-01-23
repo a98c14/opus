@@ -491,8 +491,7 @@ entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query)
 internal bool32
 entity_is_alive(EntityManager* entity_manager, Entity entity)
 {
-    World* world = entity_manager->world;
-    return !entity_address_is_null(world->entity_addresses[entity.index]);
+    return !entity_is_null(entity) && !entity_address_is_null(entity_manager->world->entity_addresses[entity.index]);
 }
 
 internal Entity

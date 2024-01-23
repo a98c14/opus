@@ -1,10 +1,11 @@
 #pragma once
-#include <core/memory.h>
-#include <core/log.h>
-#include <core/defines.h>
 #include <core/asserts.h>
+#include <core/defines.h>
+#include <core/log.h>
+#include <core/memory.h>
 #include <gfx/base.h>
 #include <gfx/debug.h>
+
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -12,7 +13,6 @@
 typedef struct
 {
     GLFWwindow* glfw_window;
-
 } Window;
 
 typedef void WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);

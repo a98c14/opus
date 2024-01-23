@@ -1,6 +1,4 @@
 #include "events.h"
-#include <ecs/component.h>
-#include <ecs/events.h>
 
 internal EventManager*
 event_manager_new(Arena* arena, uint32 event_type_count)

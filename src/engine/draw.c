@@ -214,7 +214,7 @@ draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color colo
 }
 
 internal Rect
-draw_text_deprecated(Vec2 pos, String str, Alignment alignment, StyleText style, ViewType view_type, SortLayerIndex layer)
+draw_text_at(Vec2 pos, String str, Alignment alignment, StyleText style, ViewType view_type, SortLayerIndex layer)
 {
     pos.y += style.base_line;
     ShaderDataText shader_data         = {0};
@@ -347,4 +347,10 @@ internal float32
 screen_height()
 {
     return g_draw_context->camera->world_height;
+}
+
+internal float32
+screen_width()
+{
+    return g_draw_context->camera->world_width;
 }

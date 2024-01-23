@@ -1,5 +1,4 @@
 #include "random.h"
-#include <core/math.h>
 #include <pcg/pcg_basic.c>
 
 internal void
