@@ -234,7 +234,8 @@ global const Color ColorAmber800             = {.r = 0xff, .g = 0x8f, .b = 0x00,
 global const Color ColorAmber900             = {.r = 0xff, .g = 0x6f, .b = 0x00, .a = 0xff};
 global const Color ColorAmber100A            = {.r = 0xff, .g = 0xe5, .b = 0x7f, .a = 0xbb};
 global const Color ColorAmber200A            = {.r = 0xff, .g = 0xd7, .b = 0x40, .a = 0x55};
-global const Color ColorAmber400A            = {.r = 0xff, .g = 0xc4, .b = 0x00, .a = 0xbb};
+global const Color ColorAmber400A            = {.r = 0xff, .g = 0xc4, .b = 0x00, .a = 0x44};
+global const Color ColorAmber400AA           = {.r = 0xff, .g = 0xc4, .b = 0x00, .a = 0xaa};
 global const Color ColorAmber700A            = {.r = 0xff, .g = 0xab, .b = 0x00, .a = 0xbb};
 global const Color ColorOrange               = {.r = 0xF9, .g = 0x80, .b = 0x0, .a = 0xff};
 global const Color ColorOrange50             = {.r = 0xff, .g = 0xf3, .b = 0xe0, .a = 0xff};

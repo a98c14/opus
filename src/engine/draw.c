@@ -216,6 +216,9 @@ draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color colo
 internal Rect
 draw_text_at(Vec2 pos, String str, Alignment alignment, StyleText style, ViewType view_type, SortLayerIndex layer)
 {
+    if (str.length <= 0)
+        return rect_from_wh(0, 0);
+
     pos.y += style.base_line;
     ShaderDataText shader_data         = {0};
     shader_data.color                  = style.color;
@@ -238,6 +241,9 @@ draw_text_at(Vec2 pos, String str, Alignment alignment, StyleText style, ViewTyp
 internal void
 draw_text(Rect rect, String str, Anchor anchor, StyleText style, ViewType view_type, SortLayerIndex layer)
 {
+    if (str.length <= 0)
+        return;
+
     Vec2 position = rect_get(rect, anchor.parent);
     position.y += style.base_line;
     DrawBuffer db = renderer_buffer_request(g_draw_context->renderer, view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text, str.length);
@@ -303,7 +309,7 @@ draw_boid(Vec2 position, float32 rotation, float32 size, Color color, SortLayerI
 }
 
 internal void
-draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer)
+draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color)
 {
     xassert(g_draw_context->sprite_atlas, "`g_draw_context->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
     DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->sprite_atlas->texture, g_draw_context->geometry_quad, g_draw_context->material_sprite, 1);
@@ -316,7 +322,13 @@ draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, 
     model_buffer[0].sprite_index        = sprite;
     model_buffer[0].texture_layer_index = g_draw_context->sprite_atlas->sprite_texture_indices[sprite];
     model_buffer[0].alpha               = 1;
-    model_buffer[0].color               = color_to_vec4(ColorInvisible);
+    model_buffer[0].color               = color_to_vec4(color);
+}
+
+internal void
+draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer)
+{
+    draw_sprite_colored(position, scale, rotation, sprite, flip, view_type, layer, ColorInvisible);
 }
 
 internal float32

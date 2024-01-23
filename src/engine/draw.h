@@ -135,6 +135,7 @@ internal void draw_triangle(Vec2 position, float32 rotation, Color color, float3
 internal Rect draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
 
 /* Sprite */
+internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer);
 
 /** Utility */
