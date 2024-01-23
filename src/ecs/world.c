@@ -414,6 +414,13 @@ entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeMana
     return manager;
 }
 
+internal void
+entity_manager_global_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager)
+{
+    EntityManager* manager = entity_manager_new(persistent_arena, temp_arena, type_manager);
+    g_entity_manager       = manager;
+}
+
 internal bool32
 component_data_exists_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type)
 {

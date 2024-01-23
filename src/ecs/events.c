@@ -12,6 +12,12 @@ event_manager_new(Arena* arena, uint32 event_type_count)
 }
 
 internal void
+event_manager_global_init(Arena* arena, uint32 event_type_count)
+{
+    g_event_manager = event_manager_new(arena, event_type_count);
+}
+
+internal void
 event_manager_initialize_event_type(EventManager* event_manager, EntityEventType type, usize data_size)
 {
     xassert(type < event_manager->event_type_count, "invalid event type");

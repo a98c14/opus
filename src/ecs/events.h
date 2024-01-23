@@ -26,6 +26,7 @@ typedef struct
     usize*             event_data_sizes;
     EntityEventBuffer* event_buffers;
 } EventManager;
+global EventManager* g_event_manager;
 
 typedef struct
 {
@@ -34,6 +35,7 @@ typedef struct
 } EventQueryResult;
 
 internal EventManager* event_manager_new(Arena* arena, uint32 event_type_count);
+internal void          event_manager_global_init(Arena* arena, uint32 event_type_count);
 internal void          event_manager_initialize_event_type(EventManager* event_manager, EntityEventType type, usize data_size);
 
 internal void               event_manager_fire(EventManager* event_manager, EntityEventType type, ComponentTypeField types, void* data);

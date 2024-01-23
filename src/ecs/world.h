@@ -103,6 +103,7 @@ typedef struct
     ComponentTypeManager* type_manager;
     World*                world;
 } EntityManager;
+global EntityManager* g_entity_manager;
 
 typedef struct
 {
@@ -155,6 +156,7 @@ internal void* component_data_ref_internal(EntityManager* entity_manager, Entity
 
 internal World*         world_new(Arena* arena);
 internal EntityManager* entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);
+internal void           entity_manager_global_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);
 
 /** Entity Query */
 internal EntityQuery       entity_query_default();
