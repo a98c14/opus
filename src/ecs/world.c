@@ -276,6 +276,15 @@ entity_add_component(EntityManager* manager, Entity entity, ComponentType type)
     entity_add_components(manager, entity, field);
 }
 
+internal void*
+entity_add_component_ref_internal(EntityManager* manager, Entity entity, ComponentType type)
+{
+    ComponentTypeField field = {0};
+    component_type_field_set(&field, type);
+    entity_add_components(manager, entity, field);
+    return component_data_ref_internal(manager, entity, type);
+}
+
 internal void
 entity_remove_components(EntityManager* manager, Entity entity, ComponentTypeField components)
 {

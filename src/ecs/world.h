@@ -137,9 +137,11 @@ internal ChunkIndex chunk_get_or_create(EntityManager* manager, ComponentTypeFie
 internal void       chunk_delete_entity_data(EntityManager* manager, EntityAddress address);
 internal void       chunk_copy_data(EntityManager* manager, EntityAddress src, EntityAddress dst);
 
-internal Entity             entity_create(EntityManager* manager, ComponentTypeField types);
-internal void               entity_destroy(EntityManager* manager, Entity entity);
-internal void               entity_add_component(EntityManager* manager, Entity entity, ComponentType type);
+internal Entity entity_create(EntityManager* manager, ComponentTypeField types);
+internal void   entity_destroy(EntityManager* manager, Entity entity);
+internal void   entity_add_component(EntityManager* manager, Entity entity, ComponentType type);
+internal void*  entity_add_component_ref_internal(EntityManager* manager, Entity entity, ComponentType type);
+#define entity_add_component_ref(entity_manager, entity, component_type) ((component_type*)entity_add_component_ref_internal(entity_manager, entity, CT_##component_type))
 internal void               entity_add_components(EntityManager* manager, Entity entity, ComponentTypeField components);
 internal void               entity_remove_components(EntityManager* manager, Entity entity, ComponentTypeField components);
 internal void               entity_remove_component(EntityManager* manager, Entity entity, ComponentType type);
