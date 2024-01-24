@@ -214,6 +214,7 @@ internal Range  range(float32 min, float32 max);
 /* Basic Operations */
 internal Vec2 add_vec2(Vec2 a, Vec2 b);
 internal Vec2 add_vec2_f32(Vec2 a, float32 b);
+internal Vec3 add_vec3(Vec3 a, Vec3 b);
 internal Vec4 add_vec4(Vec4 a, Vec4 b);
 internal Vec2 sub_vec2(Vec2 a, Vec2 b);
 internal Vec3 sub_vec3(Vec3 a, Vec3 b);
@@ -228,6 +229,7 @@ internal Vec2 div_vec2_f32(Vec2 a, float32 b);
 
 internal float32 lerp_f32(float32 a, float32 b, float32 t);
 internal Vec2    lerp_vec2(Vec2 a, Vec2 b, float32 t);
+internal Vec3    lerp_vec3(Vec3 a, Vec3 b, float32 t);
 internal Vec4    lerp_vec4(Vec4 a, Vec4 b, float32 t);
 internal Rect    lerp_rect(Rect a, Rect b, float32 t);
 

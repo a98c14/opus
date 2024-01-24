@@ -190,6 +190,16 @@ add_vec2(Vec2 a, Vec2 b)
     return result;
 }
 
+internal Vec3
+add_vec3(Vec3 a, Vec3 b)
+{
+    Vec3 result;
+    result.x = a.x + b.x;
+    result.y = a.y + b.y;
+    result.z = a.z + b.z;
+    return result;
+}
+
 internal Vec2
 add_vec2_f32(Vec2 a, float32 b)
 {
@@ -338,6 +348,16 @@ lerp_vec2(Vec2 a, Vec2 b, float32 t)
     Vec2 result;
     result.x = (a.x * (1 - t)) + (b.x * t);
     result.y = (a.y * (1 - t)) + (b.y * t);
+    return result;
+}
+
+internal Vec3
+lerp_vec3(Vec3 a, Vec3 b, float32 t)
+{
+    Vec3 result;
+    result.x = (a.x * (1 - t)) + (b.x * t);
+    result.y = (a.y * (1 - t)) + (b.y * t);
+    result.z = (a.z * (1 - t)) + (b.z * t);
     return result;
 }
 
