@@ -457,6 +457,15 @@ component_data_ref_internal(EntityManager* entity_manager, Entity entity, Compon
     return component_data;
 }
 
+internal void
+component_copy(EntityManager* entity_manager, Entity src, Entity dst, ComponentType component_type)
+{
+    usize component_size = entity_manager->type_manager->component_sizes[component_type];
+    void* src_ref        = component_data_ref_internal(entity_manager, src, component_type);
+    void* dst_ref        = component_data_ref_internal(entity_manager, dst, component_type);
+    memcpy(dst_ref, src_ref, component_size);
+}
+
 /** Entity Query */
 internal EntityQuery
 entity_query_default()
