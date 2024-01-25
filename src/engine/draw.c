@@ -124,6 +124,15 @@ draw_line(Vec2 start, Vec2 end, Color color, float32 thickness, SortLayerIndex l
 }
 
 internal void
+draw_line_2(Vec2 start, Vec2 end, Color color, float32 thickness, FrameBufferIndex frame_buffer_index, SortLayerIndex layer)
+{
+    RenderKey  key                                              = render_key_new(ViewTypeWorld, layer, frame_buffer_index, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line);
+    DrawBuffer draw_buffer                                      = renderer_buffer_request(g_draw_context->renderer, key, 1);
+    draw_buffer.model_buffer[0]                                 = transform_line(start, end, thickness);
+    ((ShaderDataLine*)draw_buffer.uniform_data_buffer)[0].color = color_to_vec4(color);
+}
+
+internal void
 draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness, SortLayerIndex layer)
 {
     xassert(length > 0, "Line length needs to be larger than 0 for `transform_line_rotated`");

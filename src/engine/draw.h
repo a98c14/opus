@@ -117,6 +117,7 @@ internal void draw_context_activate_atlas(SpriteAtlas* atlas);
 
 /* Draw Functions */
 internal void draw_line(Vec2 start, Vec2 end, Color color, float32 thickness, SortLayerIndex layer);
+internal void draw_line_2(Vec2 start, Vec2 end, Color color, float32 thickness, FrameBufferIndex frame_buffer_index, SortLayerIndex layer);
 internal void draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness, SortLayerIndex layer);
 internal void draw_arrow(Vec2 position, float32 length, float32 angle, Color color, float32 thickness, SortLayerIndex layer);
 internal void draw_debug_line(Vec2 start, Vec2 end, Color color, SortLayerIndex layer);
