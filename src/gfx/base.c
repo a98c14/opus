@@ -433,7 +433,7 @@ renderer_get_material_buffer(Renderer* renderer, RenderKey key, uint32 available
         }
     }
 
-    xassert(buffer->key == key, "`MaterialDrawBuffer` could not be found");
+    xassert(buffer && buffer->key == key, "`MaterialDrawBuffer` could not be found");
     return buffer;
 }
 
