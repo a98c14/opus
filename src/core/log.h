@@ -1,23 +1,27 @@
 #pragma once
 
-#include "defines.h"
 #include "asserts.h"
 #include "datetime.h"
-#include <stdio.h>
+#include "defines.h"
 #include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 #include <vadefs.h>
 
+#if DEBUG == 0
+#define LOG_TO_FILE 1
+#else
 #define LOG_TO_FILE 0
-#define LOG_TO_CONSOLE 1
+#endif
+#define LOG_TO_CONSOLE         1
 #define LOG_MESSAGE_SIZE_LIMIT 32000
 
-#define LOG_WARN_ENABLED 1
-#define LOG_INFO_ENABLED 1
+#define LOG_WARN_ENABLED  1
+#define LOG_INFO_ENABLED  1
 #define LOG_DEBUG_ENABLED 1
 #define LOG_TRACE_ENABLED 0 // Warning: Emits a lot of logs, best to enable while debugging
 
-typedef enum 
+typedef enum
 {
     LogLevelFatal,
     LogLevelError,
@@ -27,7 +31,7 @@ typedef enum
     LogLevelTrace,
 } LogLevel;
 
-internal void 
+internal void
 log_output(LogLevel level, const char* message, ...);
 
 internal bool32 logger_init();

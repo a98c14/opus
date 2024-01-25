@@ -4,7 +4,7 @@
 #include <ecs/component.h>
 
 typedef uint16 EntityEventType;
-#define ENTITY_EVENT_BUFFER_CAPACITY 256
+#define ENTITY_EVENT_BUFFER_CAPACITY 512
 
 enum
 {
