@@ -117,7 +117,8 @@ draw_context_activate_atlas(SpriteAtlas* atlas)
 internal void
 draw_line(Vec2 start, Vec2 end, Color color, float32 thickness, SortLayerIndex layer)
 {
-    DrawBuffer draw_buffer                                      = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line, 1);
+    RenderKey  key                                              = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line);
+    DrawBuffer draw_buffer                                      = renderer_buffer_request(g_draw_context->renderer, key, 1);
     draw_buffer.model_buffer[0]                                 = transform_line(start, end, thickness);
     ((ShaderDataLine*)draw_buffer.uniform_data_buffer)[0].color = color_to_vec4(color);
 }
@@ -126,7 +127,8 @@ internal void
 draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness, SortLayerIndex layer)
 {
     xassert(length > 0, "Line length needs to be larger than 0 for `transform_line_rotated`");
-    DrawBuffer draw_buffer                                      = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line, 1);
+    RenderKey  key                                              = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line);
+    DrawBuffer draw_buffer                                      = renderer_buffer_request(g_draw_context->renderer, key, 1);
     draw_buffer.model_buffer[0]                                 = transform_line_rotated(position, length, rotation, thickness);
     ((ShaderDataLine*)draw_buffer.uniform_data_buffer)[0].color = color_to_vec4(color);
 }
@@ -135,7 +137,8 @@ internal void
 draw_arrow(Vec2 position, float32 length, float32 angle, Color color, float32 thickness, SortLayerIndex layer)
 {
     xassert(length > 0, "Line length needs to be larger than 0 for `transform_line_rotated`");
-    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line, 1);
+    RenderKey  key         = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line);
+    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, key, 1);
 
     float32 radian = angle * PI_FLOAT32 / 180.0;
     float32 cosx   = (float32)cosf(radian) * (length / 2.0f);
@@ -148,7 +151,8 @@ draw_arrow(Vec2 position, float32 length, float32 angle, Color color, float32 th
     Mat4 arrow                                                        = transform_quad(position, vec2(thickness * 2, thickness * 2), angle - 90);
     draw_buffer.model_buffer[0]                                       = line;
     ((ShaderDataLine*)draw_buffer.uniform_data_buffer)[0].color       = color_to_vec4(color);
-    DrawBuffer draw_buffer_arrow                                      = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_triangle, g_draw_context->material_basic, 1);
+    RenderKey  arrow_key                                              = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_triangle, g_draw_context->material_basic);
+    DrawBuffer draw_buffer_arrow                                      = renderer_buffer_request(g_draw_context->renderer, arrow_key, 1);
     draw_buffer_arrow.model_buffer[0]                                 = arrow;
     ((ShaderDataLine*)draw_buffer_arrow.uniform_data_buffer)[0].color = color_to_vec4(color);
 }
@@ -156,7 +160,8 @@ draw_arrow(Vec2 position, float32 length, float32 angle, Color color, float32 th
 internal void
 draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLayerIndex sort_index)
 {
-    DrawBuffer draw_buffer                                       = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, sort_index, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_triangle, g_draw_context->material_basic, 1);
+    RenderKey  key                                               = render_key_new(ViewTypeWorld, sort_index, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_triangle, g_draw_context->material_basic);
+    DrawBuffer draw_buffer                                       = renderer_buffer_request(g_draw_context->renderer, key, 1);
     draw_buffer.model_buffer[0]                                  = transform_quad(position, vec2(size, size), rotation);
     ((ShaderDataBasic*)draw_buffer.uniform_data_buffer)[0].color = color_to_vec4(color);
 }
@@ -164,7 +169,8 @@ draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLa
 internal Rect
 draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style)
 {
-    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, view_type, sort_index, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_rounded_rect, 1);
+    RenderKey  key         = render_key_new(view_type, sort_index, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_rounded_rect);
+    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, key, 1);
     // transform_quad_aligned is much faster so if there is no need for rotation, use aligned
     if (rotation == 0)
         draw_buffer.model_buffer[0] = transform_quad_aligned(vec3_xy_z(rect.center, 0), rect.size);
@@ -191,7 +197,8 @@ draw_debug_line(Vec2 start, Vec2 end, Color color, SortLayerIndex layer)
 internal void
 draw_texture_aligned(Vec3 pos, Vec2 scale, TextureIndex texture, SortLayerIndex layer)
 {
-    DrawBuffer             draw_buffer  = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, texture, g_draw_context->geometry_quad, g_draw_context->material_basic_texture, 1);
+    RenderKey              key          = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, texture, g_draw_context->geometry_quad, g_draw_context->material_basic_texture);
+    DrawBuffer             draw_buffer  = renderer_buffer_request(g_draw_context->renderer, key, 1);
     ShaderDataBasicTexture uniform_data = (ShaderDataBasicTexture){0};
     draw_buffer_insert(&draw_buffer, transform_quad_aligned(pos, scale), &uniform_data);
 }
@@ -199,7 +206,8 @@ draw_texture_aligned(Vec3 pos, Vec2 scale, TextureIndex texture, SortLayerIndex 
 internal void
 draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness, SortLayerIndex layer)
 {
-    DrawBuffer draw_buffer      = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line, 4);
+    RenderKey  key              = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_line);
+    DrawBuffer draw_buffer      = renderer_buffer_request(g_draw_context->renderer, key, 4);
     draw_buffer.model_buffer[0] = transform_line(vec2(left, top), vec2(left, bottom), thickness);
     draw_buffer.model_buffer[1] = transform_line(vec2(left, bottom), vec2(right, bottom), thickness);
     draw_buffer.model_buffer[2] = transform_line(vec2(right, bottom), vec2(right, top), thickness);
@@ -220,13 +228,15 @@ draw_text_at(Vec2 pos, String str, Alignment alignment, StyleText style, ViewTyp
         return rect_from_wh(0, 0);
 
     pos.y += style.base_line;
-    ShaderDataText shader_data         = {0};
-    shader_data.color                  = style.color;
-    shader_data.outline_color          = style.outline_color;
-    shader_data.thickness              = style.thickness;
-    shader_data.softness               = style.softness;
-    shader_data.outline_thickness      = style.outline_thickness;
-    DrawBuffer      db                 = renderer_buffer_request(g_draw_context->renderer, view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text, str.length);
+    ShaderDataText shader_data    = {0};
+    shader_data.color             = style.color;
+    shader_data.outline_color     = style.outline_color;
+    shader_data.thickness         = style.thickness;
+    shader_data.softness          = style.softness;
+    shader_data.outline_thickness = style.outline_thickness;
+
+    RenderKey       key                = render_key_new(view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text);
+    DrawBuffer      db                 = renderer_buffer_request(g_draw_context->renderer, key, str.length);
     Rect            bounds             = text_calculate_transforms(g_draw_context->font_open_sans, str, style.font_size, pos, alignment, db.model_buffer, 0);
     ShaderDataText* shader_data_buffer = (ShaderDataText*)db.uniform_data_buffer;
     for (int i = 0; i < str.length; i++)
@@ -246,7 +256,8 @@ draw_text(Rect rect, String str, Anchor anchor, StyleText style, ViewType view_t
 
     Vec2 position = rect_get(rect, anchor.parent);
     position.y += style.base_line;
-    DrawBuffer db = renderer_buffer_request(g_draw_context->renderer, view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text, str.length);
+    RenderKey  key = render_key_new(view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->font_open_sans->texture, g_draw_context->geometry_quad, g_draw_context->material_text);
+    DrawBuffer db  = renderer_buffer_request(g_draw_context->renderer, key, str.length);
     text_calculate_transforms_v2(g_draw_context->font_open_sans, str, style.font_size, position, anchor.child, rect.w, db.model_buffer, 0);
 
     ShaderDataText shader_data    = {0};
@@ -268,7 +279,8 @@ draw_text(Rect rect, String str, Anchor anchor, StyleText style, ViewType view_t
 internal void
 draw_circle(Vec2 position, float32 radius, Color color, SortLayerIndex layer)
 {
-    DrawBuffer draw_buffer         = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_circle_instanced, 1);
+    RenderKey  key                 = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_circle_instanced);
+    DrawBuffer draw_buffer         = renderer_buffer_request(g_draw_context->renderer, key, 1);
     draw_buffer.model_buffer[0]    = transform_quad(position, vec2(radius, radius), 0);
     ShaderDataCircle* model_buffer = (ShaderDataCircle*)draw_buffer.uniform_data_buffer;
     model_buffer[0].color          = color_to_vec4(color);
@@ -278,7 +290,8 @@ draw_circle(Vec2 position, float32 radius, Color color, SortLayerIndex layer)
 internal void
 draw_circle_filled(Circle circle, Color color, SortLayerIndex layer)
 {
-    DrawBuffer draw_buffer         = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_circle_instanced, 1);
+    RenderKey  key                 = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_circle_instanced);
+    DrawBuffer draw_buffer         = renderer_buffer_request(g_draw_context->renderer, key, 1);
     draw_buffer.model_buffer[0]    = transform_quad(circle.center, vec2(circle.radius, circle.radius), 0);
     ShaderDataCircle* model_buffer = (ShaderDataCircle*)draw_buffer.uniform_data_buffer;
     model_buffer[0].color          = color_to_vec4(color);
@@ -291,7 +304,8 @@ draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Co
 {
     float32 percentage = (max_angle - min_angle) / 360.0f;
     rotation += (max_angle + min_angle) / 2;
-    DrawBuffer draw_buffer         = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_circle_instanced, 1);
+    RenderKey  key                 = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_circle_instanced);
+    DrawBuffer draw_buffer         = renderer_buffer_request(g_draw_context->renderer, key, 1);
     draw_buffer.model_buffer[0]    = transform_quad(position, vec2(radius, radius), rotation);
     ShaderDataCircle* model_buffer = (ShaderDataCircle*)draw_buffer.uniform_data_buffer;
     model_buffer[0].color          = color_to_vec4(color);
@@ -302,7 +316,8 @@ draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Co
 internal void
 draw_boid(Vec2 position, float32 rotation, float32 size, Color color, SortLayerIndex layer)
 {
-    DrawBuffer draw_buffer      = renderer_buffer_request(g_draw_context->renderer, ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_boid, 1);
+    RenderKey  key              = render_key_new(ViewTypeWorld, layer, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_boid);
+    DrawBuffer draw_buffer      = renderer_buffer_request(g_draw_context->renderer, key, 1);
     draw_buffer.model_buffer[0] = transform_quad(position, vec2(size, size * 1.4), 90 + rotation);
 
     ((ShaderDataBoid*)draw_buffer.uniform_data_buffer)[0].color = color_to_vec4(color);
@@ -312,7 +327,8 @@ internal void
 draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color)
 {
     xassert(g_draw_context->sprite_atlas, "`g_draw_context->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
-    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->sprite_atlas->texture, g_draw_context->geometry_quad, g_draw_context->material_sprite, 1);
+    RenderKey  key         = render_key_new(view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, g_draw_context->sprite_atlas->texture, g_draw_context->geometry_quad, g_draw_context->material_sprite);
+    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, key, 1);
     Sprite     sprite_data = g_draw_context->sprite_atlas->sprites[sprite];
 
     Vec2 pivot                     = sprite_get_pivot(sprite_data, vec2(scale, scale), vec2_one());

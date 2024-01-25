@@ -1,8 +1,5 @@
 #include "base.h"
-#include <core/log.h>
-#include <core/math.h>
-#include <core/memory.h>
-#include <core/strings.h>
+#include <gfx/base.h>
 
 internal Renderer*
 renderer_new(Arena* arena, RendererConfiguration* configuration)
@@ -105,6 +102,7 @@ camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane,
     Camera result;
     result.projection    = mat4_ortho(width, height, near_plane, far_plane);
     result.view          = mat4_identity();
+    result.inverse_view  = mat4_identity();
     result.world_width   = width;
     result.world_height  = height;
     result.window_width  = window_width;
@@ -264,14 +262,30 @@ texture_update(Renderer* renderer, TextureIndex texture, void* data)
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture_data->width, texture_data->height, texture_data->format, GL_UNSIGNED_BYTE, data);
 }
 
-internal MaterialDrawBuffer*
-renderer_get_material_buffer(Renderer* renderer, ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, uint32 available_space)
+internal RenderKey
+render_key_new(ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index)
 {
     xassert(view_type < 4, "invalid view_type value provided");
-    uint64                  key           = ((uint64)sort_layer << 34) + ((uint64)layer << 26) + ((uint64)view_type << 24) + ((uint64)texture << 16) + ((uint64)geometry << 8) + ((uint64)material_index << 0);
-    MaterialDrawBufferIndex initial_index = hash_uint64(key) % MATERIAL_DRAW_BUFFER_CAPACITY;
+    RenderKey result = ((uint64)sort_layer << RenderKeySortLayerIndexBitStart) +
+                       ((uint64)layer << RenderKeyFrameBufferIndexBitStart) +
+                       ((uint64)view_type << RenderKeyViewTypeBitStart) +
+                       ((uint64)texture << RenderKeyTextureIndexBitStart) +
+                       ((uint64)geometry << RenderKeyGeometryIndexBitStart) +
+                       ((uint64)material_index << RenderKeyMaterialIndexBitStart);
+    return result;
+}
 
-    MaterialDrawBuffer* buffer = NULL;
+internal uint64
+render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count)
+{
+    return (key >> bit_start) & ((1 << bit_count) - 1);
+}
+
+internal MaterialDrawBuffer*
+renderer_get_material_buffer(Renderer* renderer, RenderKey key, uint32 available_space)
+{
+    MaterialDrawBufferIndex initial_index = hash_uint64(key) % MATERIAL_DRAW_BUFFER_CAPACITY;
+    MaterialDrawBuffer*     buffer        = NULL;
     for (int16 draw_buffer_index = initial_index; draw_buffer_index < initial_index + MATERIAL_DRAW_BUFFER_MAX_PROBE; draw_buffer_index++)
     {
         int32 probe_count = draw_buffer_index - initial_index;
@@ -297,6 +311,13 @@ renderer_get_material_buffer(Renderer* renderer, ViewType view_type, SortLayerIn
             renderer->stat_probe_count_sum += probe_count;
             renderer->stat_probe_count++;
 
+            MaterialIndex    material_index = render_key_mask(key, RenderKeyMaterialIndexBitStart, RenderKeyMaterialIndexBitCount);
+            FrameBufferIndex layer          = render_key_mask(key, RenderKeyFrameBufferIndexBitStart, RenderKeyFrameBufferIndexBitCount);
+            ViewType         view_type      = render_key_mask(key, RenderKeyViewTypeBitStart, RenderKeyViewTypeBitCount);
+            SortLayerIndex   sort_layer     = render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);
+            TextureIndex     texture        = render_key_mask(key, RenderKeyTextureIndexBitStart, RenderKeyTextureIndexBitCount);
+            GeometryIndex    geometry       = render_key_mask(key, RenderKeyGeometryIndexBitStart, RenderKeyGeometryIndexBitCount);
+
             log_debug("initializing material buffer, sort:%d layer:%d view:%d texture:%d geometry:%d material:%d buffer_index:%03d instanced:%d", sort_layer, layer, view_type, texture, geometry, material_index, draw_buffer_index, renderer->materials[material_index].is_instanced);
             const Material* material = &renderer->materials[material_index];
             xassert(material->is_initialized, "material isn't initialized");
@@ -309,7 +330,7 @@ renderer_get_material_buffer(Renderer* renderer, ViewType view_type, SortLayerIn
 
             // find layer buffer
             int32 layer_buffer_index = -1;
-            for (int j = 0; j < renderer->draw_state->layer_count; j++)
+            for (uint32 j = 0; j < renderer->draw_state->layer_count; j++)
             {
                 FrameBufferIndex layer_index = renderer->draw_state->layer_draw_buffers[j].layer_index;
                 if (layer_index == layer)
@@ -418,18 +439,19 @@ renderer_get_material_buffer(Renderer* renderer, ViewType view_type, SortLayerIn
 
 /* queues N elements from underlying draw buffer and returns the addresses. If N is larger than `MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY` use `renderer_buffer_request_batched` instead */
 internal DrawBuffer
-renderer_buffer_request(Renderer* renderer, ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, uint32 count)
+renderer_buffer_request(Renderer* renderer, RenderKey key, uint32 count)
 {
     xassert(count > 0, "requested render buffer can not have 0 size");
     xassert(count < MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY, "requested render buffer can not be larger than max element capacity, use `renderer_buffer_request_batched` instead");
 
-    MaterialDrawBuffer* buffer   = renderer_get_material_buffer(renderer, view_type, sort_layer, layer, texture, geometry, material_index, count);
-    const Material*     material = &renderer->materials[material_index];
-    DrawBuffer          result   = {0};
-    result.capacity              = min(count, MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY - buffer->element_count);
-    result.model_buffer          = buffer->model_buffer + buffer->element_count;
-    result.uniform_data_buffer   = (uint8*)buffer->shader_data_buffer + (buffer->element_count * material->uniform_data_size);
-    result.uniform_data_size     = material->uniform_data_size;
+    MaterialDrawBuffer* buffer         = renderer_get_material_buffer(renderer, key, count);
+    MaterialIndex       material_index = render_key_mask(key, RenderKeyMaterialIndexBitStart, RenderKeyMaterialIndexBitCount);
+    const Material*     material       = &renderer->materials[material_index];
+    DrawBuffer          result         = {0};
+    result.capacity                    = min(count, MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY - buffer->element_count);
+    result.model_buffer                = buffer->model_buffer + buffer->element_count;
+    result.uniform_data_buffer         = (uint8*)buffer->shader_data_buffer + (buffer->element_count * material->uniform_data_size);
+    result.uniform_data_size           = material->uniform_data_size;
     buffer->element_count += count;
     xassert(result.capacity > 0, "material draw buffer is at maximum capacity, can not reserve more elements");
     return result;
@@ -437,7 +459,7 @@ renderer_buffer_request(Renderer* renderer, ViewType view_type, SortLayerIndex s
 
 /* queues N elements from underyling draw buffers in batches and returns the addresses. */
 internal DrawBufferArray*
-renderer_buffer_request_batched(Arena* arena, Renderer* renderer, ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, uint32 count)
+renderer_buffer_request_batched(Arena* arena, Renderer* renderer, RenderKey key, uint32 count)
 {
     uint32           capacity = 1 + (count / MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY);
     DrawBufferArray* result   = arena_push_struct_zero(arena, DrawBufferArray);
@@ -449,11 +471,18 @@ renderer_buffer_request_batched(Arena* arena, Renderer* renderer, ViewType view_
     while (remaining > 0)
     {
         uint32 batch_size               = min(MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY - 1, remaining);
-        result->elements[result->count] = renderer_buffer_request(renderer, view_type, sort_layer, layer, texture, geometry, material_index, count);
+        result->elements[result->count] = renderer_buffer_request(renderer, key, count);
         remaining -= batch_size;
         result->count++;
     }
     return result;
+}
+
+internal void
+renderer_buffer_queue_single(Renderer* renderer, RenderKey key, Vec3 position, Vec2 scale, void* uniform_data)
+{
+    DrawBuffer draw_buffer = renderer_buffer_request(renderer, key, 1);
+    draw_buffer_insert(&draw_buffer, transform_quad_aligned(position, scale), &uniform_data);
 }
 
 internal bool32
@@ -483,6 +512,12 @@ frame_buffer_begin(FrameBuffer* frame_buffer)
     glViewport(0, 0, frame_buffer->width, frame_buffer->height);
     glClearColor(frame_buffer->clear_color.x, frame_buffer->clear_color.y, frame_buffer->clear_color.z, frame_buffer->clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+internal TextureIndex
+frame_buffer_texture(Renderer* renderer, FrameBufferIndex frame_buffer_index)
+{
+    return renderer->frame_buffers[frame_buffer_index].texture_index;
 }
 
 internal FrameBufferIndex
@@ -662,7 +697,14 @@ texture_shader_data_set(Renderer* renderer, const Texture* texture)
 internal void
 camera_move(Renderer* renderer, Vec2 position)
 {
-    renderer->camera.view = mat4_inverse(mat4_translation(vec3_xy_z(position, 0)));
+    renderer->camera.inverse_view = mat4_translation(vec3_xy_z(position, 0));
+    renderer->camera.view         = mat4_inverse(renderer->camera.inverse_view);
+}
+
+internal Vec3
+camera_position(Renderer* renderer)
+{
+    return renderer->camera.inverse_view.columns[3].xyz;
 }
 
 internal float32
