@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 /* Arena Functions */
 #define DEFAULT_RESERVE_SIZE mb(256)
 #define COMMIT_BLOCK_SIZE    mb(64)
@@ -37,6 +36,7 @@ internal ArenaTemp arena_begin_temp(Arena* arena);
 internal void      arena_end_temp(ArenaTemp temp);
 
 #define arena_push_array(arena, type, count)                         (type*)arena_push((arena), sizeof(type) * (count))
+#define arena_push_array_aligned(arena, type, count, alignment)      (type*)arena_push_aligned((arena), sizeof(type) * (count), alignment)
 #define arena_push_array_zero(arena, type, count)                    (type*)arena_push_zero((arena), sizeof(type) * (count))
 #define arena_push_array_zero_aligned(arena, type, count, alignment) (type*)arena_push_zero_aligned((arena), sizeof(type) * (count), alignment)
 #define arena_push_struct(arena, type)                               arena_push_array((arena), type, 1)
