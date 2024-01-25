@@ -225,6 +225,7 @@ internal Mat3 mul_mat3(Mat3 a, Mat3 b);
 internal Vec2 mul_mat2_vec2(Mat2 m, Vec2 v);
 internal Vec3 mul_mat3_vec3(Mat3 m, Vec3 v);
 internal Mat4 mul_mat4(Mat4 a, Mat4 b);
+internal Vec4 mul_mat4_vec4(Mat4 m, Vec4 v);
 internal Vec2 div_vec2_f32(Vec2 a, float32 b);
 
 internal float32 lerp_f32(float32 a, float32 b, float32 t);

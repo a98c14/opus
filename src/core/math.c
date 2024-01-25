@@ -327,6 +327,12 @@ mul_mat4(Mat4 a, Mat4 b)
     return result;
 }
 
+internal Vec4
+mul_mat4_vec4(Mat4 m, Vec4 v)
+{
+    return linear_combine_v4_m4(v, m);
+}
+
 internal Vec2
 div_vec2_f32(Vec2 a, float32 b)
 {

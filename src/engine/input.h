@@ -25,5 +25,6 @@ typedef struct
 internal Vec2       mouse_world_position(Vec2 raw_mouse_pos, Camera camera);
 internal InputMouse input_mouse_get(Window* window, Camera camera, InputMouse prev_state);
 internal bool32     input_mouse_pressed(InputMouse mouse, MouseButtonState state);
+internal bool32     input_mouse_held(InputMouse mouse, MouseButtonState state);
 internal bool32     input_mouse_released(InputMouse mouse, MouseButtonState state);
 internal bool32     input_key_pressed(Window* window, uint16 key);
