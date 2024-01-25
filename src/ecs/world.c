@@ -444,10 +444,11 @@ component_data_exists_internal(EntityManager* entity_manager, Entity entity, Com
 internal void*
 component_data_ref_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type)
 {
-    World*        world     = entity_manager->world;
-    EntityAddress address   = world->entity_addresses[entity.index];
-    Chunk*        chunk     = &world->chunks[address.chunk_index];
-    Archetype*    archetype = &world->archetypes[chunk->archetype_index];
+    World*        world   = entity_manager->world;
+    EntityAddress address = world->entity_addresses[entity.index];
+    xassert(!entity_address_is_null(address), "given entity is not valid");
+    Chunk*     chunk     = &world->chunks[address.chunk_index];
+    Archetype* archetype = &world->archetypes[chunk->archetype_index];
     xassert(chunk->entities[address.chunk_internal_index].version == entity.version, "given entity is not the same as the one in chunk");
 
     int32 component_index = archetype->component_buffer_index_map[component_type];
