@@ -39,33 +39,33 @@ internal bool32 logger_init();
 internal void logger_flush();
 
 #ifndef log_fatal
-#define log_fatal(message, ...) log_output(LogLevelFatal, message, ##__VA_ARGS__);
+#define log_fatal(message, ...) log_output(LogLevelFatal, message, ##__VA_ARGS__)
 #endif
 
 #ifndef log_error
-#define log_error(message, ...) log_output(LogLevelError, message, ##__VA_ARGS__);
+#define log_error(message, ...) log_output(LogLevelError, message, ##__VA_ARGS__)
 #endif
 
 #if LOG_WARN_ENABLED == 1
-#define log_warn(message, ...) log_output(LogLevelWarn, message, ##__VA_ARGS__);
+#define log_warn(message, ...) log_output(LogLevelWarn, message, ##__VA_ARGS__)
 #else
 #define log_warn(message, ...)
 #endif
 
 #if LOG_INFO_ENABLED == 1
-#define log_info(message, ...) log_output(LogLevelInfo, message, ##__VA_ARGS__);
+#define log_info(message, ...) log_output(LogLevelInfo, message, ##__VA_ARGS__)
 #else
 #define log_info(message, ...)
 #endif
 
 #if LOG_DEBUG_ENABLED == 1
-#define log_debug(message, ...) log_output(LogLevelDebug, message, ##__VA_ARGS__);
+#define log_debug(message, ...) log_output(LogLevelDebug, message, ##__VA_ARGS__)
 #else
 #define log_debug(message, ...)
 #endif
 
 #if LOG_TRACE_ENABLED == 1
-#define log_trace(message, ...) log_output(LogLevelTrace, message, ##__VA_ARGS__);
+#define log_trace(message, ...) log_output(LogLevelTrace, message, ##__VA_ARGS__)
 #else
 #define log_trace(message, ...)
 #endif

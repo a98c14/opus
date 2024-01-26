@@ -1,6 +1,7 @@
 #include "random.h"
 #include <pcg/pcg_basic.c>
 
+// TODO(selim): add non-global random functions
 internal void
 random_init(uint64 seed)
 {
@@ -12,6 +13,12 @@ random_between_f32(float32 min, float32 max)
 {
     const float32 resolution = 8192.0f;
     return min + pcg32_boundedrand_r(&g_rng, resolution * (max - min)) / resolution;
+}
+
+internal int32
+random_between_i32(int32 min, int32 max)
+{
+    return min + pcg32_boundedrand_r(&g_rng, (max - min));
 }
 
 internal float32

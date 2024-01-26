@@ -33,6 +33,15 @@
 #define lengthof(s)                              (countof(s) - 1)
 #define align_pow2(number, alignment)            ((number + alignment - 1) & ~(alignment - 1))
 
+#define defer_loop(begin, end)         for (int _i_ = ((begin), 0); !_i_; _i_ += 1, (end))
+#define defer_loop_checked(begin, end) for (int _i_ = 2 * !(begin); (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
+
+#if COMPILER_MSVC && COMPILER_MSVC_YEAR < 2015
+#define this_function_name "unknown"
+#else
+#define this_function_name __func__
+#endif
+
 #define stringify(value) #value
 #define statement(statement) \
     do                       \
