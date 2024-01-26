@@ -146,6 +146,7 @@ typedef union
 } Mat4;
 
 /* Misc */
+// TODO(selim): delete this, use rect instead
 typedef union
 {
     struct

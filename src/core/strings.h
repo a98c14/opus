@@ -14,6 +14,11 @@
         (char*)s, lengthof(s) \
     }
 
+#define string_comp(s)         \
+    {                          \
+        (char*)s, lengthof(s), \
+    }
+
 typedef struct
 {
     char*  value;
