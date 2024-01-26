@@ -291,6 +291,7 @@ internal Vec2    rect_cr(Rect rect);
 internal Vec2    rect_cb(Rect rect);
 internal Vec2    rect_ct(Rect rect);
 
+internal Bounds bounds_shrink(Bounds bounds, Vec2 amount);
 internal Bounds bounds_from_circle(Circle c);
 
 internal void b32_flip(bool32* b);

@@ -793,6 +793,17 @@ b32_flip(bool32* b)
 }
 
 internal Bounds
+bounds_shrink(Bounds bounds, Vec2 amount)
+{
+    Bounds result = bounds;
+    result.bl.x += amount.x / 2.0;
+    result.bl.y += amount.y / 2.0;
+    result.tr.x -= amount.x / 2.0;
+    result.tr.y -= amount.y / 2.0;
+    return result;
+}
+
+internal Bounds
 bounds_from_circle(Circle c)
 {
     Bounds result;
