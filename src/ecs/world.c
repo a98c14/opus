@@ -118,7 +118,7 @@ chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint3
         int32 component_buffer_index = archetype->component_buffer_index_map[component_index];
 
         chunk->data_buffers[component_buffer_index].type = component_index;
-        chunk->data_buffers[component_buffer_index].data = arena_push_zero_aligned(manager->persistent_arena, component_size * capacity, 16);
+        chunk->data_buffers[component_buffer_index].data = arena_push_zero(manager->persistent_arena, component_size * capacity);
     }
 
     world->chunk_components[chunk_index] = components;

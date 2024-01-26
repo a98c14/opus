@@ -27,7 +27,7 @@ uuid_is_null(UIID id)
 internal UIContext*
 ui_context_new(Arena* arena)
 {
-    UIContext* ctx        = arena_push_struct_zero_aligned(arena, UIContext, 16);
+    UIContext* ctx        = arena_push_struct_zero(arena, UIContext);
     ctx->active           = uuid_null();
     ctx->sort_layer_index = SORT_LAYER_INDEX_UI;
     return ctx;

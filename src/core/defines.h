@@ -31,6 +31,7 @@
 #define alignof(x)                               (usize) _Alignof(x)
 #define countof(a)                               (sizeof(a) / sizeof(*(a)))
 #define lengthof(s)                              (countof(s) - 1)
+#define align_pow2(number, alignment)            ((number + alignment - 1) & ~(alignment - 1))
 
 #define stringify(value) #value
 #define statement(statement) \
@@ -38,7 +39,6 @@
     {                        \
         statement            \
     } while (0)
-#define align_up_pow2(x, p) (((x) + (p)-1) & ~((p)-1))
 
 #define kb(x) ((x) << 10)
 #define mb(x) ((x) << 20)

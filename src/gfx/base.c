@@ -4,11 +4,11 @@
 internal Renderer*
 renderer_new(Arena* arena, RendererConfiguration* configuration)
 {
-    Renderer* renderer      = arena_push_struct_zero_aligned(arena, Renderer, 16);
+    Renderer* renderer      = arena_push_struct_zero(arena, Renderer);
     renderer->arena         = arena;
     renderer->window_width  = configuration->window_width;
     renderer->window_height = configuration->window_height;
-    renderer->frame_buffers = arena_push_array_zero_aligned(arena, FrameBuffer, LAYER_CAPACITY, 16);
+    renderer->frame_buffers = arena_push_array_zero(arena, FrameBuffer, LAYER_CAPACITY);
     renderer->materials     = arena_push_array_zero(arena, Material, MATERIAL_CAPACITY);
     renderer->textures      = arena_push_array_zero(arena, Texture, TEXTURE_CAPACITY);
     renderer->geometries    = arena_push_array_zero(arena, Geometry, GEOMETRY_CAPACITY);
@@ -87,7 +87,7 @@ internal RendererDrawState*
 renderer_draw_state_new(Arena* arena)
 {
     RendererDrawState* draw_state     = arena_push_struct_zero(arena, RendererDrawState);
-    draw_state->material_draw_buffers = arena_push_array_zero_aligned(arena, MaterialDrawBuffer, MATERIAL_DRAW_BUFFER_CAPACITY, 16);
+    draw_state->material_draw_buffers = arena_push_array_zero(arena, MaterialDrawBuffer, MATERIAL_DRAW_BUFFER_CAPACITY);
     for (int i = 0; i < MATERIAL_DRAW_BUFFER_CAPACITY; i++)
     {
         draw_state->material_draw_buffers[i].key = MATERIAL_DRAW_BUFFER_EMPTY_KEY;
@@ -325,8 +325,8 @@ renderer_get_material_buffer(Renderer* renderer, RenderKey key, uint32 available
             buffer->key                = key;
             buffer->element_count      = 0;
             buffer->material_index     = material_index;
-            buffer->model_buffer       = arena_push_array_zero_aligned(renderer->arena, Mat4, MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY, 16);
-            buffer->shader_data_buffer = arena_push_zero_aligned(renderer->arena, MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY * material->uniform_data_size, 16);
+            buffer->model_buffer       = arena_push_array_zero(renderer->arena, Mat4, MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY);
+            buffer->shader_data_buffer = arena_push_zero(renderer->arena, MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY * material->uniform_data_size);
 
             // find layer buffer
             int32 layer_buffer_index = -1;
@@ -463,7 +463,7 @@ renderer_buffer_request_batched(Arena* arena, Renderer* renderer, RenderKey key,
 {
     uint32           capacity = 1 + (count / MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY);
     DrawBufferArray* result   = arena_push_struct_zero(arena, DrawBufferArray);
-    result->elements          = arena_push_array_zero_aligned(arena, DrawBuffer, capacity, 16);
+    result->elements          = arena_push_array_zero(arena, DrawBuffer, capacity);
     result->count             = 0;
     result->index             = 0;
 

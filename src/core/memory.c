@@ -31,7 +31,8 @@ arena_push(Arena* arena, uint64 size)
     void* result = 0;
     if (arena->pos + size <= arena->cap)
     {
-        result = ((uint8*)arena) + arena->pos;
+        arena->pos = align_pow2(arena->pos, 16);
+        result     = ((uint8*)arena) + arena->pos;
         arena->pos += size;
     }
     return result;
@@ -41,28 +42,6 @@ internal void*
 arena_push_zero(Arena* arena, uint64 size)
 {
     void* result = arena_push(arena, size);
-    memset(result, 0, size);
-    return result;
-}
-
-internal void*
-arena_push_aligned(Arena* arena, uint64 size, uint8 alignment)
-{
-    void* result = 0;
-    if (arena->pos + size <= arena->cap)
-    {
-        // TODO(selim): is there bitwise operator that aligns this automatically?
-        arena->pos += arena->pos % alignment != 0 ? alignment - (arena->pos % alignment) : 0;
-        result = ((uint8*)arena) + arena->pos;
-        arena->pos += size;
-    }
-    return result;
-}
-
-internal void*
-arena_push_zero_aligned(Arena* arena, uint64 size, uint8 alignment)
-{
-    void* result = arena_push_aligned(arena, size, alignment);
     memset(result, 0, size);
     return result;
 }
