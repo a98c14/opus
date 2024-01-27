@@ -42,6 +42,7 @@ struct EntityNode
 {
     Entity value;
 
+    EntityNode* prev;
     EntityNode* next;
 };
 
@@ -49,8 +50,9 @@ typedef struct EntityList EntityList;
 
 struct EntityList
 {
-    uint16      count;
-    uint16      capacity;
+    uint16 count;
+    uint16 capacity;
+
     EntityNode* first;
     EntityNode* last;
 };
