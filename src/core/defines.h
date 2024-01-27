@@ -93,6 +93,7 @@ typedef int32_t bool;
 #define queue_pop_nz(f, l, next, zset)                 ((f) == (l) ? (zset(f), zset(l)) : ((f) = (f)->next))
 #define stack_push_n(f, n, next)                       ((n)->next = (f), (f) = (n))
 #define stack_pop_nz(f, next, zchk)                    (zchk(f) ? 0 : ((f) = (f)->next))
+#define stack_pop_n(f, next)                           ((f) = (f)->next)
 
 #define dll_insert_npz(f, l, p, n, next, prev, zchk, zset)                                                                                                          \
     (zchk(f) ? (((f) = (l) = (n)), zset((n)->next), zset((n)->prev)) : zchk(p) ? (zset((n)->prev), (n)->next = (f), (zchk(f) ? (0) : ((f)->prev = (n))), (f) = (n)) \
