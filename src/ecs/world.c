@@ -249,6 +249,43 @@ entity_destroy(EntityManager* manager, Entity entity)
 }
 
 internal void
+entity_activate(EntityManager* manager, Entity entity)
+{
+    World* world = manager->world;
+    if (!component_data_exists_internal(manager, entity, CTT_InactiveComponent))
+        return;
+
+    component_remove(manager, entity, CTT_InactiveComponent);
+    EntityList* children = &world->entity_children[entity.index];
+    if (children->count > 0)
+    {
+        EntityNode* child = children->first;
+        while (child && child->value.version > 0)
+        {
+            component_remove(manager, child->value, CTT_InactiveComponent);
+            child = child->next;
+        }
+    }
+}
+
+internal void
+entity_deactivate(EntityManager* manager, Entity entity)
+{
+    World* world = manager->world;
+    component_add(manager, entity, CTT_InactiveComponent);
+    EntityList* children = &world->entity_children[entity.index];
+    if (children->count > 0)
+    {
+        EntityNode* child = children->first;
+        while (child && child->value.version > 0)
+        {
+            component_add(manager, child->value, CTT_InactiveComponent);
+            child = child->next;
+        }
+    }
+}
+
+internal void
 component_add_many(EntityManager* manager, Entity entity, ComponentTypeField components)
 {
     World*        world           = manager->world;
