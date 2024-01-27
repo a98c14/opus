@@ -707,6 +707,13 @@ camera_position(Renderer* renderer)
     return renderer->camera.inverse_view.columns[3].xyz;
 }
 
+internal Rect
+camera_world_bounds(Camera camera)
+{
+    Vec2 camera_position = camera.inverse_view.columns[3].xy;
+    return rect(camera_position.x, camera_position.y, camera.world_width, camera.world_height);
+}
+
 internal float32
 px(float32 u)
 {

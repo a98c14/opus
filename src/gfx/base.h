@@ -323,6 +323,7 @@ internal void                texture_shader_data_set(Renderer* renderer, const T
 internal Camera camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
 internal void   camera_move(Renderer* renderer, Vec2 position);
 internal Vec3   camera_position(Renderer* renderer);
+internal Rect   camera_world_bounds(Camera camera);
 
 /* converts the unit value to actual screen pixel*/
 internal float32 px(float32 u);

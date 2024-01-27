@@ -24,7 +24,7 @@ def camel_to_snake(name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Opus Component Header Generator")
-    parser.add_argument("--data", type=str, help="Component header file", required=True)
+    parser.add_argument("--data", nargs='+', type=str, help="Component header file", required=True)
     parser.add_argument("--event-data", type=str, help="Event header file")
     parser.add_argument("--out", type=str, help="Output path", required=True)
     args = parser.parse_args()
@@ -55,15 +55,16 @@ if __name__ == "__main__":
             for match in matches:
                 event_types.append(match)
         
-    with open(args.data, 'r') as data_file:
-        data_contents = data_file.read()
-        matches = re.findall(r'(?<=}\s)\w+(?=;)', data_contents)
-        for match in matches:
-            component_types.append(match)
-            
-        matches = re.findall(r'(?<=TagComponent\s)\w+(?=;)', data_contents)
-        for match in matches:
-            tag_component_types.append(match)
+    for path in args.data:
+        with open(path, 'r') as data_file:
+            data_contents = data_file.read()
+            matches = re.findall(r'(?<=}\s)\w+(?=;)', data_contents)
+            for match in matches:
+                component_types.append(match)
+                
+            matches = re.findall(r'(?<=TagComponent\s)\w+(?=;)', data_contents)
+            for match in matches:
+                tag_component_types.append(match)
         
     with open(out_header, 'w') as header_file, open(out_source, 'w') as source_file:
         # write header
@@ -87,7 +88,8 @@ if __name__ == "__main__":
         header_file.write("\ninternal void register_components(Arena* temp_arena, ComponentTypeManager* type_manager);")
             
         source_file.write("#include \"component_types.h\"\n")
-        source_file.write(f"#include \"{os.path.relpath(args.data, args.out)}\"\n")
+        for path in args.data:
+            source_file.write(f"#include \"{os.path.relpath(path, args.out)}\"\n")
         
         source_file.write("\ninternal void")
         source_file.write("\nregister_components(Arena* temp_arena, ComponentTypeManager* type_manager)\n{\n")
