@@ -1,4 +1,5 @@
 #include "prefab.h"
+#include <ecs/component.h>
 
 internal Prefab
 prefab_create(EntityManager* entity_manager, ComponentTypeField types)
@@ -22,8 +23,15 @@ prefab_create_as_child(EntityManager* entity_manager, Prefab* parent, ComponentT
 internal Entity
 prefab_instantiate(EntityManager* entity_manager, Prefab prefab)
 {
+    return prefab_instantiate_modified(entity_manager, prefab, (ComponentTypeField){0});
+}
+
+internal Entity
+prefab_instantiate_modified(EntityManager* entity_manager, Prefab prefab, ComponentTypeField additional_types)
+{
     ComponentTypeField types = entity_get_types(entity_manager, prefab.entity);
     component_type_field_unset(&types, CTT_PrefabComponent);
+    component_type_field_set_group(&types, additional_types);
     Entity entity = entity_create(entity_manager, types);
     entity_copy_data(entity_manager, prefab.entity, entity);
 
