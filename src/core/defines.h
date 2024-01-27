@@ -111,3 +111,5 @@ typedef int32_t bool;
 #define dll_push_front(f, l, n)   dll_push_back_npz(l, f, n, prev, next, check_null, set_null)
 #define dll_insert(f, l, p, n)    dll_insert_npz(f, l, p, n, next, prev, check_null, set_null)
 #define dll_remove(f, l, n)       dll_remove_npz(f, l, n, next, prev, check_null, set_null)
+
+#define for_each(n, f) for ((n = f); (n != 0); (n = n->next))
