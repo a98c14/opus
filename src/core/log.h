@@ -70,4 +70,5 @@ internal void logger_flush();
 #define log_trace(message, ...)
 #endif
 
-internal void log_assertion_failure(const char* expr, const char* message, const char* file, int32 line);
+internal void log_assertion_failure(const char* message, const char* function, const char* file, int32 line);
+internal void log_assertion_failure_expr(const char* expr, const char* message, const char* function, const char* file, int32 line);

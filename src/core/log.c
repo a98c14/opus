@@ -53,7 +53,13 @@ logger_flush()
 }
 
 internal void
-log_assertion_failure(const char* expr, const char* message, const char* file, int32 line)
+log_assertion_failure(const char* message, const char* function, const char* file, int32 line)
 {
-    log_output(LogLevelFatal, "assertion failure: %s, message: '%s', in file %s, line: %d\n", expr, message, file, line);
+    log_output(LogLevelFatal, "assertion failure, message: '%s', in function %s, in file %s, line: %d\n", message, function, file, line);
+}
+
+internal void
+log_assertion_failure_expr(const char* expr, const char* message, const char* function, const char* file, int32 line)
+{
+    log_output(LogLevelFatal, "assertion failure: %s, message: '%s', in function %s, in file %s, line: %d\n", expr, message, function, file, line);
 }
