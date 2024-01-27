@@ -129,7 +129,7 @@ ui_button(UIContext* ctx, Rect rect, UIID id, String label, StyleButton style)
     Alignment alignment = AlignmentCenter;
     Rect      inner_row = rect_shrink(rect, style.padding);
     draw_text_at(rect_relative(inner_row, alignment), label, alignment, style.font, ViewTypeScreen, ctx->sort_layer_index);
-    bool32 hover   = intersects_rect_point(rect, ctx->mouse.world);
+    bool32 hover   = intersects_rect_point(rect, ctx->mouse.screen);
     bool32 clicked = ui_is_active(ctx, id) && input_mouse_released(ctx->mouse, MouseButtonStateLeft);
     if (hover && ui_is_free(ctx) && input_mouse_pressed(ctx->mouse, MouseButtonStateLeft))
     {
