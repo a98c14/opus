@@ -18,12 +18,12 @@ typedef struct
     float32 cached_min;
     float32 cached_max;
     float32 cached_avg;
-} Profiler;
+} PerfTimer;
 
-internal Profiler* profiler_new(Arena* arena, String name);
-internal void      profiler_begin(Profiler* profiler);
-internal void      profiler_end(Profiler* profiler);
-internal float32   profiler_avg(Profiler* profiler);
-internal float32   profiler_min(Profiler* profiler);
-internal float32   profiler_max(Profiler* profiler);
-internal void      profiler_refresh_cache(Profiler* profiler);
+internal PerfTimer* perf_timer_new(Arena* arena, String name);
+internal void       perf_timer_begin(PerfTimer* profiler);
+internal void       perf_timer_end(PerfTimer* profiler);
+internal float32    perf_timer_avg(PerfTimer* profiler);
+internal float32    perf_timer_min(PerfTimer* profiler);
+internal float32    perf_timer_max(PerfTimer* profiler);
+internal void       perf_timer_refresh_cache(PerfTimer* profiler);

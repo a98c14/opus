@@ -41,3 +41,6 @@
 #include <ecs/events.h>
 #include <ecs/prefab.h>
 #include <ecs/world.h>
+
+//
+#include <profiler/profiler.h>

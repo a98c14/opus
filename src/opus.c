@@ -37,3 +37,6 @@
 #include <ecs/events.c>
 #include <ecs/prefab.c>
 #include <ecs/world.c>
+
+//
+#include <profiler/profiler.c>

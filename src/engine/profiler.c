@@ -1,21 +1,21 @@
 #include "profiler.h"
 
-internal Profiler*
-profiler_new(Arena* arena, String name)
+internal PerfTimer*
+perf_timer_new(Arena* arena, String name)
 {
-    Profiler* result = arena_push_struct_zero(arena, Profiler);
-    result->name     = name;
+    PerfTimer* result = arena_push_struct_zero(arena, PerfTimer);
+    result->name      = name;
     return result;
 }
 
 internal void
-profiler_begin(Profiler* profiler)
+perf_timer_begin(PerfTimer* profiler)
 {
     profiler->start[profiler->buffer_index % PROFILER_BUFFER_CAPACITY] = glfwGetTime() * 1000;
 }
 
 internal void
-profiler_end(Profiler* profiler)
+perf_timer_end(PerfTimer* profiler)
 {
     uint64 index             = profiler->buffer_index % PROFILER_BUFFER_CAPACITY;
     profiler->elapsed[index] = glfwGetTime() * 1000 - profiler->start[index];
@@ -23,7 +23,7 @@ profiler_end(Profiler* profiler)
 }
 
 internal float32
-profiler_avg(Profiler* profiler)
+perf_timer_avg(PerfTimer* profiler)
 {
     float32 sum = 0;
     for (int32 i = 0; i < PROFILER_BUFFER_CAPACITY; i++)
@@ -32,7 +32,7 @@ profiler_avg(Profiler* profiler)
 }
 
 internal float32
-profiler_min(Profiler* profiler)
+perf_timer_min(PerfTimer* profiler)
 {
     float32 min_elapsed = FLOAT32_MAX;
     for (int32 i = 0; i < PROFILER_BUFFER_CAPACITY; i++)
@@ -41,7 +41,7 @@ profiler_min(Profiler* profiler)
 }
 
 internal float32
-profiler_max(Profiler* profiler)
+perf_timer_max(PerfTimer* profiler)
 {
     float32 max_elapsed = FLOAT32_MIN;
     for (int32 i = 0; i < PROFILER_BUFFER_CAPACITY; i++)
@@ -50,9 +50,9 @@ profiler_max(Profiler* profiler)
 }
 
 internal void
-profiler_refresh_cache(Profiler* profiler)
+perf_timer_refresh_cache(PerfTimer* profiler)
 {
-    profiler->cached_min = profiler_min(profiler);
-    profiler->cached_max = profiler_max(profiler);
-    profiler->cached_avg = profiler_avg(profiler);
+    profiler->cached_min = perf_timer_min(profiler);
+    profiler->cached_max = perf_timer_max(profiler);
+    profiler->cached_avg = perf_timer_avg(profiler);
 }
