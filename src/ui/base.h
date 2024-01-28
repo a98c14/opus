@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/defines.h>
+#include <base/defines.h>
 #include <engine/draw.h>
 #include <engine/input.h>
 #include <engine/time.h>

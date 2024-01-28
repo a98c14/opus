@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/strings.h>
+#include <base/strings.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <vadefs.h>

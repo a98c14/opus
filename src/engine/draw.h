@@ -1,8 +1,8 @@
 #pragma once
 
-#include <core/defines.h>
-#include <core/file.h>
-#include <core/math.h>
+#include <base/defines.h>
+#include <base/file.h>
+#include <base/math.h>
 #include <fonts/fonts.h>
 #include <gfx/base.h>
 #include <gfx/math.h>

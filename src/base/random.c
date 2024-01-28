@@ -1,5 +1,5 @@
 #include "random.h"
-#include <core/math.h>
+#include <base/math.h>
 #include <pcg/pcg_basic.c>
 
 // TODO(selim): add non-global random functions

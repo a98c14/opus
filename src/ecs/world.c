@@ -1,6 +1,6 @@
 #include "world.h"
-#include <core/log.h>
-#include <core/memory.h>
+#include <base/log.h>
+#include <base/memory.h>
 #include <ecs/component.h>
 #include <ecs/world.h>
 

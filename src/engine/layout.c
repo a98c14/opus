@@ -1,8 +1,8 @@
 #pragma once
 
 #include "layout.h"
-#include <core/asserts.h>
-#include <core/defines.h>
+#include <base/asserts.h>
+#include <base/defines.h>
 
 internal Cut
 cut(Rect* rect, CutSide side)

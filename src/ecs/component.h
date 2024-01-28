@@ -2,11 +2,11 @@
 
 #include <intrin.h>
 
-#include <core/asserts.h>
-#include <core/defines.h>
-#include <core/log.h>
-#include <core/memory.h>
-#include <core/strings.h>
+#include <base/asserts.h>
+#include <base/defines.h>
+#include <base/log.h>
+#include <base/memory.h>
+#include <base/strings.h>
 
 #ifndef COMPONENT_COUNT
 #define COMPONENT_COUNT 1

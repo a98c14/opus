@@ -1,11 +1,10 @@
 #pragma once
-#include <core/asserts.h>
-#include <core/defines.h>
-#include <core/log.h>
-#include <core/memory.h>
+#include <base/asserts.h>
+#include <base/defines.h>
+#include <base/log.h>
+#include <base/memory.h>
 #include <gfx/base.h>
 #include <gfx/debug.h>
-
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>

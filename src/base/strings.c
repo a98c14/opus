@@ -1,6 +1,6 @@
 #include "strings.h"
-#include <core/memory.h>
-#include <core/strings.h>
+#include <base/memory.h>
+#include <base/strings.h>
 
 internal String
 string_new(Arena* arena, uint64 length)

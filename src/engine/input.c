@@ -1,5 +1,5 @@
 #include "input.h"
-#include <core/math.h>
+#include <base/math.h>
 
 internal Vec2
 mouse_world_position(Vec2 raw_mouse_pos, Camera camera)

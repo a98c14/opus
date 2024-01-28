@@ -1,5 +1,4 @@
 #include "base.h"
-#include <gfx/base.h>
 
 internal Renderer*
 renderer_new(Arena* arena, RendererConfiguration* configuration)

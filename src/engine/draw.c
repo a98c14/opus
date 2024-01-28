@@ -1,6 +1,6 @@
-#include <core/asserts.h>
-#include <core/math.h>
-#include <core/strings.h>
+#include <base/asserts.h>
+#include <base/math.h>
+#include <base/strings.h>
 #include <engine/color.h>
 #include <engine/draw.h>
 #include <engine/layout.h>

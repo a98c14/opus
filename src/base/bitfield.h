@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/defines.h>
+#include <base/defines.h>
 
 typedef uint64 BitField64;
 

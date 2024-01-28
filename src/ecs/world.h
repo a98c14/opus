@@ -1,7 +1,7 @@
 #pragma once
 
-#include <core/defines.h>
-#include <core/memory.h>
+#include <base/defines.h>
+#include <base/memory.h>
 #include <ecs/component.h>
 #include <ecs/world.h>
 

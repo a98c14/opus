@@ -1,7 +1,7 @@
 #pragma once
-#include <core/defines.h>
-#include <core/math.h>
-#include <core/strings.h>
+#include <base/defines.h>
+#include <base/math.h>
+#include <base/strings.h>
 
 #define GLFW_INCLUDE_NONE
 #include <glfw/glfw3.h>

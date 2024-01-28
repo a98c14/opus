@@ -1,11 +1,11 @@
 #pragma once
-#include <core/asserts.h>
-#include <core/defines.h>
-#include <core/hash.h>
-#include <core/log.h>
-#include <core/math.h>
-#include <core/memory.h>
-#include <core/strings.h>
+#include <base/asserts.h>
+#include <base/defines.h>
+#include <base/hash.h>
+#include <base/log.h>
+#include <base/math.h>
+#include <base/memory.h>
+#include <base/strings.h>
 #include <glad/gl.h>
 
 #include "math.h"

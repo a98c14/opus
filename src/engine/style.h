@@ -1,23 +1,30 @@
 // TODO: Move styles to `/ui` folder
 #pragma once
 
-#include <core/defines.h>
-#include <core/math.h>
 #include "layout.h"
+#include <base/defines.h>
+#include <base/math.h>
 
-typedef union 
+
+typedef union
 {
-    struct { float32 tr; float32 br; float32 tl; float32 bl; };
+    struct
+    {
+        float32 tr;
+        float32 br;
+        float32 tl;
+        float32 bl;
+    };
     Vec4 v;
 } BorderRadius;
 
 typedef struct
 {
-    Vec4 color;
-    Vec4 border_color;
+    Vec4         color;
+    Vec4         border_color;
     BorderRadius border_radius;
-    float32 softness;
-    float32 border_thickness;
+    float32      softness;
+    float32      border_thickness;
 } StyleRect;
 
 typedef struct
@@ -37,14 +44,14 @@ typedef struct
 
 typedef struct
 {
-    Vec2 margin;
-    Vec2 padding;
+    Vec2      margin;
+    Vec2      padding;
     StyleRect background;
 } StyleContainer;
 
 typedef struct
 {
-    Vec2 padding;
+    Vec2      padding;
     StyleRect background;
     StyleRect header_background;
     StyleRect header_background_hover;
@@ -53,16 +60,15 @@ typedef struct
 
 typedef struct
 {
-    Vec2 padding;
+    Vec2      padding;
     Alignment alignment;
     StyleRect background;
     StyleText font;
 } StyleLabel;
 
-
 typedef struct
 {
-    Vec2 padding;
+    Vec2      padding;
     StyleText font;
     StyleRect background;
     StyleRect background_hover;
@@ -70,7 +76,7 @@ typedef struct
 
 typedef struct
 {
-    Vec2 padding;
+    Vec2      padding;
     StyleText font;
     StyleRect background;
     StyleRect background_hover;

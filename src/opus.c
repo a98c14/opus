@@ -1,13 +1,13 @@
 
-#include <core/bitfield.c>
-#include <core/datetime.c>
-#include <core/file.c>
-#include <core/hash.c>
-#include <core/log.c>
-#include <core/math.c>
-#include <core/memory.c>
-#include <core/random.c>
-#include <core/strings.c>
+#include <base/bitfield.c>
+#include <base/datetime.c>
+#include <base/file.c>
+#include <base/hash.c>
+#include <base/log.c>
+#include <base/math.c>
+#include <base/memory.c>
+#include <base/random.c>
+#include <base/strings.c>
 
 #include <gfx/base.c>
 #include <gfx/debug.c>

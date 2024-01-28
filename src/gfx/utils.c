@@ -1,7 +1,7 @@
 #include "utils.h"
-#include <core/asserts.h>
-#include <core/memory.h>
-#include <core/strings.h>
+#include <base/asserts.h>
+#include <base/memory.h>
+#include <base/strings.h>
 #include <gfx/base.h>
 
 internal TextureIndex

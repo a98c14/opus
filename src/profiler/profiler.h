@@ -12,8 +12,8 @@
 
 
 #if PROFILE_SUPERLUMINAL
-#include <core/defines.h>
-#include <core/memory.h>
+#include <base/defines.h>
+#include <base/memory.h>
 
 #include <windows.h>
 #include <superluminal/PerformanceAPI_capi.h>

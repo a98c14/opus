@@ -1,7 +1,7 @@
 #pragma once
 
-#include <core/defines.h>
-#include <core/math.h>
+#include <base/defines.h>
+#include <base/math.h>
 #include <engine/window.h>
 #include <gfx/base.h>
 

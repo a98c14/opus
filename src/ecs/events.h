@@ -1,6 +1,6 @@
 #pragma once
 
-#include <core/defines.h>
+#include <base/defines.h>
 #include <ecs/component.h>
 
 typedef uint16 EntityEventType;

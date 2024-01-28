@@ -1,5 +1,5 @@
 #include "sprite.h"
-#include <core/memory.h>
+#include <base/memory.h>
 #include <gfx/base.h>
 
 internal SpriteAtlas*

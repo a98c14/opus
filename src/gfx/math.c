@@ -1,5 +1,5 @@
 #include "math.h"
-#include <core/math.h>
+#include <base/math.h>
 #include <gfx/sprite.h>
 
 internal Mat4

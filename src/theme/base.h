@@ -1,9 +1,9 @@
 #pragma once
-#include <core/defines.h>
-#include <core/memory.h>
+#include <base/defines.h>
+#include <base/memory.h>
 #include <engine/draw.h>
 
-typedef struct 
+typedef struct
 {
     /* padding */
     Vec2 p0;
@@ -53,13 +53,13 @@ typedef struct
 
     StyleSlider slider_default;
 
-    StyleButton button_default;
+    StyleButton       button_default;
     StyleToggleButton toggle_default;
 
     /* Global Styles */
-    Vec2 padding;
-    float32 line_height;
-    float32 spacing;
+    Vec2      padding;
+    float32   line_height;
+    float32   spacing;
     Alignment alignment;
 } Theme;
 

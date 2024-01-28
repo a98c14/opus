@@ -1,6 +1,6 @@
 #pragma once
-#include <core/asserts.h>
-#include <core/math.h>
+#include <base/asserts.h>
+#include <base/math.h>
 
 internal Mat4 mat4_mvp(Mat4 model, Mat4 view, Mat4 projection);
 

@@ -1,5 +1,5 @@
 #include "math.h"
-#include <core/math.h>
+#include <base/math.h>
 
 /* Constructors */
 internal Vec2

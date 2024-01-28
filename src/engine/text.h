@@ -3,10 +3,10 @@
 #include <string.h>
 
 #include "layout.h"
-#include <core/defines.h>
-#include <core/math.h>
-#include <core/memory.h>
-#include <core/strings.h>
+#include <base/defines.h>
+#include <base/math.h>
+#include <base/memory.h>
+#include <base/strings.h>
 #include <gfx/base.h>
 #include <gfx/math.h>
 
