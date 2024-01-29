@@ -1,29 +1,42 @@
+// clang-format off
 #pragma once
 #include <base/defines.h>
-#include <base/math.h>
-#include <base/strings.h>
+#include <base/memory.h>
 
-#define GLFW_INCLUDE_NONE
-#include <glfw/glfw3.h>
 
-#define PROFILER_BUFFER_CAPACITY 128
+#define PROFILER_COLOR_DEFAULT 0xFFFFFFFF
+#define PROFILER_COLOR_RED     0xFF0000FF
+#define PROFILER_COLOR_UPDATE  0x44BBFFFF
 
-typedef struct
-{
-    String  name;
-    uint64  buffer_index;
-    float64 start[PROFILER_BUFFER_CAPACITY];
-    float64 elapsed[PROFILER_BUFFER_CAPACITY];
+#if !defined(PROFILE_SUPERLUMINAL)
+    #define PROFILE_SUPERLUMINAL 0
+#endif
 
-    float32 cached_min;
-    float32 cached_max;
-    float32 cached_avg;
-} PerfTimer;
 
-internal PerfTimer* perf_timer_new(Arena* arena, String name);
-internal void       perf_timer_begin(PerfTimer* profiler);
-internal void       perf_timer_end(PerfTimer* profiler);
-internal float32    perf_timer_avg(PerfTimer* profiler);
-internal float32    perf_timer_min(PerfTimer* profiler);
-internal float32    perf_timer_max(PerfTimer* profiler);
-internal void       perf_timer_refresh_cache(PerfTimer* profiler);
+#if PROFILE_SUPERLUMINAL
+
+
+#include <windows.h>
+#include <superluminal/PerformanceAPI_capi.h>
+#include <superluminal/PerformanceAPI_loader.h>
+
+global PerformanceAPI_Functions* g_performance_api;
+internal void profiler_init(Arena* arena);
+
+#define profiler_thread_name(name) (g_performance_api->SetCurrentThreadName(name))
+#define profiler_begin_data_color(name, data, color) (g_performance_api->BeginEvent(name, data, color))
+#define profiler_begin_color(name, color) (profiler_begin_data_color(name, 0, color))
+#define profiler_begin(name) profiler_begin_color(name, PROFILER_COLOR_DEFAULT)
+#define profiler_end() g_performance_api->EndEvent()
+#else
+#define profiler_thread_name(name) (0)
+#define profiler_begin_data_color(name, data, color) (0)
+#define profiler_begin_color(name, color) (0)
+#define profiler_begin(name) (0)
+#define profiler_end() (0)
+#define profiler_init(arena) (0)
+#endif
+
+#define profiler_scope(name, color) defer_loop(profiler_begin_color(name, color), profiler_end())
+#define profiler_scope_with_ctx(name, ctx, color) defer_loop(profiler_begin_data_color(name, ctx, color), profiler_end())
+

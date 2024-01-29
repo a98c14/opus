@@ -22,6 +22,7 @@
 #include <engine/draw.c>
 #include <engine/input.c>
 #include <engine/layout.c>
+#include <engine/perf_timer.c>
 #include <engine/profiler.c>
 #include <engine/style.c>
 #include <engine/text.c>
@@ -37,6 +38,3 @@
 #include <ecs/events.c>
 #include <ecs/prefab.c>
 #include <ecs/world.c>
-
-//
-#include <profiler/profiler.c>

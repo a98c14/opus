@@ -4,6 +4,7 @@
 #include "engine/draw.h"
 #include "engine/input.h"
 #include "engine/layout.h"
+#include "engine/perf_timer.h"
 #include "engine/profiler.h"
 #include "engine/style.h"
 #include "engine/text.h"
