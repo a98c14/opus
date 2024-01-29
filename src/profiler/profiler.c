@@ -1,7 +1,6 @@
 #include "profiler.h"
 
 #if PROFILE_SUPERLUMINAL
-
 internal void
 profiler_init(Arena* arena)
 {

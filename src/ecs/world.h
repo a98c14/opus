@@ -1,9 +1,8 @@
 #pragma once
 
-#include <base/defines.h>
-#include <base/memory.h>
-#include <ecs/component.h>
-#include <ecs/world.h>
+#include "base/defines.h"
+#include "base/log.h"
+#include "base/memory.h"
 
 #include "component.h"
 
