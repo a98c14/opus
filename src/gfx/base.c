@@ -1,35 +1,35 @@
 #include "base.h"
 
-internal Renderer*
-renderer_new(Arena* arena, RendererConfiguration* configuration)
+internal void
+renderer_init(Arena* arena, RendererConfiguration* configuration)
 {
-    Renderer* renderer      = arena_push_struct_zero(arena, Renderer);
-    renderer->arena         = arena;
-    renderer->window_width  = configuration->window_width;
-    renderer->window_height = configuration->window_height;
-    renderer->frame_buffers = arena_push_array_zero(arena, FrameBuffer, LAYER_CAPACITY);
-    renderer->materials     = arena_push_array_zero(arena, Material, MATERIAL_CAPACITY);
-    renderer->textures      = arena_push_array_zero(arena, Texture, TEXTURE_CAPACITY);
-    renderer->geometries    = arena_push_array_zero(arena, Geometry, GEOMETRY_CAPACITY);
+    g_renderer                = arena_push_struct_zero(arena, Renderer);
+    g_renderer->arena         = arena;
+    g_renderer->window_width  = configuration->window_width;
+    g_renderer->window_height = configuration->window_height;
+    g_renderer->frame_buffers = arena_push_array_zero(arena, FrameBuffer, LAYER_CAPACITY);
+    g_renderer->materials     = arena_push_array_zero(arena, Material, MATERIAL_CAPACITY);
+    g_renderer->textures      = arena_push_array_zero(arena, Texture, TEXTURE_CAPACITY);
+    g_renderer->geometries    = arena_push_array_zero(arena, Geometry, GEOMETRY_CAPACITY);
 
     xassert(configuration->world_width > 0 || configuration->world_height > 0, "at least one of world width or world height needs to have a value");
-    glViewport(0, 0, renderer->window_width, renderer->window_height);
+    glViewport(0, 0, g_renderer->window_width, g_renderer->window_height);
 
-    renderer->aspect     = renderer->window_width / (float)renderer->window_height;
+    g_renderer->aspect   = g_renderer->window_width / (float)g_renderer->window_height;
     float32 world_height = configuration->world_height;
     float32 world_width  = configuration->world_width;
 
     if (configuration->world_width == 0)
-        world_width = world_height * renderer->aspect;
+        world_width = world_height * g_renderer->aspect;
     if (configuration->world_height == 0)
-        world_height = world_width / renderer->aspect;
-    renderer->world_width  = world_width;
-    renderer->world_height = world_height;
-    renderer->ppu          = 1.0f / (renderer->window_width / world_width);
-    renderer->camera       = camera_new(world_width, world_height, 100, -100, renderer->window_width, renderer->window_height);
+        world_height = world_width / g_renderer->aspect;
+    g_renderer->world_width  = world_width;
+    g_renderer->world_height = world_height;
+    g_renderer->ppu          = 1.0f / (g_renderer->window_width / world_width);
+    g_renderer->camera       = camera_new(world_width, world_height, 100, -100, g_renderer->window_width, g_renderer->window_height);
 
     // TEMP: testing global variable solution out. Potentially dangerous?
-    _pixel_per_unit = renderer->ppu;
+    _pixel_per_unit = g_renderer->ppu;
 
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
@@ -37,49 +37,48 @@ renderer_new(Arena* arena, RendererConfiguration* configuration)
     glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
 
     /* Create Global UBO */
-    glGenBuffers(1, &renderer->global_uniform_buffer_id);
-    glBindBuffer(GL_UNIFORM_BUFFER, renderer->global_uniform_buffer_id);
+    glGenBuffers(1, &g_renderer->global_uniform_buffer_id);
+    glBindBuffer(GL_UNIFORM_BUFFER, g_renderer->global_uniform_buffer_id);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(GlobalUniformData), NULL, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_GLOBAL, renderer->global_uniform_buffer_id, 0, sizeof(GlobalUniformData));
+    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_GLOBAL, g_renderer->global_uniform_buffer_id, 0, sizeof(GlobalUniformData));
 
     /* Create Texture UBO */
-    glGenBuffers(1, &renderer->texture_uniform_buffer_id);
-    glBindBuffer(GL_UNIFORM_BUFFER, renderer->texture_uniform_buffer_id);
+    glGenBuffers(1, &g_renderer->texture_uniform_buffer_id);
+    glBindBuffer(GL_UNIFORM_BUFFER, g_renderer->texture_uniform_buffer_id);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(TextureUniformData), NULL, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_TEXTURE, renderer->texture_uniform_buffer_id, 0, sizeof(TextureUniformData));
+    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_TEXTURE, g_renderer->texture_uniform_buffer_id, 0, sizeof(TextureUniformData));
 
     /* Create Camera UBO */
-    glGenBuffers(1, &renderer->camera_uniform_buffer_id);
-    glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_uniform_buffer_id);
+    glGenBuffers(1, &g_renderer->camera_uniform_buffer_id);
+    glBindBuffer(GL_UNIFORM_BUFFER, g_renderer->camera_uniform_buffer_id);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(CameraUniformData), NULL, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_CAMERA, renderer->camera_uniform_buffer_id, 0, sizeof(CameraUniformData));
+    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_CAMERA, g_renderer->camera_uniform_buffer_id, 0, sizeof(CameraUniformData));
 
     /* Create MVP SSBO */
-    glGenBuffers(1, &renderer->mvp_ssbo_id);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, renderer->mvp_ssbo_id);
+    glGenBuffers(1, &g_renderer->mvp_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, g_renderer->mvp_ssbo_id);
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Mat4) * MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY, 0, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_MODEL, renderer->mvp_ssbo_id);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_MODEL, g_renderer->mvp_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     /* Draw State Setup */
-    renderer->draw_state = renderer_draw_state_new(arena);
+    g_renderer->draw_state = renderer_draw_state_new(arena);
 
     // Reserve the first slot for NULL texture
-    renderer->texture_count += 1;
+    g_renderer->texture_count += 1;
 
     // Initialize default frame buffer
-    renderer->frame_buffer_count += 1;
-    FrameBuffer* frame_buffer   = &renderer->frame_buffers[FRAME_BUFFER_INDEX_DEFAULT];
+    g_renderer->frame_buffer_count += 1;
+    FrameBuffer* frame_buffer   = &g_renderer->frame_buffers[FRAME_BUFFER_INDEX_DEFAULT];
     frame_buffer->texture_index = TEXTURE_INDEX_NULL;
     frame_buffer->buffer_id     = 0;
     frame_buffer->clear_color   = clear_color;
     frame_buffer->width         = configuration->window_width;
     frame_buffer->height        = configuration->window_height;
     log_debug("renderer created");
-    return renderer;
 }
 
 internal RendererDrawState*

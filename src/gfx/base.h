@@ -283,6 +283,7 @@ typedef struct
     int64   stat_probe_count;
     float32 stat_probe_count_sum;
 } Renderer;
+global Renderer* g_renderer;
 
 typedef struct
 {
@@ -295,7 +296,7 @@ typedef struct
     Color   clear_color;
 } RendererConfiguration;
 
-internal Renderer*          renderer_new(Arena* arena, RendererConfiguration* configuration);
+internal void               renderer_init(Arena* arena, RendererConfiguration* configuration);
 internal RendererDrawState* renderer_draw_state_new(Arena* arena);
 internal MaterialIndex      material_new(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
 internal GeometryIndex      geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object);
