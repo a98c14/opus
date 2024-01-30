@@ -22,7 +22,7 @@ renderer_load_sprite_atlas(Renderer* renderer, SpriteAtlas* atlas)
     glGenBuffers(1, &renderer->sprites_ssbo_id);
     ArenaTemp temp          = arena_begin_temp(renderer->arena);
     Vec4*     sprite_bounds = arena_push_array_zero(temp.arena, Vec4, atlas->sprite_count);
-    for (int i = 0; i < atlas->sprite_count; i++)
+    for (uint32 i = 0; i < atlas->sprite_count; i++)
     {
         sprite_bounds[i].x = atlas->sprites[i].rect.x;
         sprite_bounds[i].y = atlas->sprites[i].rect.y;
