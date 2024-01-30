@@ -1,4 +1,5 @@
 #include "world.h"
+#include <ecs/world.h>
 
 internal Entity
 entity_null()
@@ -37,9 +38,9 @@ entity_is_null(Entity a)
 }
 
 internal ArchetypeIndex
-archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
+archetype_get_or_create(ComponentTypeField components)
 {
-    World* world = manager->world;
+    World* world = g_entity_manager->world;
     for (int i = 0; i < world->archetype_count; i++)
     {
         if (component_type_field_is_same(world->archetype_components[i], components))
@@ -50,8 +51,8 @@ archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
     Archetype*     archetype      = &world->archetypes[archtype_index];
 
     archetype->component_count            = component_type_field_count(components);
-    archetype->component_buffer_index_map = arena_push_array_zero(manager->persistent_arena, int32, COMPONENT_COUNT);
-    archetype->components                 = arena_push_array_zero(manager->persistent_arena, ComponentType, archetype->component_count);
+    archetype->component_buffer_index_map = arena_push_array_zero(g_entity_manager->persistent_arena, int32, COMPONENT_COUNT);
+    archetype->components                 = arena_push_array_zero(g_entity_manager->persistent_arena, ComponentType, archetype->component_count);
 
     int32 current_index        = 0;
     archetype->byte_per_entity = 0;
@@ -65,7 +66,7 @@ archetype_get_or_create(EntityManager* manager, ComponentTypeField components)
         {
             archetype->component_buffer_index_map[i] = current_index;
             archetype->components[current_index]     = (ComponentType)i;
-            archetype->byte_per_entity += manager->type_manager->component_sizes[i];
+            archetype->byte_per_entity += g_entity_manager->type_manager->component_sizes[i];
             current_index++;
         }
     }
@@ -82,16 +83,16 @@ chunk_has_space(Chunk* chunk, uint32 count)
 }
 
 internal ChunkIndex
-chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint32 space_required, uint32 capacity)
+chunk_get_or_create(ComponentTypeField components, uint32 space_required, uint32 capacity)
 {
-    World* world = manager->world;
+    World* world = g_entity_manager->world;
     for (int i = 0; i < world->chunk_count; i++)
     {
         if (component_type_field_is_same(world->chunk_components[i], components) && chunk_has_space(&world->chunks[i], space_required))
             return i;
     }
 
-    ArchetypeIndex archetype_index = archetype_get_or_create(manager, components);
+    ArchetypeIndex archetype_index = archetype_get_or_create(components);
     Archetype*     archetype       = &world->archetypes[archetype_index];
 
     ChunkIndex chunk_index = world->chunk_count;
@@ -99,22 +100,22 @@ chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint3
     chunk->archetype_index = archetype_index;
     chunk->entity_count    = 0;
     chunk->entity_capacity = capacity;
-    chunk->entities        = arena_push_array_zero(manager->persistent_arena, Entity, capacity);
-    chunk->data_buffers    = arena_push_array_zero(manager->persistent_arena, DataBuffer, archetype->component_count);
+    chunk->entities        = arena_push_array_zero(g_entity_manager->persistent_arena, Entity, capacity);
+    chunk->data_buffers    = arena_push_array_zero(g_entity_manager->persistent_arena, DataBuffer, archetype->component_count);
 
     for (int i = 0; i < archetype->component_count; i++)
     {
         ComponentType component_index = archetype->components[i];
 
-        ComponentDataType data_type = manager->type_manager->component_data_types[component_index];
+        ComponentDataType data_type = g_entity_manager->type_manager->component_data_types[component_index];
         if (data_type != ComponentDataTypeDefault)
             continue;
 
-        usize component_size         = manager->type_manager->component_sizes[component_index];
+        usize component_size         = g_entity_manager->type_manager->component_sizes[component_index];
         int32 component_buffer_index = archetype->component_buffer_index_map[component_index];
 
         chunk->data_buffers[component_buffer_index].type = component_index;
-        chunk->data_buffers[component_buffer_index].data = arena_push_zero(manager->persistent_arena, component_size * capacity);
+        chunk->data_buffers[component_buffer_index].data = arena_push_zero(g_entity_manager->persistent_arena, component_size * capacity);
     }
 
     world->chunk_components[chunk_index] = components;
@@ -124,9 +125,9 @@ chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint3
 
 /** Deletes the entity data at the given internal index. Does not handle parent/child relationships or entity addresses.  */
 internal void
-chunk_delete_entity_data(EntityManager* manager, EntityAddress address)
+chunk_delete_entity_data(EntityAddress address)
 {
-    World*     world     = manager->world;
+    World*     world     = g_entity_manager->world;
     Chunk*     chunk     = &world->chunks[address.chunk_index];
     Archetype* archetype = &world->archetypes[chunk->archetype_index];
 
@@ -140,7 +141,7 @@ chunk_delete_entity_data(EntityManager* manager, EntityAddress address)
         for (int i = 0; i < archetype->component_count; i++)
         {
             DataBuffer* data_buffer    = &chunk->data_buffers[i];
-            usize       component_size = manager->type_manager->component_sizes[data_buffer->type];
+            usize       component_size = g_entity_manager->type_manager->component_sizes[data_buffer->type];
             memcpy(((uint8*)data_buffer->data) + (component_size * address.chunk_internal_index), ((uint8*)data_buffer->data) + (component_size * last_entity_address->chunk_internal_index), component_size);
         }
 
@@ -153,10 +154,10 @@ chunk_delete_entity_data(EntityManager* manager, EntityAddress address)
 }
 
 internal void
-chunk_copy_data(EntityManager* manager, EntityAddress src, EntityAddress dst)
+chunk_copy_data(EntityAddress src, EntityAddress dst)
 {
-    World*                world        = manager->world;
-    ComponentTypeManager* type_manager = manager->type_manager;
+    World*                world        = g_entity_manager->world;
+    ComponentTypeManager* type_manager = g_entity_manager->type_manager;
 
     Chunk* src_chunk = &world->chunks[src.chunk_index];
     Chunk* dst_chunk = &world->chunks[dst.chunk_index];
@@ -190,10 +191,10 @@ chunk_copy_data(EntityManager* manager, EntityAddress src, EntityAddress dst)
 }
 
 internal Entity
-entity_create(EntityManager* manager, ComponentTypeField components)
+entity_create(ComponentTypeField components)
 {
-    World*     world       = manager->world;
-    ChunkIndex chunk_index = chunk_get_or_create(manager, components, 1, DEFAULT_CHUNK_CAPACITY);
+    World*     world       = g_entity_manager->world;
+    ChunkIndex chunk_index = chunk_get_or_create(components, 1, DEFAULT_CHUNK_CAPACITY);
     Chunk*     chunk       = &world->chunks[chunk_index];
 
     uint32 entity_index                                        = world->entity_count;
@@ -207,15 +208,15 @@ entity_create(EntityManager* manager, ComponentTypeField components)
 
     chunk->entity_count++;
     world->entity_count++;
-    manager->world->chunk_count;
+    g_entity_manager->world->chunk_count;
 
     return *entity;
 }
 
 internal void
-entity_destroy(EntityManager* manager, Entity entity)
+entity_destroy(Entity entity)
 {
-    World* world = manager->world;
+    World* world = g_entity_manager->world;
 
     EntityAddress current_address = world->entity_addresses[entity.index];
 
@@ -223,7 +224,7 @@ entity_destroy(EntityManager* manager, Entity entity)
     if (entity_address_is_null(current_address))
         return;
 
-    chunk_delete_entity_data(manager, current_address);
+    chunk_delete_entity_data(current_address);
     world->entity_addresses[entity.index] = entity_address_null();
     world->entity_parents[entity.index]   = entity_null();
 
@@ -235,7 +236,7 @@ entity_destroy(EntityManager* manager, Entity entity)
         EntityNode* child = children->first;
         while (child && child->value.version > 0)
         {
-            entity_destroy(manager, child->value);
+            entity_destroy(child->value);
             child->value = entity_null();
             child        = child->next;
         }
@@ -245,46 +246,46 @@ entity_destroy(EntityManager* manager, Entity entity)
 }
 
 internal void
-entity_activate(EntityManager* manager, Entity entity)
+entity_activate(Entity entity)
 {
-    World* world = manager->world;
-    if (!component_data_exists_internal(manager, entity, CTT_InactiveComponent))
+    World* world = g_entity_manager->world;
+    if (!component_data_exists_internal(entity, CTT_InactiveComponent))
         return;
 
-    component_remove(manager, entity, CTT_InactiveComponent);
+    component_remove(entity, CTT_InactiveComponent);
     EntityList* children = &world->entity_children[entity.index];
     if (children->count > 0)
     {
         EntityNode* child = children->first;
         while (child && child->value.version > 0)
         {
-            component_remove(manager, child->value, CTT_InactiveComponent);
+            component_remove(child->value, CTT_InactiveComponent);
             child = child->next;
         }
     }
 }
 
 internal void
-entity_deactivate(EntityManager* manager, Entity entity)
+entity_deactivate(Entity entity)
 {
-    World* world = manager->world;
-    component_add(manager, entity, CTT_InactiveComponent);
+    World* world = g_entity_manager->world;
+    component_add(entity, CTT_InactiveComponent);
     EntityList* children = &world->entity_children[entity.index];
     if (children->count > 0)
     {
         EntityNode* child = children->first;
         while (child && child->value.version > 0)
         {
-            component_add(manager, child->value, CTT_InactiveComponent);
+            component_add(child->value, CTT_InactiveComponent);
             child = child->next;
         }
     }
 }
 
 internal void
-component_add_many(EntityManager* manager, Entity entity, ComponentTypeField components)
+component_add_many(Entity entity, ComponentTypeField components)
 {
-    World*        world           = manager->world;
+    World*        world           = g_entity_manager->world;
     EntityAddress current_address = world->entity_addresses[entity.index];
 
     xassert(!entity_address_is_null(current_address), "entity address is not valid");
@@ -297,31 +298,31 @@ component_add_many(EntityManager* manager, Entity entity, ComponentTypeField com
         return;
     }
 
-    ChunkIndex new_chunk_index = chunk_get_or_create(manager, new_components, 1, DEFAULT_CHUNK_CAPACITY);
-    entity_move(manager, entity, new_chunk_index);
+    ChunkIndex new_chunk_index = chunk_get_or_create(new_components, 1, DEFAULT_CHUNK_CAPACITY);
+    entity_move(entity, new_chunk_index);
 }
 
 internal void
-component_add(EntityManager* manager, Entity entity, ComponentType type)
+component_add(Entity entity, ComponentType type)
 {
     ComponentTypeField field = {0};
     component_type_field_set(&field, type);
-    component_add_many(manager, entity, field);
+    component_add_many(entity, field);
 }
 
 internal void*
-component_add_ref_internal(EntityManager* manager, Entity entity, ComponentType type)
+component_add_ref_internal(Entity entity, ComponentType type)
 {
     ComponentTypeField field = {0};
     component_type_field_set(&field, type);
-    component_add_many(manager, entity, field);
-    return component_data_ref_internal(manager, entity, type);
+    component_add_many(entity, field);
+    return component_data_ref_internal(entity, type);
 }
 
 internal void
-component_remove_many(EntityManager* manager, Entity entity, ComponentTypeField components)
+component_remove_many(Entity entity, ComponentTypeField components)
 {
-    World*        world           = manager->world;
+    World*        world           = g_entity_manager->world;
     EntityAddress current_address = world->entity_addresses[entity.index];
 
     xassert(!entity_address_is_null(current_address), "entity address is not valid");
@@ -334,22 +335,22 @@ component_remove_many(EntityManager* manager, Entity entity, ComponentTypeField 
         return;
     }
 
-    ChunkIndex new_chunk_index = chunk_get_or_create(manager, new_components, 1, DEFAULT_CHUNK_CAPACITY);
-    entity_move(manager, entity, new_chunk_index);
+    ChunkIndex new_chunk_index = chunk_get_or_create(new_components, 1, DEFAULT_CHUNK_CAPACITY);
+    entity_move(entity, new_chunk_index);
 }
 
 internal void
-component_remove(EntityManager* manager, Entity entity, ComponentType type)
+component_remove(Entity entity, ComponentType type)
 {
     ComponentTypeField field = {0};
     component_type_field_set(&field, type);
-    component_remove_many(manager, entity, field);
+    component_remove_many(entity, field);
 }
 
 internal void
-entity_add_child(EntityManager* manager, Entity parent, Entity child)
+entity_add_child(Entity parent, Entity child)
 {
-    World* world = manager->world;
+    World* world = g_entity_manager->world;
 
     world->entity_parents[child.index] = parent;
 
@@ -364,7 +365,7 @@ entity_add_child(EntityManager* manager, Entity parent, Entity child)
         return;
     }
 
-    EntityNode* new_node = arena_push_struct_zero(manager->persistent_arena, EntityNode);
+    EntityNode* new_node = arena_push_struct_zero(g_entity_manager->persistent_arena, EntityNode);
     new_node->value      = child;
     if (!children->first)
         children->first = new_node;
@@ -378,9 +379,9 @@ entity_add_child(EntityManager* manager, Entity parent, Entity child)
 }
 
 internal ComponentTypeField
-entity_get_types(EntityManager* manager, Entity entity)
+entity_get_types(Entity entity)
 {
-    World* world = manager->world;
+    World* world = g_entity_manager->world;
 
     EntityAddress current_address = world->entity_addresses[entity.index];
     xassert(!entity_address_is_null(current_address), "given entity does not exist");
@@ -389,20 +390,20 @@ entity_get_types(EntityManager* manager, Entity entity)
 
 /** Copies all matching components from source entity to destination entity */
 internal void
-entity_copy_data(EntityManager* manager, Entity src, Entity dst)
+entity_copy_data(Entity src, Entity dst)
 {
-    World* world = manager->world;
+    World* world = g_entity_manager->world;
 
     EntityAddress src_address = world->entity_addresses[src.index];
     EntityAddress dst_address = world->entity_addresses[dst.index];
     xassert(!entity_address_is_null(src_address) && !entity_address_is_null(dst_address), "invalid entity during copy");
-    chunk_copy_data(manager, src_address, dst_address);
+    chunk_copy_data(src_address, dst_address);
 }
 
 internal void
-entity_move(EntityManager* manager, Entity entity, ChunkIndex destination)
+entity_move(Entity entity, ChunkIndex destination)
 {
-    World* world = manager->world;
+    World* world = g_entity_manager->world;
 
     EntityAddress src_address = world->entity_addresses[entity.index];
     xassert(!entity_address_is_null(src_address), "invalid entity during copy");
@@ -416,8 +417,8 @@ entity_move(EntityManager* manager, Entity entity, ChunkIndex destination)
     dst_chunk->entity_count++;
     world->entity_addresses[entity.index] = dst_address;
 
-    chunk_copy_data(manager, src_address, dst_address);
-    chunk_delete_entity_data(manager, src_address);
+    chunk_copy_data(src_address, dst_address);
+    chunk_delete_entity_data(src_address);
 }
 
 internal World*
@@ -445,28 +446,20 @@ world_new(Arena* arena)
     return world;
 }
 
-internal EntityManager*
-entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager)
-{
-    EntityManager* manager    = arena_push_struct_zero(persistent_arena, EntityManager);
-    manager->persistent_arena = persistent_arena;
-    manager->temp_arena       = temp_arena;
-    manager->world            = world_new(persistent_arena);
-    manager->type_manager     = type_manager;
-    return manager;
-}
-
 internal void
-entity_manager_global_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager)
+entity_manager_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager)
 {
-    EntityManager* manager = entity_manager_new(persistent_arena, temp_arena, type_manager);
-    g_entity_manager       = manager;
+    g_entity_manager                   = arena_push_struct_zero(persistent_arena, EntityManager);
+    g_entity_manager->persistent_arena = persistent_arena;
+    g_entity_manager->temp_arena       = temp_arena;
+    g_entity_manager->world            = world_new(persistent_arena);
+    g_entity_manager->type_manager     = type_manager;
 }
 
 internal bool32
-component_data_exists_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type)
+component_data_exists_internal(Entity entity, ComponentType component_type)
 {
-    World*        world     = entity_manager->world;
+    World*        world     = g_entity_manager->world;
     EntityAddress address   = world->entity_addresses[entity.index];
     Chunk*        chunk     = &world->chunks[address.chunk_index];
     Archetype*    archetype = &world->archetypes[chunk->archetype_index];
@@ -475,9 +468,9 @@ component_data_exists_internal(EntityManager* entity_manager, Entity entity, Com
 }
 
 internal void*
-component_data_ref_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type)
+component_data_ref_internal(Entity entity, ComponentType component_type)
 {
-    World*        world   = entity_manager->world;
+    World*        world   = g_entity_manager->world;
     EntityAddress address = world->entity_addresses[entity.index];
     xassert(!entity_address_is_null(address), "given entity is not valid");
     Chunk*     chunk     = &world->chunks[address.chunk_index];
@@ -486,17 +479,17 @@ component_data_ref_internal(EntityManager* entity_manager, Entity entity, Compon
 
     int32 component_index = archetype->component_buffer_index_map[component_type];
     xassert(component_index >= 0, "component doesn't exist on the entity");
-    usize component_size = entity_manager->type_manager->component_sizes[component_type];
+    usize component_size = g_entity_manager->type_manager->component_sizes[component_type];
     void* component_data = (void*)((uint8*)chunk->data_buffers[component_index].data + component_size * address.chunk_internal_index);
     return component_data;
 }
 
 internal void
-component_copy(EntityManager* entity_manager, Entity src, Entity dst, ComponentType component_type)
+component_copy(Entity src, Entity dst, ComponentType component_type)
 {
-    usize component_size = entity_manager->type_manager->component_sizes[component_type];
-    void* src_ref        = component_data_ref_internal(entity_manager, src, component_type);
-    void* dst_ref        = component_data_ref_internal(entity_manager, dst, component_type);
+    usize component_size = g_entity_manager->type_manager->component_sizes[component_type];
+    void* src_ref        = component_data_ref_internal(src, component_type);
+    void* dst_ref        = component_data_ref_internal(dst, component_type);
     memcpy(dst_ref, src_ref, component_size);
 }
 
@@ -511,12 +504,12 @@ entity_query_default()
 }
 
 internal EntityQueryResult
-entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query)
+entity_get_all(Arena* arena, EntityQuery query)
 {
-    World* world = entity_manager->world;
+    World* world = g_entity_manager->world;
 
     // TODO(selim): cache query results (invalidate on chunk add/remove)
-    ArenaTemp temp         = arena_begin_temp(entity_manager->temp_arena);
+    ArenaTemp temp         = arena_begin_temp(g_entity_manager->temp_arena);
     Chunk*    chunks       = arena_push_array(temp.arena, Chunk, 128);
     bool32    chunk_count  = 0;
     uint32    entity_count = 0;
@@ -548,13 +541,13 @@ entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query)
 }
 
 internal bool32
-entity_is_alive(EntityManager* entity_manager, Entity entity)
+entity_is_alive(Entity entity)
 {
-    return !entity_is_null(entity) && !entity_address_is_null(entity_manager->world->entity_addresses[entity.index]);
+    return !entity_is_null(entity) && !entity_address_is_null(g_entity_manager->world->entity_addresses[entity.index]);
 }
 
 internal Entity
-entity_get_parent(EntityManager* entity_manager, Entity entity)
+entity_get_parent(Entity entity)
 {
-    return entity_manager->world->entity_parents[entity.index];
+    return g_entity_manager->world->entity_parents[entity.index];
 }

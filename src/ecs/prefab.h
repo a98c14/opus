@@ -23,11 +23,11 @@ struct PrefabNode
     PrefabNode* next;
 };
 
-internal Prefab prefab_create(EntityManager* entity_manager, ComponentTypeField types);
-internal Prefab prefab_create_as_child(EntityManager* entity_manager, Prefab* parent, ComponentTypeField types);
-internal Entity prefab_instantiate(EntityManager* entity_manager, Prefab prefab);
+internal Prefab prefab_create(ComponentTypeField types);
+internal Prefab prefab_create_as_child(Prefab* parent, ComponentTypeField types);
+internal Entity prefab_instantiate(Prefab prefab);
 
 // Instantiates the prefab with extra types added beforehand
-internal Entity prefab_instantiate_modified(EntityManager* entity_manager, Prefab prefab, ComponentTypeField additional_types);
-internal void   prefab_add_child(EntityManager* entity_manager, Prefab* parent, Prefab child);
-internal void   prefab_copy_data(EntityManager* entity_manager, Prefab src, Prefab dst);
+internal Entity prefab_instantiate_modified(Prefab prefab, ComponentTypeField additional_types);
+internal void   prefab_add_child(Prefab* parent, Prefab child);
+internal void   prefab_copy_data(Prefab src, Prefab dst);

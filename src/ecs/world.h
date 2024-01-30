@@ -124,49 +124,48 @@ typedef struct
     Entity value;
 } Parent;
 
-internal Entity        entity_get_parent(EntityManager* entity_manager, Entity entity);
+internal Entity        entity_get_parent(Entity entity);
 internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);
 internal bool32        entity_is_same(Entity a, Entity b);
 internal bool32        entity_is_null(Entity a);
 internal Entity        entity_null();
 
-internal ArchetypeIndex archetype_get_or_create(EntityManager* manager, ComponentTypeField types);
+internal ArchetypeIndex archetype_get_or_create(ComponentTypeField types);
 
 internal bool32     chunk_has_space(Chunk* chunk, uint32 count);
-internal ChunkIndex chunk_get_or_create(EntityManager* manager, ComponentTypeField components, uint32 space_required, uint32 capacity);
-internal void       chunk_delete_entity_data(EntityManager* manager, EntityAddress address);
-internal void       chunk_copy_data(EntityManager* manager, EntityAddress src, EntityAddress dst);
+internal ChunkIndex chunk_get_or_create(ComponentTypeField components, uint32 space_required, uint32 capacity);
+internal void       chunk_delete_entity_data(EntityAddress address);
+internal void       chunk_copy_data(EntityAddress src, EntityAddress dst);
 
-internal Entity entity_create(EntityManager* manager, ComponentTypeField types);
-internal void   entity_destroy(EntityManager* manager, Entity entity);
-internal void   entity_activate(EntityManager* manager, Entity entity);
-internal void   entity_deactivate(EntityManager* manager, Entity entity);
+internal Entity entity_create(ComponentTypeField types);
+internal void   entity_destroy(Entity entity);
+internal void   entity_activate(Entity entity);
+internal void   entity_deactivate(Entity entity);
 
-internal void               entity_add_child(EntityManager* manager, Entity parent, Entity child);
-internal ComponentTypeField entity_get_types(EntityManager* manager, Entity entity);
-internal void               entity_copy_data(EntityManager* manager, Entity src, Entity dst);
-internal void               entity_move(EntityManager* manager, Entity entity, ChunkIndex destination);
+internal void               entity_add_child(Entity parent, Entity child);
+internal ComponentTypeField entity_get_types(Entity entity);
+internal void               entity_copy_data(Entity src, Entity dst);
+internal void               entity_move(Entity entity, ChunkIndex destination);
 
-internal void   component_add(EntityManager* manager, Entity entity, ComponentType type);
-internal void   component_add_many(EntityManager* manager, Entity entity, ComponentTypeField components);
-internal void*  component_add_ref_internal(EntityManager* manager, Entity entity, ComponentType type);
-internal void   component_remove(EntityManager* manager, Entity entity, ComponentType type);
-internal void   component_remove_many(EntityManager* manager, Entity entity, ComponentTypeField components);
-internal bool32 component_data_exists_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type);
-internal void*  component_data_ref_internal(EntityManager* entity_manager, Entity entity, ComponentType component_type);
-internal void   component_copy(EntityManager* entity_manager, Entity src, Entity dst, ComponentType component_type);
-#define component_add_ref(entity_manager, entity, component_type)     ((component_type*)component_add_ref_internal(entity_manager, entity, CT_##component_type))
-#define component_data_exists(entity_manager, entity, component_type) component_data_exists_internal(entity_manager, entity, CT_##component_type)
-#define component_data_get(entity_manager, entity, component_type)    (*((component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type)))
-#define component_data_ref(entity_manager, entity, component_type)    ((component_type*)component_data_ref_internal(entity_manager, entity, CT_##component_type))
+internal void   component_add(Entity entity, ComponentType type);
+internal void   component_add_many(Entity entity, ComponentTypeField components);
+internal void*  component_add_ref_internal(Entity entity, ComponentType type);
+internal void   component_remove(Entity entity, ComponentType type);
+internal void   component_remove_many(Entity entity, ComponentTypeField components);
+internal bool32 component_data_exists_internal(Entity entity, ComponentType component_type);
+internal void*  component_data_ref_internal(Entity entity, ComponentType component_type);
+internal void   component_copy(Entity src, Entity dst, ComponentType component_type);
+#define component_add_ref(entity, component_type)     ((component_type*)component_add_ref_internal(entity, CT_##component_type))
+#define component_data_exists(entity, component_type) component_data_exists_internal(entity, CT_##component_type)
+#define component_data_get(entity, component_type)    (*((component_type*)component_data_ref_internal(entity, CT_##component_type)))
+#define component_data_ref(entity, component_type)    ((component_type*)component_data_ref_internal(entity, CT_##component_type))
 
-internal World*         world_new(Arena* arena);
-internal EntityManager* entity_manager_new(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);
-internal void           entity_manager_global_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);
+internal World* world_new(Arena* arena);
+internal void   entity_manager_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);
 
 /** Entity Query */
 internal EntityQuery       entity_query_default();
-internal EntityQueryResult entity_get_all(Arena* arena, EntityManager* entity_manager, EntityQuery query);
-internal bool32            entity_is_alive(EntityManager* entity_manager, Entity entity);
-internal Entity            entity_get_parent(EntityManager* entity_manager, Entity entity);
+internal EntityQueryResult entity_get_all(Arena* arena, EntityQuery query);
+internal bool32            entity_is_alive(Entity entity);
+internal Entity            entity_get_parent(Entity entity);
