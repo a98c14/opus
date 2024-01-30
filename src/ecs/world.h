@@ -50,7 +50,6 @@ typedef struct EntityList EntityList;
 struct EntityList
 {
     uint16 count;
-    uint16 capacity;
 
     EntityNode* first;
     EntityNode* last;
@@ -94,6 +93,10 @@ typedef struct
     // relations
     Entity*     entity_parents;
     EntityList* entity_children;
+
+    uint32      free_entity_count;
+    uint32*     free_entity_indices;
+    EntityNode* free_entity_nodes;
 } World;
 
 typedef struct
@@ -138,10 +141,14 @@ internal ChunkIndex chunk_get_or_create(ComponentTypeField components, uint32 sp
 internal void       chunk_delete_entity_data(EntityAddress address);
 internal void       chunk_copy_data(EntityAddress src, EntityAddress dst);
 
-internal Entity entity_create(ComponentTypeField types);
-internal void   entity_destroy(Entity entity);
-internal void   entity_activate(Entity entity);
-internal void   entity_deactivate(Entity entity);
+internal uint32      entity_reserve_free();
+internal void        entity_free(Entity e);
+internal EntityNode* entity_node_alloc();
+internal void        entity_node_free(EntityNode* node);
+internal Entity      entity_create(ComponentTypeField types);
+internal void        entity_destroy(Entity entity);
+internal void        entity_activate(Entity entity);
+internal void        entity_deactivate(Entity entity);
 
 internal void               entity_add_child(Entity parent, Entity child);
 internal ComponentTypeField entity_get_types(Entity entity);
