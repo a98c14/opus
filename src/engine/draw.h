@@ -146,3 +146,4 @@ internal float32 screen_left();
 internal float32 screen_right();
 internal float32 screen_bottom();
 internal float32 screen_height();
+internal float32 screen_width();
