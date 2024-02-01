@@ -208,6 +208,12 @@ typedef struct
     float32 max;
 } Range;
 
+typedef struct
+{
+    int32 min;
+    int32 max;
+} IRange;
+
 /* Constructors */
 internal Vec2 vec2(float32 x, float32 y);
 internal Vec2 vec2_zero();
