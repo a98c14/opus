@@ -1,5 +1,6 @@
 #include "base/bitfield.h"
 #include "base/datetime.h"
+#include "base/easing.h"
 #include "base/file.h"
 #include "base/hash.h"
 #include "base/log.h"

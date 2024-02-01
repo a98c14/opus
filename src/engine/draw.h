@@ -133,6 +133,7 @@ internal void draw_circle_partially_filled(Vec2 position, float32 rotation, floa
 // TODO(selim): why is this here?
 internal void draw_boid(Vec2 position, float32 rotation, float32 size, Color color, SortLayerIndex layer);
 internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLayerIndex sort_index);
+internal Rect draw_rect_simple(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, Vec4 color);
 internal Rect draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
 
 /* Sprite */
@@ -147,3 +148,4 @@ internal float32 screen_right();
 internal float32 screen_bottom();
 internal float32 screen_height();
 internal float32 screen_width();
+internal Rect    screen_rect();

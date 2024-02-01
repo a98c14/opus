@@ -1,6 +1,7 @@
 
 #include <base/bitfield.c>
 #include <base/datetime.c>
+#include <base/easing.c>
 #include <base/file.c>
 #include <base/hash.c>
 #include <base/log.c>

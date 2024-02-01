@@ -176,6 +176,30 @@ draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLa
 }
 
 internal Rect
+draw_rect_simple(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, Vec4 color)
+{
+    const Vec4 border_color = color_to_vec4(ColorInvisible);
+
+    RenderKey  key         = render_key_new(view_type, sort_index, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_rounded_rect);
+    DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, key, 1);
+    // transform_quad_aligned is much faster so if there is no need for rotation, use aligned
+    if (rotation == 0)
+        draw_buffer.model_buffer[0] = transform_quad_aligned(vec3_xy_z(rect.center, 0), rect.size);
+    else
+        draw_buffer.model_buffer[0] = transform_quad(rect.center, rect.size, rotation);
+
+    ShaderDataRectRounded* uniform_buffer = (ShaderDataRectRounded*)draw_buffer.uniform_data_buffer;
+    uniform_buffer[0].color               = color;
+    uniform_buffer[0].edge_color          = border_color;
+    uniform_buffer[0].round               = vec4(1, 1, 1, 1);
+    uniform_buffer[0].scale               = rect.size;
+    uniform_buffer[0].softness            = 1;
+    uniform_buffer[0].edge_thickness      = 0;
+
+    return rect;
+}
+
+internal Rect
 draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style)
 {
     RenderKey  key         = render_key_new(view_type, sort_index, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_rounded_rect);
@@ -390,4 +414,10 @@ internal float32
 screen_width()
 {
     return g_draw_context->camera->world_width;
+}
+
+internal Rect
+screen_rect()
+{
+    return rect(0, 0, screen_width(), screen_height());
 }
