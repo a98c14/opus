@@ -581,7 +581,7 @@ entity_get_all(Arena* arena, EntityQuery query)
 internal bool32
 entity_is_alive(Entity entity)
 {
-    return !entity_is_null(entity) && !entity_address_is_null(g_entity_manager->world->entity_addresses[entity.index]);
+    return !entity_is_null(entity) && g_entity_manager->world->entities[entity.index].version == entity.version && !entity_address_is_null(g_entity_manager->world->entity_addresses[entity.index]);
 }
 
 internal Entity
