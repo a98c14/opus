@@ -43,6 +43,7 @@ const Anchor ANCHOR_BR_BR = {AlignmentBottomRight, AlignmentBottomRight};
 const Anchor ANCHOR_BR_BL = {AlignmentBottomRight, AlignmentBottomLeft};
 const Anchor ANCHOR_BR_TR = {AlignmentBottomRight, AlignmentTopRight};
 const Anchor ANCHOR_BR_TL = {AlignmentBottomRight, AlignmentTopLeft};
+const Anchor ANCHOR_BR_C  = {AlignmentBottomRight, AlignmentCenter};
 const Anchor ANCHOR_TR_TR = {AlignmentTopRight, AlignmentTopRight};
 const Anchor ANCHOR_TR_TL = {AlignmentTopRight, AlignmentTopLeft};
 const Anchor ANCHOR_TR_BL = {AlignmentTopRight, AlignmentBottomLeft};
@@ -98,6 +99,8 @@ typedef struct
 } Cut;
 
 internal Cut  cut(Rect* rect, CutSide side);
+internal Rect rect_cut(Rect* r, float32 size, CutSide side);
+internal Rect rect_cut_r(Rect* r, Rect size, CutSide side);
 internal Rect rect_cut_left(Rect* r, float32 size);
 internal Rect rect_cut_right(Rect* r, float32 size);
 internal Rect rect_cut_top(Rect* r, float32 size);
@@ -113,18 +116,15 @@ internal Rect
 rect_place(Rect child, Rect parent, Anchor anchor);
 
 internal Rect rect_place_under(Rect child, Rect parent);
-
 internal Vec2 rect_relative(Rect rect, Alignment alignment);
-
 internal Rect rect_expand_f32(Rect rect, float32 v);
-
 internal Rect rect_expand(Rect rect, Vec2 v);
-
 internal Rect rect_shrink_f32(Rect rect, float32 v);
-
 internal Rect rect_shrink(Rect rect, Vec2 v);
-
 internal Rect rect_move(Rect rect, Vec2 v);
+internal Rect rect_resize(Rect r, float32 w, float32 h, Alignment alignment);
+internal Rect rect_resize_height(Rect r, float32 h, Alignment alignment);
+internal Rect rect_resize_width(Rect r, float32 w, Alignment alignment);
 
 internal LayoutGrid layout_grid(Rect container, int32 columns, int32 rows, Vec2 padding);
 

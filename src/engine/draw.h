@@ -1,8 +1,13 @@
 #pragma once
 
+#include <base/asserts.h>
 #include <base/defines.h>
 #include <base/file.h>
 #include <base/math.h>
+#include <base/strings.h>
+#include <engine/color.h>
+#include <engine/draw.h>
+#include <engine/layout.h>
 #include <fonts/fonts.h>
 #include <gfx/base.h>
 #include <gfx/math.h>
@@ -15,16 +20,31 @@
 #include "style.h"
 #include "text.h"
 
+typedef struct DrawContextNode DrawContextNode;
+struct DrawContextNode
+{
+    ViewType       view;
+    SortLayerIndex sort_layer;
+
+    DrawContextNode* next;
+};
+
+global read_only DrawContextNode d_default_node = {
+    .sort_layer = 12,
+    .view       = ViewTypeScreen,
+};
+
 typedef struct
 {
     Renderer* renderer;
     Camera*   camera;
+    Arena*    persistent_arena;
 
-    /* Geometries */
+    /* geometries */
     GeometryIndex geometry_quad;
     GeometryIndex geometry_triangle;
 
-    /* Materials */
+    /* materials */
     MaterialIndex material_text;
     MaterialIndex material_basic;
     MaterialIndex material_line;
@@ -37,15 +57,20 @@ typedef struct
     MaterialIndex material_sprite;
     MaterialIndex material_circle_instanced;
 
-    /* Atlas */
+    /** draw state context */
+    DrawContextNode* free_nodes;
+    DrawContextNode* ctx;
+
+    /** atlas */
     GlyphAtlas*  font_open_sans;
     SpriteAtlas* sprite_atlas;
 
     /** default styles */
     StyleRect style_debug_rect;
-} DrawContext;
-
-global DrawContext* g_draw_context;
+    StyleRect style_default_rect;
+    StyleText style_default_text;
+} D_State;
+global D_State* d_state;
 
 /* Shader Data */
 typedef struct
@@ -129,7 +154,7 @@ internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 t
 
 // Draws given string to screen and returns the bounding box for the while string
 internal Rect draw_text_at(Vec2 pos, String str, Alignment alignment, StyleText style, ViewType view_type, SortLayerIndex layer);
-internal void draw_text(Rect rect, String str, Anchor anchor, StyleText style, ViewType view_type, SortLayerIndex layer);
+internal Rect draw_text(Rect rect, String str, Anchor anchor, StyleText style, ViewType view_type, SortLayerIndex layer);
 internal void draw_circle(Vec2 position, float32 radius, Color color, SortLayerIndex layer);
 internal void draw_circle_filled(Circle circle, Color color, SortLayerIndex layer);
 internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle, SortLayerIndex layer);
@@ -138,10 +163,11 @@ internal void draw_boid(Vec2 position, float32 rotation, float32 size, Color col
 internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLayerIndex sort_index);
 internal Rect draw_rect_simple(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, Vec4 color);
 internal Rect draw_rect_rotated(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
-internal Rect draw_rect(Rect rect, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
+internal Rect draw_rect_internal(Rect rect, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
 
-/* Sprite */
+/* sprite */
 internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color);
+internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer);
 
 /** Utility */
@@ -154,8 +180,16 @@ internal float32 screen_height();
 internal float32 screen_width();
 internal Rect    screen_rect();
 
+/** context push */
+internal void draw_context_push(SortLayerIndex sort_layer, ViewType view_type);
+internal void draw_context_pop();
+#define draw_scope(sort_layer, view_type) defer_loop(draw_context_push(sort_layer, view_type), draw_context_pop())
+
 /** extra draw functions */
+internal Rect draw_rect(Rect rect, Color color);
 internal Rect draw_debug_rect(Rect rect);
 internal Rect draw_debug_rect_screen(Rect rect);
-internal Rect draw_sprite_rect(Rect rect, SpriteIndex sprite, Anchor anchor);
+internal Rect draw_sprite_rect(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
+internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect get_sprite_rect(SpriteIndex sprite);
+internal Rect draw_text_screen(Rect rect, String str, Anchor anchor, float32 font_size);

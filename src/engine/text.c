@@ -30,26 +30,40 @@ glyph_atlas_load(Arena* arena, const GlyphAtlasInfo* atlas_info, const Glyph* gl
     return atlas;
 }
 
+internal Rect
+text_calculate_bounds_deprecated(GlyphAtlas* atlas, Vec2 position, Alignment alignment, String str, float32 size)
+{
+    Vec2  string_size = vec2_zero();
+    Glyph glyph;
+    for (uint32 i = 0; i < str.length; i++)
+    {
+        glyph = glyph_get(atlas, str.value[i]);
+        string_size.x += glyph.advance * size;
+        float32 h     = glyph_height(glyph, size);
+        string_size.y = max(h, string_size.y);
+    };
+
+    float32 x = string_size.x * AlignmentMultiplierX[alignment];
+    float32 y = size * AlignmentMultiplierY[alignment];
+    return (Rect){.x = x + position.x, .y = y + position.y, .w = string_size.x, .h = size};
+}
+
 // TODO(selim): Go over each of these functions at some point. Currently we calculate glyph bounds multiple times for each string.
 internal Rect
 text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, String str, float32 size)
 {
     Vec2  string_size = vec2_zero();
     Glyph glyph;
-    for (int i = 0; i < str.length; i++)
+    for (uint32 i = 0; i < str.length; i++)
     {
-        glyph     = glyph_get(atlas, str.value[i]);
-        float32 h = glyph_height(glyph, size);
+        glyph = glyph_get(atlas, str.value[i]);
         string_size.x += glyph.advance * size;
-        string_size.y = max(h, string_size.y);
+        string_size.y = max(glyph.plane_bounds.top * size, string_size.y);
     };
-
-    // add the width (plus offset) of the last letter so bounds cover the whole string to the end
-    string_size.x += size * glyph.plane_bounds.left + (glyph_width(glyph, size)) / 2.0f + AlignmentMultiplierX[alignment];
 
     float32 x = string_size.x * AlignmentMultiplierX[alignment];
     float32 y = size * AlignmentMultiplierY[alignment];
-    return (Rect){.x = x + position.x, .y = y + position.y, .w = string_size.x, .h = size};
+    return (Rect){.x = x + position.x, .y = y + position.y, .w = string_size.x, .h = string_size.y};
 }
 
 internal Rect
@@ -61,7 +75,7 @@ text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels,
           .y = string_bounds.h * FontAlignmentMultiplierY[alignment]};
 
     uint32 index = dst_index;
-    for (int i = 0; i < str.length; i++)
+    for (uint32 i = 0; i < str.length; i++)
     {
         Glyph   glyph        = glyph_get(atlas, str.value[i]);
         float32 w            = glyph_width(glyph, size_in_pixels);
@@ -91,7 +105,7 @@ text_calculate_transforms_v2(GlyphAtlas* atlas, String str, float32 size_in_pixe
     uint32  current_line = 0;
     float32 line_height  = size_in_pixels;
     int32   space_index  = -1;
-    for (int i = 0; i < str.length; i++)
+    for (uint32 i = 0; i < str.length; i++)
     {
         Glyph   glyph        = glyph_get(atlas, str.value[i]);
         float32 w            = glyph_width(glyph, size_in_pixels);
@@ -111,7 +125,6 @@ text_calculate_transforms_v2(GlyphAtlas* atlas, String str, float32 size_in_pixe
         {
             base_offset.x = initial_base_offset.x;
             current_line++;
-
             i           = space_index;
             space_index = -1;
         }

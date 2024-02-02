@@ -2,7 +2,7 @@
 
 #include "layout.h"
 #include <base/asserts.h>
-#include <base/defines.h>
+#include <engine/layout.h>
 
 internal Cut
 cut(Rect* rect, CutSide side)
@@ -11,6 +11,44 @@ cut(Rect* rect, CutSide side)
     result.rect = rect;
     result.side = side;
     return result;
+}
+
+internal Rect
+rect_cut(Rect* r, float32 size, CutSide side)
+{
+    switch (side)
+    {
+    case CutSideTop:
+        return rect_cut_top(r, size);
+    case CutSideRight:
+        return rect_cut_right(r, size);
+    case CutSideLeft:
+        return rect_cut_left(r, size);
+    case CutSideBottom:
+        return rect_cut_bottom(r, size);
+    default:
+        not_implemented();
+    }
+    return (Rect){0};
+}
+
+internal Rect
+rect_cut_r(Rect* r, Rect size, CutSide side)
+{
+    switch (side)
+    {
+    case CutSideTop:
+        return rect_cut_top(r, size.h);
+    case CutSideRight:
+        return rect_cut_right(r, size.w);
+    case CutSideLeft:
+        return rect_cut_left(r, size.w);
+    case CutSideBottom:
+        return rect_cut_bottom(r, size.h);
+    default:
+        not_implemented();
+    }
+    return (Rect){0};
 }
 
 internal Rect
@@ -152,6 +190,30 @@ rect_move(Rect rect, Vec2 v)
     result.x += v.x;
     result.y += v.y;
     return result;
+}
+
+internal Rect
+rect_resize(Rect r, float32 w, float32 h, Alignment alignment)
+{
+    Anchor anchor;
+    anchor.child  = alignment;
+    anchor.parent = alignment;
+
+    Rect result = rect(0, 0, w, h);
+    result      = rect_anchor(result, r, anchor);
+    return result;
+}
+
+internal Rect
+rect_resize_height(Rect r, float32 h, Alignment alignment)
+{
+    return rect_resize(r, r.w, h, alignment);
+}
+
+internal Rect
+rect_resize_width(Rect r, float32 w, Alignment alignment)
+{
+    return rect_resize(r, w, r.h, alignment);
 }
 
 internal LayoutGrid
