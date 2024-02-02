@@ -410,7 +410,7 @@ draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex 
 }
 
 internal void
-draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color)
+draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color, float32 alpha)
 {
     xassert(d_state->sprite_atlas, "`d_state->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
     RenderKey  key         = render_key_new(view_type, layer, FRAME_BUFFER_INDEX_DEFAULT, d_state->sprite_atlas->texture, d_state->geometry_quad, d_state->material_sprite);
@@ -422,7 +422,7 @@ draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprit
 
     model_buffer[0].sprite_index        = sprite;
     model_buffer[0].texture_layer_index = d_state->sprite_atlas->sprite_texture_indices[sprite];
-    model_buffer[0].alpha               = 1;
+    model_buffer[0].alpha               = alpha;
     model_buffer[0].color               = color_to_vec4(color);
 }
 
@@ -522,7 +522,17 @@ draw_sprite_rect(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor)
     Rect sprite_rect = get_sprite_rect(sprite);
     Rect container   = rect_cut_r(rect, sprite_rect, side);
     Rect result      = rect_anchor(sprite_rect, container, anchor);
-    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), d_state->ctx->view, d_state->ctx->sort_layer, ColorInvisible);
+    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), d_state->ctx->view, d_state->ctx->sort_layer, ColorInvisible, 1);
+    return result;
+}
+
+internal Rect
+draw_sprite_rect_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha)
+{
+    Rect sprite_rect = get_sprite_rect(sprite);
+    Rect container   = rect_cut_r(rect, sprite_rect, side);
+    Rect result      = rect_anchor(sprite_rect, container, anchor);
+    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(-1, 1), d_state->ctx->view, d_state->ctx->sort_layer, color, alpha);
     return result;
 }
 
@@ -532,7 +542,7 @@ draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor an
     Rect sprite_rect = get_sprite_rect(sprite);
     Rect container   = rect_cut_r(rect, sprite_rect, side);
     Rect result      = rect_anchor(sprite_rect, container, anchor);
-    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(-1, 1), d_state->ctx->view, d_state->ctx->sort_layer, ColorInvisible);
+    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(-1, 1), d_state->ctx->view, d_state->ctx->sort_layer, ColorInvisible, 1);
     return container;
 }
 

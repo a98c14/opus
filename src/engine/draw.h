@@ -131,7 +131,7 @@ typedef struct
     int32   sprite_index;
     int32   texture_layer_index;
     float32 alpha;
-    float32 _;
+    float32 color_strength;
     Vec4    color;
 } ShaderDataSprite;
 
@@ -167,7 +167,7 @@ internal Rect draw_rect_internal(Rect rect, SortLayerIndex sort_index, ViewType 
 
 /* sprite */
 internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color);
-internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color);
+internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color, float32 alpha);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer);
 
 /** Utility */
@@ -190,6 +190,7 @@ internal Rect draw_rect(Rect rect, Color color);
 internal Rect draw_debug_rect(Rect rect);
 internal Rect draw_debug_rect_screen(Rect rect);
 internal Rect draw_sprite_rect(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
+internal Rect draw_sprite_rect_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha);
 internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect get_sprite_rect(SpriteIndex sprite);
 internal Rect draw_text_screen(Rect rect, String str, Anchor anchor, float32 font_size);
