@@ -2,11 +2,11 @@
 #include <stdint.h>
 
 /* Defines */
-#define global   static
-#define local    static
-#define internal static
-#define true     1
-#define false    0
+#define global        static
+#define local_persist static
+#define internal      static
+#define true          1
+#define false         0
 
 #if COMPILER_MSVC
 #define per_thread __declspec(thread)
@@ -18,9 +18,11 @@
 #define per_thread
 #endif
 
-#if OS_WINDOWS
-#pragma section(".roglob", read)
-#define read_only no_asan __declspec(allocate(".roglob"))
+#if COMPILER_CL || (COMPILER_CLANG && OS_WINDOWS)
+#pragma section(".rdata$", read)
+#define read_only __declspec(allocate(".rdata$"))
+#elif (COMPILER_CLANG && OS_LINUX)
+#define read_only __attribute__((section(".rodata")))
 #else
 #define read_only
 #endif
@@ -113,3 +115,13 @@ typedef int32_t bool;
 #define dll_remove(f, l, n)       dll_remove_npz(f, l, n, next, prev, check_null, set_null)
 
 #define for_each(n, f) for ((n = f); (n != 0); (n = n->next))
+
+/** branch predictor hints */
+#if defined(__clang__)
+#define expect(expr, val) __builtin_expect((expr), (val))
+#else
+#define expect(expr, val) (expr)
+#endif
+
+#define likely(expr)   expect(expr, 1)
+#define unlikely(expr) expect(expr, 0)

@@ -40,6 +40,9 @@ typedef struct
     /* Atlas */
     GlyphAtlas*  font_open_sans;
     SpriteAtlas* sprite_atlas;
+
+    /** default styles */
+    StyleRect style_debug_rect;
 } DrawContext;
 
 global DrawContext* g_draw_context;
@@ -134,7 +137,8 @@ internal void draw_circle_partially_filled(Vec2 position, float32 rotation, floa
 internal void draw_boid(Vec2 position, float32 rotation, float32 size, Color color, SortLayerIndex layer);
 internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLayerIndex sort_index);
 internal Rect draw_rect_simple(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, Vec4 color);
-internal Rect draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
+internal Rect draw_rect_rotated(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
+internal Rect draw_rect(Rect rect, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
 
 /* Sprite */
 internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color);
@@ -149,3 +153,9 @@ internal float32 screen_bottom();
 internal float32 screen_height();
 internal float32 screen_width();
 internal Rect    screen_rect();
+
+/** extra draw functions */
+internal Rect draw_debug_rect(Rect rect);
+internal Rect draw_debug_rect_screen(Rect rect);
+internal Rect draw_sprite_rect(Rect rect, SpriteIndex sprite, Anchor anchor);
+internal Rect get_sprite_rect(SpriteIndex sprite);

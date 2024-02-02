@@ -7,6 +7,7 @@
 #include <gfx/base.h>
 #include <gfx/sprite.h>
 #include <gfx/utils.h>
+#include <ui/base.h>
 
 #ifndef SHADER_PATH
 #define SHADER_PATH "..\\src\\shaders"
@@ -105,6 +106,13 @@ draw_context_initialize(Arena* arena, Arena* temp_arena, Renderer* renderer)
         countof(FONT_OPEN_SANS_GLYPHS),
         font_texture);
 
+    /** default styles */
+    g_draw_context->style_debug_rect.border_color     = color_to_vec4(ColorRed500);
+    g_draw_context->style_debug_rect.color            = color_to_vec4(ColorInvisible);
+    g_draw_context->style_debug_rect.softness         = 2;
+    g_draw_context->style_debug_rect.border_radius.v  = vec4(1, 1, 1, 1);
+    g_draw_context->style_debug_rect.border_thickness = 4;
+
     log_debug("initialized draw context");
 }
 
@@ -200,7 +208,7 @@ draw_rect_simple(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewTyp
 }
 
 internal Rect
-draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style)
+draw_rect_rotated(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style)
 {
     RenderKey  key         = render_key_new(view_type, sort_index, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_rounded_rect);
     DrawBuffer draw_buffer = renderer_buffer_request(g_draw_context->renderer, key, 1);
@@ -209,6 +217,24 @@ draw_rect(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_
         draw_buffer.model_buffer[0] = transform_quad_aligned(vec3_xy_z(rect.center, 0), rect.size);
     else
         draw_buffer.model_buffer[0] = transform_quad(rect.center, rect.size, rotation);
+
+    ShaderDataRectRounded* uniform_buffer = (ShaderDataRectRounded*)draw_buffer.uniform_data_buffer;
+    uniform_buffer[0].color               = style.color;
+    uniform_buffer[0].edge_color          = style.border_color;
+    uniform_buffer[0].round               = style.border_radius.v;
+    uniform_buffer[0].scale               = rect.size;
+    uniform_buffer[0].softness            = style.softness;
+    uniform_buffer[0].edge_thickness      = style.border_thickness;
+
+    return rect;
+}
+
+internal Rect
+draw_rect(Rect rect, SortLayerIndex sort_index, ViewType view_type, StyleRect style)
+{
+    RenderKey  key              = render_key_new(view_type, sort_index, FRAME_BUFFER_INDEX_DEFAULT, TEXTURE_INDEX_NULL, g_draw_context->geometry_quad, g_draw_context->material_rounded_rect);
+    DrawBuffer draw_buffer      = renderer_buffer_request(g_draw_context->renderer, key, 1);
+    draw_buffer.model_buffer[0] = transform_quad_aligned(vec3_xy_z(rect.center, 0), rect.size);
 
     ShaderDataRectRounded* uniform_buffer = (ShaderDataRectRounded*)draw_buffer.uniform_data_buffer;
     uniform_buffer[0].color               = style.color;
@@ -420,4 +446,33 @@ internal Rect
 screen_rect()
 {
     return rect(0, 0, screen_width(), screen_height());
+}
+
+/** extra draw functions */
+internal Rect
+draw_debug_rect(Rect rect)
+{
+    return draw_rect(rect, SORT_LAYER_INDEX_UI, ViewTypeWorld, g_draw_context->style_debug_rect);
+}
+
+internal Rect
+draw_debug_rect_screen(Rect rect)
+{
+    return draw_rect(rect, SORT_LAYER_INDEX_UI, ViewTypeScreen, g_draw_context->style_debug_rect);
+}
+
+internal Rect
+draw_sprite_rect(Rect rect, SpriteIndex sprite, Anchor anchor)
+{
+    Rect sprite_rect = get_sprite_rect(sprite);
+    Rect result      = rect_anchor(sprite_rect, rect, anchor);
+    draw_sprite(result.center, 1, 0, sprite, vec2_one(), ViewTypeScreen, SORT_LAYER_INDEX_UI);
+    return result;
+}
+
+internal Rect
+get_sprite_rect(SpriteIndex sprite)
+{
+    const Sprite* s = &g_draw_context->sprite_atlas->sprites[sprite];
+    return rect_from_wh(s->rect.w, s->rect.h);
 }
