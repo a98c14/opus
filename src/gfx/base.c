@@ -113,9 +113,6 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_MODEL, g_renderer->mvp_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    /* Draw State Setup */
-    g_renderer->draw_state = renderer_draw_state_new(arena);
-
     // Reserve the first slot for NULL texture
     g_renderer->texture_count += 1;
 
@@ -150,19 +147,6 @@ r_pipeline_init(R_PipelineConfiguration* configuration)
     }
 
     g_renderer->active_render_key = render_key_new(0, 0, 0, TEXTURE_INDEX_NULL, GEOMETRY_CAPACITY - 1, MATERIAL_CAPACITY - 1); // TODO(selim): find a way to show invalid values properly;
-}
-
-internal RendererDrawState*
-renderer_draw_state_new(Arena* arena)
-{
-    RendererDrawState* draw_state     = arena_push_struct_zero(arena, RendererDrawState);
-    draw_state->material_draw_buffers = arena_push_array_zero(arena, MaterialDrawBuffer, MATERIAL_DRAW_BUFFER_CAPACITY);
-    for (int i = 0; i < MATERIAL_DRAW_BUFFER_CAPACITY; i++)
-    {
-        draw_state->material_draw_buffers[i].key = MATERIAL_DRAW_BUFFER_EMPTY_KEY;
-    }
-
-    return draw_state;
 }
 
 internal Camera
@@ -414,93 +398,6 @@ internal Color
 vec4_to_color(Vec4 c)
 {
     return (Color){.r = c.r * 255.0F, .g = c.g * 255.0F, .b = c.b * 255.0F, .a = c.a * 255.0F};
-}
-
-internal void
-renderer_render(Renderer* renderer, float32 dt)
-{
-    Camera*            camera = &renderer->camera;
-    RendererDrawState* state  = renderer->draw_state;
-    renderer->timer += dt;
-    renderer->stat_draw_count   = 0;
-    renderer->stat_object_count = 0;
-
-    /* setup global shader data */
-    GlobalUniformData global_shader_data = {0};
-    global_shader_data.time              = renderer->timer;
-    glBindBuffer(GL_UNIFORM_BUFFER, renderer->global_uniform_buffer_id);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalUniformData), &global_shader_data);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_MODEL, renderer->mvp_ssbo_id);
-
-    /* Layer */
-    for (uint8 layer_index = 0; layer_index < state->layer_count; layer_index++)
-    {
-        LayerDrawBuffer* layer_draw_buffer = &state->layer_draw_buffers[layer_index];
-        FrameBuffer*     frame_buffer      = &renderer->frame_buffers[layer_draw_buffer->layer_index];
-        frame_buffer_begin(frame_buffer);
-
-        /* Sort Layer */
-        for (int8 sort_layer_index = 0; sort_layer_index < SORTING_LAYER_CAPACITY; sort_layer_index++)
-        {
-            SortingLayerDrawBuffer* sort_layer_draw_buffer = &layer_draw_buffer->sorting_layer_draw_buffers[sort_layer_index];
-
-            /* View */
-            for (uint8 view_type_index = 0; view_type_index < ViewTypeCOUNT; view_type_index++)
-            {
-                ViewDrawBuffer* view_draw_buffer = &sort_layer_draw_buffer->view_buffers[view_type_index];
-                Mat4            view_matrix      = view_draw_buffer->view_type == ViewTypeWorld ? camera->view : mat4_identity();
-
-                CameraUniformData camera_data = {0};
-                camera_data.view              = view_matrix;
-                camera_data.projection        = camera->projection;
-                glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_uniform_buffer_id);
-                glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
-                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_CAMERA, renderer->camera_uniform_buffer_id);
-
-                /* Texture */
-                for (uint8 texture_index = 0; texture_index < view_draw_buffer->texture_count; texture_index++)
-                {
-                    TextureDrawBuffer* texture_draw_buffer = &view_draw_buffer->texture_draw_buffers[texture_index];
-                    if (texture_draw_buffer->texture_index != TEXTURE_INDEX_NULL)
-                    {
-                        Texture* texture = &renderer->textures[texture_draw_buffer->texture_index];
-                        glActiveTexture(GL_TEXTURE0);
-                        glBindTexture(texture->gl_texture_type, texture->gl_texture_id);
-                        texture_shader_data_set(renderer, texture);
-                    }
-
-                    /* Geometry */
-                    for (uint8 geometry_internal_index = 0; geometry_internal_index < texture_draw_buffer->geometry_count; geometry_internal_index++)
-                    {
-                        GeometryDrawBuffer* geometry_draw_buffer = &texture_draw_buffer->geometry_draw_buffers[geometry_internal_index];
-                        Geometry            geometry             = renderer->geometries[geometry_draw_buffer->geometry_index];
-                        // don't update state if not needed
-                        if (state->active_geometry.vertex_array_object != geometry.vertex_array_object)
-                        {
-                            state->active_geometry = geometry;
-                            glBindVertexArray(geometry.vertex_array_object);
-                        }
-
-                        /* Draw Buffers */
-                        for (int internal_index = 0; internal_index < geometry_draw_buffer->material_count; internal_index++)
-                        {
-                            MaterialDrawBufferIndex material_draw_buffer_index = geometry_draw_buffer->material_buffer_indices[internal_index];
-                            MaterialDrawBuffer*     material_draw_buffer       = &state->material_draw_buffers[material_draw_buffer_index];
-                            Material*               material                   = &g_renderer->materials[material_draw_buffer->material_index];
-                            Geometry*               geometry                   = &g_renderer->geometries[geometry_draw_buffer->geometry_index];
-
-                            glUseProgram(material->gl_program_id);
-                            glUniform1i(material->location_texture, 0);
-                            r_draw_batch_internal(geometry, material, material_draw_buffer->element_count, material_draw_buffer->model_buffer, material_draw_buffer->shader_data_buffer);
-                            material_draw_buffer->element_count = 0;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 internal void

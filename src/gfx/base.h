@@ -165,86 +165,6 @@ enum ShaderProgramType
 
 typedef struct
 {
-    int64                   key;
-    MaterialDrawBufferIndex index;
-    MaterialIndex           material_index;
-    uint32                  element_count;
-    Mat4*                   model_buffer;
-    void*                   shader_data_buffer;
-} MaterialDrawBuffer;
-
-typedef struct
-{
-    GeometryIndex geometry_index;
-
-    uint32                  material_count;
-    MaterialDrawBufferIndex material_buffer_indices[MATERIAL_DRAW_BUFFER_CAPACITY_PER_SETTING];
-} GeometryDrawBuffer;
-
-typedef struct
-{
-    TextureIndex texture_index;
-
-    uint32             geometry_count;
-    GeometryDrawBuffer geometry_draw_buffers[GEOMETRY_CAPACITY];
-} TextureDrawBuffer;
-
-typedef struct
-{
-    ViewType view_type;
-
-    uint32            texture_count;
-    TextureDrawBuffer texture_draw_buffers[TEXTURE_CAPACITY];
-} ViewDrawBuffer;
-
-typedef struct
-{
-    // grouped by view type (screen, world)
-    uint32         view_count;
-    ViewDrawBuffer view_buffers[ViewTypeCOUNT];
-} SortingLayerDrawBuffer;
-
-typedef struct
-{
-    FrameBufferIndex layer_index;
-
-    /** TODO: Should we keep the count here and sort when a new buffer is created
-     * instead of looping through all every frame? */
-    SortingLayerDrawBuffer sorting_layer_draw_buffers[SORTING_LAYER_CAPACITY];
-} LayerDrawBuffer;
-
-typedef struct
-{
-    /** model and shader data that is needed to render the image
-     * indexed by hash of layer, view, texture, material */
-    uint32              material_draw_buffer_count;
-    MaterialDrawBuffer* material_draw_buffers;
-    Geometry            active_geometry;
-
-    // draw buffers
-    uint32          layer_count;
-    LayerDrawBuffer layer_draw_buffers[LAYER_CAPACITY];
-} RendererDrawState;
-
-typedef struct
-{
-    int32  capacity;
-    int32  index;
-    uint32 uniform_data_size;
-    Mat4*  model_buffer;
-    void*  uniform_data_buffer;
-} DrawBuffer;
-
-typedef struct
-{
-    uint32      count;
-    uint32      index;
-    DrawBuffer* elements;
-} DrawBufferArray;
-
-/** V2 */
-typedef struct
-{
     RenderKey key;
     uint32    element_count;
     uint32    uniform_data_size;
@@ -296,11 +216,9 @@ typedef struct
     uint8     pass_count;
     R_Pass*   passes;
 
-    // TODO: delete
-    float32            timer;
-    float32            ppu;
-    float32            aspect;
-    RendererDrawState* draw_state;
+    float32 timer;
+    float32 ppu;
+    float32 aspect;
 
     /* resources */
     uint8        frame_buffer_count;
@@ -365,13 +283,12 @@ internal R_PipelineConfiguration* r_pipeline_config_new(Arena* temp_arena);
 internal PassIndex                r_pipeline_config_add_pass(R_PipelineConfiguration* config, FrameBufferIndex frame_buffer);
 internal void                     r_pipeline_init(R_PipelineConfiguration* configuration);
 
-internal void               renderer_init(Arena* arena, RendererConfiguration* configuration);
-internal RendererDrawState* renderer_draw_state_new(Arena* arena);
-internal MaterialIndex      material_new(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
-internal GeometryIndex      geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object);
-internal TextureIndex       texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
-internal TextureIndex       texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
-internal uint32             shader_load(String vertex_shader_text, String fragment_shader_text);
+internal void          renderer_init(Arena* arena, RendererConfiguration* configuration);
+internal MaterialIndex material_new(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
+internal GeometryIndex geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object);
+internal TextureIndex  texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
+internal TextureIndex  texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
+internal uint32        shader_load(String vertex_shader_text, String fragment_shader_text);
 
 internal RenderKey render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index);
 internal uint64    render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count);
