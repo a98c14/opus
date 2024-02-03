@@ -142,7 +142,8 @@ draw_arrow(Vec2 position, float32 length, float32 rotation, Color color, float32
     float32 sinx   = (float32)sinf(radian) * (length / 2.0f);
     position.x += cosx;
     position.y += sinx;
-    r_draw_single(arrow_key, transform_quad(position, vec2(thickness * 2, thickness * 2), rotation - 90), &shader_data);
+    ShaderDataBasic arrow_shader = {.color = color_to_vec4(color)};
+    r_draw_single(arrow_key, transform_quad(position, vec2(thickness * 2, thickness * 2), rotation - 90), &arrow_shader);
 }
 
 internal void
@@ -228,6 +229,7 @@ draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color colo
         memcpy(&shader_data_buffer[i], &shader_data, sizeof(ShaderDataText));
     }
     return bounds;
+    return rect_from_wh(0, 0);
 }
 
 internal Rect
@@ -258,6 +260,7 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
     }
 
     return result;
+    return rect_from_wh(0, 0);
 }
 
 internal void

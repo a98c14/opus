@@ -269,6 +269,7 @@ typedef struct
 typedef struct
 {
     R_BatchGroup* batch_groups;
+    uint32        total_draw_count;
 
     FrameBufferIndex frame_buffer;
 } R_Pass;
@@ -291,6 +292,11 @@ typedef struct
     uint32 mvp_ssbo_id;
 
     /* state */
+    RenderKey active_render_key;
+    uint8     pass_count;
+    R_Pass*   passes;
+
+    // TODO: delete
     float32            timer;
     float32            ppu;
     float32            aspect;
@@ -320,9 +326,6 @@ typedef struct
     int64   stat_probe_count;
     float32 stat_probe_count_sum;
 
-    /** V2 */
-    uint8   pass_count;
-    R_Pass* passes;
 } Renderer;
 global Renderer* g_renderer;
 
@@ -339,6 +342,7 @@ typedef struct
     Arena*                   temp_arena;
     uint32                   pass_count;
     R_PassConfigurationNode* first_pass;
+    R_PassConfigurationNode* last_pass;
 } R_PipelineConfiguration;
 
 typedef struct

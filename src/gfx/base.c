@@ -44,7 +44,7 @@ r_pipeline_config_add_pass(R_PipelineConfiguration* config, FrameBufferIndex fra
     node->frame_buffer_index      = frame_buffer;
     PassIndex pass_index          = config->pass_count;
     config->pass_count++;
-    stack_push(config->first_pass, node);
+    queue_push(config->first_pass, config->last_pass, node);
     return pass_index;
 }
 
@@ -53,7 +53,7 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
 {
     g_renderer                = arena_push_struct_zero(arena, Renderer);
     g_renderer->arena         = arena;
-    g_renderer->frame_arena   = make_arena_reserve(mb(64));
+    g_renderer->frame_arena   = make_arena_reserve(mb(128));
     g_renderer->window_width  = configuration->window_width;
     g_renderer->window_height = configuration->window_height;
     g_renderer->frame_buffers = arena_push_array_zero(arena, FrameBuffer, LAYER_CAPACITY);
@@ -148,6 +148,8 @@ r_pipeline_init(R_PipelineConfiguration* configuration)
         g_renderer->passes[pass_index].batch_groups = arena_push_array_zero(g_renderer->arena, R_BatchGroup, SORTING_LAYER_CAPACITY);
         pass_index++;
     }
+
+    g_renderer->active_render_key = render_key_new(0, 0, 0, TEXTURE_INDEX_NULL, GEOMETRY_CAPACITY - 1, MATERIAL_CAPACITY - 1); // TODO(selim): find a way to show invalid values properly;
 }
 
 internal RendererDrawState*
@@ -333,6 +335,7 @@ internal RenderKey
 render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index)
 {
     xassert(view_type < 4, "invalid view_type value provided");
+    log_trace("render key new, sort: %2d, pass: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", sort_layer, pass, view_type, texture, geometry, material_index);
     RenderKey result = ((uint64)sort_layer << RenderKeySortLayerIndexBitStart) +
                        ((uint64)pass << RenderKeyPassIndexBitStart) +
                        ((uint64)view_type << RenderKeyViewTypeBitStart) +
@@ -517,9 +520,8 @@ renderer_v2_render(Renderer* renderer, float32 dt)
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_MODEL, renderer->mvp_ssbo_id);
 
     /* setup global camera data */
-    Mat4              view_matrix = camera->view;
     CameraUniformData camera_data = {0};
-    camera_data.view              = view_matrix;
+    camera_data.view              = camera->view;
     camera_data.projection        = camera->projection;
     glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_uniform_buffer_id);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
@@ -528,36 +530,40 @@ renderer_v2_render(Renderer* renderer, float32 dt)
     for (uint32 i = 0; i < renderer->pass_count; i++)
     {
         R_Pass* pass = &renderer->passes[i];
+        if (pass->total_draw_count <= 0)
+            continue;
 
         FrameBuffer* frame_buffer = &renderer->frame_buffers[pass->frame_buffer];
         frame_buffer_begin(frame_buffer);
 
-        RenderKey current_render_key = 0;
-        for (uint32 i = 0; i < SORTING_LAYER_CAPACITY; i++)
+        for (uint32 j = 0; j < SORTING_LAYER_CAPACITY; j++)
         {
-            R_BatchGroup* batch_list = &pass->batch_groups[i];
-            R_BatchNode*  batch_node;
+            R_BatchGroup* batch_list = &pass->batch_groups[j];
+            if (batch_list->batch_count <= 0)
+                continue;
+
+            R_BatchNode* batch_node;
             for_each(batch_node, batch_list->first)
             {
-                R_Batch batch      = batch_node->v;
-                uint64  diff       = current_render_key ^ batch.key;
-                current_render_key = batch.key;
+                R_Batch batch                 = batch_node->v;
+                uint64  diff                  = g_renderer->active_render_key ^ batch.key;
+                g_renderer->active_render_key = batch.key;
 
                 /** set texture */
-                if (render_key_mask(diff, RenderKeyTextureIndexBitStart, RenderKeyTextureIndexBitCount) > 0)
+                TextureIndex texture_index = render_key_mask(batch.key, RenderKeyTextureIndexBitStart, RenderKeyTextureIndexBitCount);
+                if (render_key_mask(diff, RenderKeyTextureIndexBitStart, RenderKeyTextureIndexBitCount) > 0 && texture_index > 0)
                 {
-                    TextureIndex texture_index = render_key_mask(batch.key, RenderKeyTextureIndexBitStart, RenderKeyTextureIndexBitCount);
-                    Texture*     texture       = &renderer->textures[texture_index];
+                    Texture* texture = &renderer->textures[texture_index];
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(texture->gl_texture_type, texture->gl_texture_id);
                     texture_shader_data_set(renderer, texture);
                 }
 
                 /** set view matrix */
+                ViewType view_type = render_key_mask(batch.key, RenderKeyViewTypeBitStart, RenderKeyViewTypeBitCount);
                 if (render_key_mask(diff, RenderKeyViewTypeBitStart, RenderKeyViewTypeBitCount) > 0)
                 {
-                    ViewType view_type = render_key_mask(batch.key, RenderKeyViewTypeBitStart, RenderKeyViewTypeBitCount);
-                    camera_data.view   = view_type == ViewTypeWorld ? camera->view : mat4_identity();
+                    camera_data.view = view_type == ViewTypeWorld ? camera->view : mat4_identity();
                     glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_uniform_buffer_id);
                     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
                     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_CAMERA, renderer->camera_uniform_buffer_id);
@@ -580,8 +586,13 @@ renderer_v2_render(Renderer* renderer, float32 dt)
                     glBindVertexArray(geometry->vertex_array_object);
                 }
 
+                log_trace("rendering, sort: %2d, layer: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", i, pass->frame_buffer, view_type, texture_index, geometry_index, material_index);
+
                 r_draw_batch_internal(geometry, material, batch.element_count, batch.model_buffer, batch.uniform_buffer);
             }
+
+            // NOTE(selim): if we don't zero the list it keeps the old references in the next frame
+            memory_zero_struct(batch_list);
         }
     }
 
@@ -609,9 +620,14 @@ r_batch_from_key(RenderKey key, uint64 element_count)
 
     PassIndex      pass_index       = render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
     SortLayerIndex sort_layer_index = render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);
-    R_BatchGroup*  batch_group      = &g_renderer->passes[pass_index].batch_groups[sort_layer_index];
+    R_Pass*        pass             = &g_renderer->passes[pass_index];
+    pass->total_draw_count += element_count;
+
+    R_BatchGroup* batch_group = &pass->batch_groups[sort_layer_index];
+    batch_group->batch_count++;
 
     R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
+    batch_node->v.key               = key;
     batch_node->v.element_count     = element_count;
     batch_node->v.uniform_data_size = uniform_data_size;
     batch_node->v.model_buffer      = arena_push_array(g_renderer->frame_arena, Mat4, element_count);
@@ -631,7 +647,7 @@ r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data)
 {
     R_Batch* batch = r_batch_from_key(key, count);
     memcpy(batch->model_buffer, models, sizeof(Mat4) * count);
-    memcpy(batch->uniform_buffer, uniform_data, batch->uniform_data_size * count);
+    memcpy((uint8*)batch->uniform_buffer, uniform_data, batch->uniform_data_size * count);
 }
 
 internal void
@@ -653,20 +669,16 @@ internal void
 r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_layer, MaterialIndex material_index, void* uniform_data)
 {
     R_Pass*      source_pass         = &g_renderer->passes[source_index];
-    R_Pass*      target_pass         = &g_renderer->passes[target_index];
     FrameBuffer* source_frame_buffer = &g_renderer->frame_buffers[source_pass->frame_buffer];
-    FrameBuffer* target_frame_buffer = &g_renderer->frame_buffers[target_pass->frame_buffer];
 
-    Mat4      model = transform_quad_aligned(vec3_zero(), vec2(target_frame_buffer->width, target_frame_buffer->height));
-    RenderKey key   = render_key_new(ViewTypeScreen, sort_layer, target_pass->frame_buffer, source_frame_buffer->texture_index, g_renderer->quad, material_index);
+    Mat4      model = transform_quad_aligned(vec3_zero(), vec2(g_renderer->world_width, g_renderer->world_height));
+    RenderKey key   = render_key_new(ViewTypeScreen, sort_layer, target_index, source_frame_buffer->texture_index, g_renderer->quad, material_index);
     r_draw_single(key, model, uniform_data);
 }
 
 internal void
 r_draw_batch_internal(Geometry* geometry, Material* material, uint64 element_count, Mat4* models, void* uniform_data)
 {
-    log_trace("rendering, sort: %2d, layer: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d, internal: %2d, draw_buffer: %03d", sort_layer_index, layer_draw_buffer->layer_index, view_draw_buffer->view_type, texture_draw_buffer->texture_index, geometry_draw_buffer->geometry_index, material_draw_buffer->material_index, internal_index, material_draw_buffer_index);
-
     if (material->is_instanced)
     {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_CUSTOM, material->uniform_buffer_id);
