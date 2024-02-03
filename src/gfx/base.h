@@ -35,20 +35,21 @@ enum
 };
 
 typedef int64 RenderKey;
-const uint64  RenderKeyMaterialIndexBitStart    = 0;
-const uint64  RenderKeyMaterialIndexBitCount    = 8;
-const uint64  RenderKeyGeometryIndexBitStart    = 8;
-const uint64  RenderKeyGeometryIndexBitCount    = 8;
-const uint64  RenderKeyTextureIndexBitStart     = 16;
-const uint64  RenderKeyTextureIndexBitCount     = 8;
-const uint64  RenderKeyViewTypeBitStart         = 24;
-const uint64  RenderKeyViewTypeBitCount         = 2;
-const uint64  RenderKeyFrameBufferIndexBitStart = 26;
-const uint64  RenderKeyFrameBufferIndexBitCount = 8;
-const uint64  RenderKeySortLayerIndexBitStart   = 34;
-const uint64  RenderKeySortLayerIndexBitCount   = 8;
+const uint64  RenderKeyMaterialIndexBitStart  = 0;
+const uint64  RenderKeyMaterialIndexBitCount  = 8;
+const uint64  RenderKeyGeometryIndexBitStart  = 8;
+const uint64  RenderKeyGeometryIndexBitCount  = 8;
+const uint64  RenderKeyTextureIndexBitStart   = 16;
+const uint64  RenderKeyTextureIndexBitCount   = 8;
+const uint64  RenderKeyViewTypeBitStart       = 24;
+const uint64  RenderKeyViewTypeBitCount       = 2;
+const uint64  RenderKeyPassIndexBitStart      = 26;
+const uint64  RenderKeyPassIndexBitCount      = 8;
+const uint64  RenderKeySortLayerIndexBitStart = 34;
+const uint64  RenderKeySortLayerIndexBitCount = 8;
 
 typedef uint8 ViewType;
+typedef uint8 PassIndex;
 typedef int8  FrameBufferIndex;
 typedef int8  TextureIndex;
 typedef int8  MaterialIndex;
@@ -207,7 +208,7 @@ typedef struct
     FrameBufferIndex layer_index;
 
     /** TODO: Should we keep the count here and sort when a new buffer is created
-     * instead of looping through all evevy frame? */
+     * instead of looping through all every frame? */
     SortingLayerDrawBuffer sorting_layer_draw_buffers[SORTING_LAYER_CAPACITY];
 } LayerDrawBuffer;
 
@@ -240,9 +241,41 @@ typedef struct
     DrawBuffer* elements;
 } DrawBufferArray;
 
+/** V2 */
+typedef struct
+{
+    RenderKey key;
+    uint64    element_count;
+    Mat4*     model_data;
+    void*     uniform_data;
+} R_Batch;
+
+typedef struct R_BatchNode R_BatchNode;
+struct R_BatchNode
+{
+    R_Batch      v;
+    R_BatchNode* next;
+};
+
+typedef struct
+{
+    R_BatchNode* first;
+    R_BatchNode* last;
+    uint32       batch_count;
+} R_BatchGroup;
+
+typedef struct
+{
+    R_BatchGroup* batch_groups;
+
+    ViewType         view_type;
+    FrameBufferIndex frame_buffer;
+} R_Pass;
+
 typedef struct
 {
     Arena* arena;
+    Arena* frame_arena;
 
     float32 window_width;
     float32 window_height;
@@ -282,6 +315,10 @@ typedef struct
     int32   stat_probe_count_max;
     int64   stat_probe_count;
     float32 stat_probe_count_sum;
+
+    /** V2 */
+    uint8   pass_count;
+    R_Pass* passes;
 } Renderer;
 global Renderer* g_renderer;
 
@@ -319,6 +356,12 @@ internal Vec4                color_to_vec4(Color color);
 internal Color               vec4_to_color(Vec4 c);
 internal void                renderer_render(Renderer* renderer, float32 dt);
 internal void                texture_shader_data_set(Renderer* renderer, const Texture* texture);
+
+/** V2 */
+internal void r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
+internal void r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
+internal void r_draw_many_no_copy(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
+internal void r_draw_batch_internal(Geometry* geometry, Material* material, uint64 element_count, Mat4* models, void* uniform_data);
 
 /** camera */
 internal Camera camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
