@@ -1,5 +1,6 @@
 #include "draw.h"
 #include <base/defines.h>
+#include <engine/color.h>
 #include <engine/draw.h>
 #include <gfx/base.h>
 
@@ -153,7 +154,7 @@ draw_triangle(Vec2 position, float32 rotation, Color color, float32 size)
 }
 
 internal Rect
-draw_rect_rotated(Rect rect, float32 rotation, Vec4 color)
+draw_rect_rotated(Rect rect, float32 rotation, Color color)
 {
     RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
 
@@ -161,7 +162,7 @@ draw_rect_rotated(Rect rect, float32 rotation, Vec4 color)
                                : transform_quad(rect.center, rect.size, rotation);
 
     ShaderDataRectRounded shader_data = {0};
-    shader_data.color                 = color;
+    shader_data.color                 = color_to_vec4(color);
     shader_data.edge_color            = d_color_none;
     shader_data.round                 = vec4(1, 1, 1, 1);
     shader_data.scale                 = rect.size;
@@ -172,7 +173,7 @@ draw_rect_rotated(Rect rect, float32 rotation, Vec4 color)
 }
 
 internal Rect
-draw_rect(Rect rect, Vec4 color)
+draw_rect(Rect rect, Color color)
 {
     return draw_rect_rotated(rect, 0, color);
 }
@@ -260,18 +261,18 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
 }
 
 internal void
-draw_circle(Circle circle, Color color)
+draw_circle(Vec2 pos, float32 radius, Color color)
 {
     RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
 
     ShaderDataCircle shader_data = {0};
     shader_data.color            = color_to_vec4(color);
     shader_data.slice_ratio      = 1;
-    r_draw_single(key, transform_quad_aligned(vec3_xy_z(circle.center, 0), vec2(circle.radius, circle.radius)), &shader_data);
+    r_draw_single(key, transform_quad_aligned(vec3_xy_z(pos, 0), vec2(radius, radius)), &shader_data);
 }
 
 internal void
-draw_circle_filled(Circle circle, Color color)
+draw_circle_filled(Vec2 pos, float32 radius, Color color)
 {
     RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
 
@@ -279,7 +280,7 @@ draw_circle_filled(Circle circle, Color color)
     shader_data.color            = color_to_vec4(color);
     shader_data.fill_ratio       = 1;
     shader_data.slice_ratio      = 1;
-    r_draw_single(key, transform_quad_aligned(vec3_xy_z(circle.center, 0), vec2(circle.radius, circle.radius)), &shader_data);
+    r_draw_single(key, transform_quad_aligned(vec3_xy_z(pos, 0), vec2(radius, radius)), &shader_data);
 }
 
 internal void
@@ -369,7 +370,7 @@ draw_context_pop()
 internal Rect
 draw_debug_rect(Rect rect)
 {
-    return draw_rect(rect, vec4(1, 0, 0, 1));
+    return draw_rect(rect, ColorRed);
 }
 
 internal Rect

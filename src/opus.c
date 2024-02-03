@@ -25,15 +25,9 @@
 #include <engine/layout.c>
 #include <engine/perf_timer.c>
 #include <engine/profiler.c>
-#include <engine/style.c>
 #include <engine/text.c>
 #include <engine/time.c>
 #include <engine/window.c>
-
-#include <theme/base.c>
-
-#include <ui/base.c>
-#include <ui/components.c>
 
 #include <ecs/component.c>
 #include <ecs/events.c>

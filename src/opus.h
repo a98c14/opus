@@ -28,20 +28,11 @@
 #include <engine/layout.h>
 #include <engine/perf_timer.h>
 #include <engine/profiler.h>
-#include <engine/style.h>
 #include <engine/text.h>
 #include <engine/time.h>
 #include <engine/window.h>
-
-#include <theme/base.h>
-
-#include <ui/base.h>
-#include <ui/components.h>
-#include <ui/debug.h>
 
 #include <ecs/component.h>
 #include <ecs/events.h>
 #include <ecs/prefab.h>
 #include <ecs/world.h>
-
-//

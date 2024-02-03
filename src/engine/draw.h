@@ -145,15 +145,15 @@ internal void draw_line_fixed(Vec2 position, float32 length, float32 rotation, C
 internal void draw_arrow(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness);
 internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size);
 
-internal Rect draw_rect_rotated(Rect rect, float32 rotation, Vec4 color);
-internal Rect draw_rect(Rect rect, Vec4 color);
+internal Rect draw_rect_rotated(Rect rect, float32 rotation, Color color);
+internal Rect draw_rect(Rect rect, Color color);
 internal void draw_texture_aligned(Vec2 pos, Vec2 scale, TextureIndex texture);
 internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
 
 internal Rect draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color color);
 internal Rect draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color);
-internal void draw_circle(Circle circle, Color color);
-internal void draw_circle_filled(Circle circle, Color color);
+internal void draw_circle(Vec2 pos, float32 radius, Color color);
+internal void draw_circle_filled(Vec2 pos, float32 radius, Color color);
 internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle);
 
 /* sprite */
@@ -167,4 +167,3 @@ internal Rect draw_sprite_rect(Rect* rect, CutSide side, SpriteIndex sprite, Anc
 internal Rect draw_sprite_rect_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha);
 internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect get_sprite_rect(SpriteIndex sprite);
-internal Rect draw_text_screen(Rect rect, String str, Anchor anchor, float32 font_size);
