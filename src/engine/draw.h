@@ -1,23 +1,12 @@
 #pragma once
 
-#include <base/asserts.h>
+#include <base.h>
 #include <base/defines.h>
-#include <base/file.h>
-#include <base/math.h>
-#include <base/strings.h>
-#include <engine/color.h>
-#include <engine/draw.h>
-#include <engine/layout.h>
 #include <fonts/fonts.h>
-#include <gfx/base.h>
-#include <gfx/math.h>
-#include <gfx/primitives.h>
-#include <gfx/sprite.h>
-#include <gfx/utils.h>
+#include <gfx.h>
 
 #include "color.h"
 #include "layout.h"
-#include "style.h"
 #include "text.h"
 
 typedef struct DrawContextNode DrawContextNode;
@@ -25,6 +14,7 @@ struct DrawContextNode
 {
     ViewType       view;
     SortLayerIndex sort_layer;
+    PassIndex      pass;
 
     DrawContextNode* next;
 };
@@ -34,15 +24,19 @@ global read_only DrawContextNode d_default_node = {
     .view       = ViewTypeScreen,
 };
 
+/** default settings */
+global read_only float32 d_default_text_baseline          = 0;
+global read_only float32 d_default_text_thickness         = 0.55;
+global read_only float32 d_default_text_softness          = 30;
+global read_only float32 d_default_text_outline_thickness = 0.3;
+global read_only Vec4    d_color_none                     = {.r = 0, .b = 0, .g = 0, .a = 0};
+global read_only Vec4    d_color_black                    = {.r = 0, .b = 0, .g = 0, .a = 1};
+
 typedef struct
 {
     Renderer* renderer;
     Camera*   camera;
     Arena*    persistent_arena;
-
-    /* geometries */
-    GeometryIndex geometry_quad;
-    GeometryIndex geometry_triangle;
 
     /* materials */
     MaterialIndex material_text;
@@ -65,10 +59,6 @@ typedef struct
     GlyphAtlas*  font_open_sans;
     SpriteAtlas* sprite_atlas;
 
-    /** default styles */
-    StyleRect style_debug_rect;
-    StyleRect style_default_rect;
-    StyleText style_default_text;
 } D_State;
 global D_State* d_state;
 
@@ -140,55 +130,39 @@ typedef struct
     Vec4 color;
 } ShaderDataBoid;
 
-internal void draw_context_initialize(Arena* arena, Arena* temp_arena, Renderer* renderer);
+internal void draw_context_init(Arena* arena, Arena* temp_arena, Renderer* renderer, PassIndex default_pass);
 internal void draw_context_activate_atlas(SpriteAtlas* atlas);
 
-/* Draw Functions */
-internal void draw_line(Vec2 start, Vec2 end, Color color, float32 thickness, SortLayerIndex layer);
+/** context push */
+internal void draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass);
+internal void draw_context_pop();
+#define draw_scope(sort_layer, view_type, pass) defer_loop(draw_context_push(sort_layer, view_type, pass), draw_context_pop())
+
+/* draw_functions */
+internal void draw_line(Vec2 start, Vec2 end, Color color, float32 thickness);
 internal void draw_line_2(Vec2 start, Vec2 end, Color color, float32 thickness, FrameBufferIndex frame_buffer_index, SortLayerIndex layer);
 internal void draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness, SortLayerIndex layer);
-internal void draw_arrow(Vec2 position, float32 length, float32 angle, Color color, float32 thickness, SortLayerIndex layer);
-internal void draw_debug_line(Vec2 start, Vec2 end, Color color, SortLayerIndex layer);
-internal void draw_texture_aligned(Vec3 pos, Vec2 scale, TextureIndex texture, SortLayerIndex layer);
-internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness, SortLayerIndex layer);
+internal void draw_arrow(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness);
+internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size);
 
-// Draws given string to screen and returns the bounding box for the while string
-internal Rect draw_text_at(Vec2 pos, String str, Alignment alignment, StyleText style, ViewType view_type, SortLayerIndex layer);
-internal Rect draw_text(Rect rect, String str, Anchor anchor, StyleText style, ViewType view_type, SortLayerIndex layer);
-internal void draw_circle(Vec2 position, float32 radius, Color color, SortLayerIndex layer);
-internal void draw_circle_filled(Circle circle, Color color, SortLayerIndex layer);
-internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle, SortLayerIndex layer);
-// TODO(selim): why is this here?
-internal void draw_boid(Vec2 position, float32 rotation, float32 size, Color color, SortLayerIndex layer);
-internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size, SortLayerIndex sort_index);
-internal Rect draw_rect_simple(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, Vec4 color);
-internal Rect draw_rect_rotated(Rect rect, float32 rotation, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
-internal Rect draw_rect_internal(Rect rect, SortLayerIndex sort_index, ViewType view_type, StyleRect style);
+internal Rect draw_rect_rotated(Rect rect, float32 rotation, Vec4 color);
+internal Rect draw_rect(Rect rect, Vec4 color);
+internal void draw_texture_aligned(Vec2 pos, Vec2 scale, TextureIndex texture);
+internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
+
+internal Rect draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color color);
+internal Rect draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color);
+internal void draw_circle(Circle circle, Color color);
+internal void draw_circle_filled(Circle circle, Color color);
+internal void draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle);
 
 /* sprite */
-internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color);
-internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer, Color color, float32 alpha);
-internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, ViewType view_type, SortLayerIndex layer);
-
-/** Utility */
-// TODO(selim): Move these to renderer (make renderer global as well)
-internal float32 screen_top();
-internal float32 screen_left();
-internal float32 screen_right();
-internal float32 screen_bottom();
-internal float32 screen_height();
-internal float32 screen_width();
-internal Rect    screen_rect();
-
-/** context push */
-internal void draw_context_push(SortLayerIndex sort_layer, ViewType view_type);
-internal void draw_context_pop();
-#define draw_scope(sort_layer, view_type) defer_loop(draw_context_push(sort_layer, view_type), draw_context_pop())
+internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
+internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
+internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
 
 /** extra draw functions */
-internal Rect draw_rect(Rect rect, Color color);
 internal Rect draw_debug_rect(Rect rect);
-internal Rect draw_debug_rect_screen(Rect rect);
 internal Rect draw_sprite_rect(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect draw_sprite_rect_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha);
 internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);

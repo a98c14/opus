@@ -15,6 +15,7 @@
 #define TEXTURE_CAPACITY       32
 #define GEOMETRY_CAPACITY      32
 #define LAYER_CAPACITY         16
+#define PASS_CAPACITY          16
 #define SORTING_LAYER_CAPACITY 16
 
 #define MATERIAL_DRAW_BUFFER_CAPACITY_PER_SETTING (16)
@@ -49,8 +50,8 @@ const uint64  RenderKeySortLayerIndexBitStart = 34;
 const uint64  RenderKeySortLayerIndexBitCount = 8;
 
 typedef uint8 ViewType;
-typedef uint8 PassIndex;
 typedef int8  FrameBufferIndex;
+typedef int8  PassIndex;
 typedef int8  TextureIndex;
 typedef int8  MaterialIndex;
 typedef uint8 GeometryIndex;
@@ -245,9 +246,10 @@ typedef struct
 typedef struct
 {
     RenderKey key;
-    uint64    element_count;
-    Mat4*     model_data;
-    void*     uniform_data;
+    uint32    element_count;
+    uint32    uniform_data_size;
+    Mat4*     model_buffer;
+    void*     uniform_buffer;
 } R_Batch;
 
 typedef struct R_BatchNode R_BatchNode;
@@ -268,7 +270,6 @@ typedef struct
 {
     R_BatchGroup* batch_groups;
 
-    ViewType         view_type;
     FrameBufferIndex frame_buffer;
 } R_Pass;
 
@@ -308,6 +309,9 @@ typedef struct
     uint8     material_count;
     Material* materials;
 
+    GeometryIndex quad;
+    GeometryIndex triangle;
+
     /* stats */
     int32   stat_draw_count;
     int32   stat_object_count;
@@ -322,6 +326,21 @@ typedef struct
 } Renderer;
 global Renderer* g_renderer;
 
+typedef struct R_PassConfigurationNode R_PassConfigurationNode;
+struct R_PassConfigurationNode
+{
+    FrameBufferIndex frame_buffer_index;
+
+    R_PassConfigurationNode* next;
+};
+
+typedef struct
+{
+    Arena*                   temp_arena;
+    uint32                   pass_count;
+    R_PassConfigurationNode* first_pass;
+} R_PipelineConfiguration;
+
 typedef struct
 {
     uint32 window_width;
@@ -333,6 +352,15 @@ typedef struct
     Color   clear_color;
 } RendererConfiguration;
 
+internal RendererConfiguration* r_config_new(Arena* temp_arena);
+internal void                   r_config_set_screen_size(RendererConfiguration* configuration, float32 width, float32 height);
+internal void                   r_config_set_world_size(RendererConfiguration* configuration, float32 width, float32 height);
+internal void                   r_config_set_clear_color(RendererConfiguration* configuration, Color color);
+
+internal R_PipelineConfiguration* r_pipeline_config_new(Arena* temp_arena);
+internal PassIndex                r_pipeline_config_add_pass(R_PipelineConfiguration* config, FrameBufferIndex frame_buffer);
+internal void                     r_pipeline_init(R_PipelineConfiguration* configuration);
+
 internal void               renderer_init(Arena* arena, RendererConfiguration* configuration);
 internal RendererDrawState* renderer_draw_state_new(Arena* arena);
 internal MaterialIndex      material_new(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
@@ -341,27 +369,24 @@ internal TextureIndex       texture_new(Renderer* renderer, uint32 width, uint32
 internal TextureIndex       texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
 internal uint32             shader_load(String vertex_shader_text, String fragment_shader_text);
 
-internal RenderKey           render_key_new(ViewType view_type, SortLayerIndex sort_layer, FrameBufferIndex layer, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index);
-internal uint64              render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count);
-internal MaterialDrawBuffer* renderer_get_material_buffer(Renderer* renderer, RenderKey key, uint32 available_space);
-internal DrawBuffer          renderer_buffer_request(Renderer* renderer, RenderKey key, uint32 count);
-internal DrawBufferArray*    renderer_buffer_request_batched(Arena* arena, Renderer* renderer, RenderKey key, uint32 count);
-internal void                renderer_buffer_queue_single(Renderer* renderer, RenderKey key, Vec3 position, Vec2 scale, void* uniform_data);
-internal bool32              draw_buffer_insert(DrawBuffer* draw_buffer, Mat4 model, void* uniform_data);
-internal void                draw_buffer_array_insert(DrawBufferArray* draw_buffer_array, Mat4 model, void* uniform_data);
-internal void                frame_buffer_begin(FrameBuffer* frame_buffer);
-internal TextureIndex        frame_buffer_texture(Renderer* renderer, FrameBufferIndex frame_buffer_index);
-internal FrameBufferIndex    renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color);
-internal Vec4                color_to_vec4(Color color);
-internal Color               vec4_to_color(Vec4 c);
-internal void                renderer_render(Renderer* renderer, float32 dt);
-internal void                texture_shader_data_set(Renderer* renderer, const Texture* texture);
+internal RenderKey render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index);
+internal uint64    render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count);
+
+internal void             frame_buffer_begin(FrameBuffer* frame_buffer);
+internal TextureIndex     frame_buffer_texture(Renderer* renderer, FrameBufferIndex frame_buffer_index);
+internal FrameBufferIndex renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color);
+internal Vec4             color_to_vec4(Color color);
+internal Color            vec4_to_color(Vec4 c);
+internal void             renderer_v2_render(Renderer* renderer, float32 dt);
+internal void             texture_shader_data_set(Renderer* renderer, const Texture* texture);
 
 /** V2 */
-internal void r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
-internal void r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
-internal void r_draw_many_no_copy(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
-internal void r_draw_batch_internal(Geometry* geometry, Material* material, uint64 element_count, Mat4* models, void* uniform_data);
+internal R_Batch* r_batch_from_key(RenderKey key, uint64 element_count);
+internal void     r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
+internal void     r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
+internal void     r_draw_many_no_copy(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
+internal void     r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_layer, MaterialIndex material_index, void* uniform_data);
+internal void     r_draw_batch_internal(Geometry* geometry, Material* material, uint64 element_count, Mat4* models, void* uniform_data);
 
 /** camera */
 internal Camera camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
@@ -372,3 +397,12 @@ internal Rect   camera_world_bounds(Camera camera);
 /* converts the unit value to actual screen pixel*/
 internal float32 px(float32 u);
 internal float32 em(float32 v);
+
+/** helpers */
+internal float32 screen_top();
+internal float32 screen_left();
+internal float32 screen_right();
+internal float32 screen_bottom();
+internal float32 screen_height();
+internal float32 screen_width();
+internal Rect    screen_rect();
