@@ -51,6 +51,7 @@ typedef struct
     MaterialIndex material_circle;
     MaterialIndex material_boid;
     MaterialIndex material_sprite;
+    MaterialIndex material_sprite_border;
     MaterialIndex material_circle_instanced;
 
     /** draw state context */
@@ -129,6 +130,16 @@ typedef struct
 
 typedef struct
 {
+    int32 sprite_index;
+    int32 texture_layer_index;
+    Vec2  size;
+    Vec4  color;
+    int32 protection;
+    Vec3  _;
+} ShaderDataSpriteBorder;
+
+typedef struct
+{
     Vec4 color;
 } ShaderDataBoid;
 
@@ -163,6 +174,8 @@ internal void draw_circle_partially_filled(Vec2 position, float32 rotation, floa
 internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
 internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
+
+internal void draw_sprite_border(Rect rect, SpriteIndex sprite, uint32 protection);
 
 /** extra draw functions */
 internal Rect draw_debug_rect(Rect rect);

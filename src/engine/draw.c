@@ -89,6 +89,13 @@ draw_context_init(Arena* arena, Arena* temp_arena, Renderer* renderer, PassIndex
         sizeof(ShaderDataSprite),
         false);
 
+    d_state->material_sprite_border = material_new(
+        renderer,
+        file_read_all_as_string(arena, string(SHADER_PATH "\\sprite_border.vert")),
+        file_read_all_as_string(arena, string(SHADER_PATH "\\sprite_border.frag")),
+        sizeof(ShaderDataSpriteBorder),
+        false);
+
     /* Fonts */
     TextureIndex font_texture = texture_new_from_file(renderer, string(ASSET_PATH "\\open_sans.png"), 0, 1);
     d_state->font_open_sans   = glyph_atlas_load(
@@ -341,6 +348,24 @@ draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex 
     shader_data.texture_layer_index = d_state->sprite_atlas->sprite_texture_indices[sprite];
     shader_data.alpha               = alpha;
     shader_data.color               = color_v4(color);
+
+    r_draw_single(key, model, &shader_data);
+}
+
+internal void
+draw_sprite_border(Rect rect, SpriteIndex sprite, uint32 protection)
+{
+    xassert(d_state->sprite_atlas, "`d_state->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
+
+    RenderKey key   = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite_border);
+    Mat4      model = transform_quad_aligned(rect.center, rect.size);
+    draw_debug_rect(rect);
+    ShaderDataSpriteBorder shader_data = {0};
+    shader_data.sprite_index           = sprite;
+    shader_data.texture_layer_index    = d_state->sprite_atlas->sprite_texture_indices[sprite];
+    shader_data.size                   = rect.size;
+    shader_data.color                  = d_color_none;
+    shader_data.protection             = protection;
 
     r_draw_single(key, model, &shader_data);
 }
