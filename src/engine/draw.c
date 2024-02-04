@@ -407,23 +407,34 @@ draw_debug_rect_b(Rect rect)
 }
 
 internal Rect
-draw_sprite_rect(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor)
+draw_sprite_rect_colored(Rect rect, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha)
 {
     Rect sprite_rect = get_sprite_rect(sprite);
-    Rect container   = rect_cut_r(rect, sprite_rect, side);
-    Rect result      = rect_anchor(sprite_rect, container, anchor);
-    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), ColorInvisible, 1);
+    Rect result      = rect_anchor(sprite_rect, rect, anchor);
+    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), color, alpha);
     return result;
 }
 
 internal Rect
-draw_sprite_rect_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha)
+draw_sprite_rect(Rect rect, SpriteIndex sprite, Anchor anchor)
+{
+    return draw_sprite_rect_colored(rect, sprite, anchor, ColorInvisible, 1);
+}
+
+internal Rect
+draw_sprite_rect_cut_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha)
 {
     Rect sprite_rect = get_sprite_rect(sprite);
     Rect container   = rect_cut_r(rect, sprite_rect, side);
     Rect result      = rect_anchor(sprite_rect, container, anchor);
     draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(-1, 1), color, alpha);
     return result;
+}
+
+internal Rect
+draw_sprite_rect_cut(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor)
+{
+    return draw_sprite_rect_cut_colored(rect, side, sprite, anchor, ColorInvisible, 1);
 }
 
 internal Rect

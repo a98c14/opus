@@ -26,7 +26,7 @@ global read_only DrawContextNode d_default_node = {
 };
 
 /** default settings */
-global read_only float32 d_default_text_baseline          = 0;
+global read_only float32 d_default_text_baseline          = 1;
 global read_only float32 d_default_text_thickness         = 0.55;
 global read_only float32 d_default_text_softness          = 30;
 global read_only float32 d_default_text_outline_thickness = 0.3;
@@ -167,7 +167,9 @@ internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, Sprite
 /** extra draw functions */
 internal Rect draw_debug_rect(Rect rect);
 internal Rect draw_debug_rect_b(Rect rect);
-internal Rect draw_sprite_rect(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
-internal Rect draw_sprite_rect_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha);
+internal Rect draw_sprite_rect(Rect rect, SpriteIndex sprite, Anchor anchor);
+internal Rect draw_sprite_rect_colored(Rect rect, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha);
+internal Rect draw_sprite_rect_cut(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
+internal Rect draw_sprite_rect_cut_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha);
 internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect get_sprite_rect(SpriteIndex sprite);

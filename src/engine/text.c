@@ -156,7 +156,6 @@ text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str,
 #if DEBUG_TEXT
         draw_debug_rect_b(inner_line_rect);
 #endif
-
         Vec2 base_offset = {
             .x = inner_line_rect.x - inner_line_rect.w * 0.5,
             .y = inner_line_rect.y - inner_line_rect.h * 0.5};
