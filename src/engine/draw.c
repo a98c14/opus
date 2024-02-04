@@ -114,16 +114,24 @@ internal void
 draw_line(Vec2 start, Vec2 end, Color color, float32 thickness)
 {
     RenderKey      key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
-    ShaderDataLine shader_data = {.color = color_to_vec4(color)};
+    ShaderDataLine shader_data = {.color = color_v4(color)};
     r_draw_single(key, transform_line(start, end, thickness), &shader_data);
 }
 
 internal void
-draw_heading(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness)
+draw_heading(Vec2 origin, Vec2 heading, Color color, float32 thickness)
+{
+    RenderKey      key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
+    ShaderDataLine shader_data = {.color = color_v4(color)};
+    r_draw_single(key, transform_line(origin, add_vec2(origin, heading), thickness), &shader_data);
+}
+
+internal void
+draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness)
 {
     xassert(length > 0, "line length needs to be larger than 0 for `transform_line_rotated`");
     RenderKey      key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
-    ShaderDataLine shader_data = {.color = color_to_vec4(color)};
+    ShaderDataLine shader_data = {.color = color_v4(color)};
     r_draw_single(key, transform_line_rotated(position, length, rotation, thickness), &shader_data);
 }
 
@@ -134,7 +142,7 @@ draw_arrow(Vec2 position, float32 length, float32 rotation, Color color, float32
     RenderKey line_key  = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
     RenderKey arrow_key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->triangle, d_state->material_basic);
 
-    ShaderDataLine shader_data = {.color = color_to_vec4(color)};
+    ShaderDataLine shader_data = {.color = color_v4(color)};
     r_draw_single(line_key, transform_quad(position, vec2(length, thickness), rotation), &shader_data);
 
     float32 radian = rotation * PI_FLOAT32 / 180.0;
@@ -142,7 +150,7 @@ draw_arrow(Vec2 position, float32 length, float32 rotation, Color color, float32
     float32 sinx   = (float32)sinf(radian) * (length / 2.0f);
     position.x += cosx;
     position.y += sinx;
-    ShaderDataBasic arrow_shader = {.color = color_to_vec4(color)};
+    ShaderDataBasic arrow_shader = {.color = color_v4(color)};
     r_draw_single(arrow_key, transform_quad(position, vec2(thickness * 2, thickness * 2), rotation - 90), &arrow_shader);
 }
 
@@ -150,7 +158,7 @@ internal void
 draw_triangle(Vec2 position, float32 rotation, Color color, float32 size)
 {
     RenderKey       key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->triangle, d_state->material_basic);
-    ShaderDataBasic shader_data = {.color = color_to_vec4(color)};
+    ShaderDataBasic shader_data = {.color = color_v4(color)};
     r_draw_single(key, transform_quad(position, vec2(size, size), rotation), &shader_data);
 }
 
@@ -163,7 +171,7 @@ draw_rect_rotated(Rect rect, float32 rotation, Color color)
                                : transform_quad(rect.center, rect.size, rotation);
 
     ShaderDataRectRounded shader_data = {0};
-    shader_data.color                 = color_to_vec4(color);
+    shader_data.color                 = color_v4(color);
     shader_data.edge_color            = d_color_none;
     shader_data.round                 = vec4(1, 1, 1, 1);
     shader_data.scale                 = rect.size;
@@ -177,6 +185,24 @@ internal Rect
 draw_rect(Rect rect, Color color)
 {
     return draw_rect_rotated(rect, 0, color);
+}
+
+internal Rect
+draw_rect_outline(Rect rect, Color color, float32 thickness)
+{
+    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
+
+    Mat4 model = transform_quad_aligned(vec3_xy_z(rect.center, 0), rect.size);
+
+    ShaderDataRectRounded shader_data = {0};
+    shader_data.color                 = d_color_none;
+    shader_data.edge_color            = color_v4(color);
+    shader_data.round                 = vec4(1, 1, 1, 1);
+    shader_data.scale                 = rect.size;
+    shader_data.softness              = 1;
+    shader_data.edge_thickness        = thickness;
+    r_draw_single(key, model, &shader_data);
+    return rect;
 }
 
 internal void
@@ -199,7 +225,7 @@ draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color colo
     shader_data.round                 = vec4(1, 1, 1, 1);
     shader_data.scale                 = r.size;
     shader_data.softness              = 1;
-    shader_data.edge_color            = color_to_vec4(color);
+    shader_data.edge_color            = color_v4(color);
     shader_data.edge_thickness        = thickness;
     r_draw_single(key, model, &shader_data);
 }
@@ -212,7 +238,7 @@ draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color colo
 
     pos.y += d_default_text_baseline;
     ShaderDataText shader_data    = {0};
-    shader_data.color             = color_to_vec4(color);
+    shader_data.color             = color_v4(color);
     shader_data.outline_color     = d_color_black;
     shader_data.thickness         = d_default_text_thickness;
     shader_data.softness          = d_default_text_softness;
@@ -245,7 +271,7 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
     Rect      result = text_calculate_transforms_v2(d_state->font_open_sans, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
 
     ShaderDataText shader_data    = {0};
-    shader_data.color             = color_to_vec4(color);
+    shader_data.color             = color_v4(color);
     shader_data.outline_color     = d_color_black;
     shader_data.thickness         = d_default_text_thickness;
     shader_data.softness          = d_default_text_softness;
@@ -269,7 +295,7 @@ draw_circle(Vec2 pos, float32 radius, Color color)
     RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
 
     ShaderDataCircle shader_data = {0};
-    shader_data.color            = color_to_vec4(color);
+    shader_data.color            = color_v4(color);
     shader_data.slice_ratio      = 1;
     r_draw_single(key, transform_quad_aligned(vec3_xy_z(pos, 0), vec2(radius, radius)), &shader_data);
 }
@@ -280,7 +306,7 @@ draw_circle_filled(Vec2 pos, float32 radius, Color color)
     RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
 
     ShaderDataCircle shader_data = {0};
-    shader_data.color            = color_to_vec4(color);
+    shader_data.color            = color_v4(color);
     shader_data.fill_ratio       = 1;
     shader_data.slice_ratio      = 1;
     r_draw_single(key, transform_quad_aligned(vec3_xy_z(pos, 0), vec2(radius, radius)), &shader_data);
@@ -295,7 +321,7 @@ draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Co
     rotation += (max_angle + min_angle) / 2;
 
     ShaderDataCircle shader_data = {0};
-    shader_data.color            = color_to_vec4(color);
+    shader_data.color            = color_v4(color);
     shader_data.fill_ratio       = 1;
     shader_data.slice_ratio      = percentage;
     r_draw_single(key, transform_quad(position, vec2(radius, radius), rotation), &shader_data);
@@ -317,7 +343,7 @@ draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex 
     shader_data.sprite_index        = sprite;
     shader_data.texture_layer_index = d_state->sprite_atlas->sprite_texture_indices[sprite];
     shader_data.alpha               = alpha;
-    shader_data.color               = color_to_vec4(color);
+    shader_data.color               = color_v4(color);
 
     r_draw_single(key, model, &shader_data);
 }
@@ -336,7 +362,7 @@ draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprit
     shader_data.sprite_index        = sprite;
     shader_data.texture_layer_index = d_state->sprite_atlas->sprite_texture_indices[sprite];
     shader_data.alpha               = alpha;
-    shader_data.color               = color_to_vec4(color);
+    shader_data.color               = color_v4(color);
 
     r_draw_single(key, model, &shader_data);
 }
@@ -364,6 +390,7 @@ draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass)
 internal void
 draw_context_pop()
 {
+    xassert(d_state->ctx, "draw_context is already null, can't pop!");
     DrawContextNode* node = d_state->ctx;
     stack_pop(d_state->ctx);
     stack_push(d_state->free_nodes, node);
@@ -373,7 +400,7 @@ draw_context_pop()
 internal Rect
 draw_debug_rect(Rect rect)
 {
-    return draw_rect(rect, ColorRed);
+    return draw_rect_outline(rect, ColorRed500, 4);
 }
 
 internal Rect

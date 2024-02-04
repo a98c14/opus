@@ -85,13 +85,7 @@ typedef struct
     float32 world_width;
 } Camera;
 
-typedef struct
-{
-    uint8 r;
-    uint8 g;
-    uint8 b;
-    uint8 a;
-} Color;
+typedef uint32 Color;
 
 typedef struct
 {
@@ -296,12 +290,11 @@ internal uint64    render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_c
 internal void             frame_buffer_begin(FrameBuffer* frame_buffer);
 internal TextureIndex     frame_buffer_texture(Renderer* renderer, FrameBufferIndex frame_buffer_index);
 internal FrameBufferIndex renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color);
-internal Vec4             color_to_vec4(Color color);
+internal Vec4             color_v4(Color hex);
 internal Color            vec4_to_color(Vec4 c);
-internal void             renderer_v2_render(Renderer* renderer, float32 dt);
+internal void             r_render(Renderer* renderer, float32 dt);
 internal void             texture_shader_data_set(Renderer* renderer, const Texture* texture);
 
-/** V2 */
 internal R_Batch* r_batch_from_key(RenderKey key, uint64 element_count);
 internal void     r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
 internal void     r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);

@@ -82,7 +82,7 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
 
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-    Vec4 clear_color = color_to_vec4(configuration->clear_color);
+    Vec4 clear_color = color_v4(configuration->clear_color);
     glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
 
     /* Create Global UBO */
@@ -382,26 +382,35 @@ renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint
     frame_buffer->texture_index   = texture_index;
     frame_buffer->width           = width;
     frame_buffer->height          = height;
-    frame_buffer->clear_color     = color_to_vec4(clear_color);
+    frame_buffer->clear_color     = color_v4(clear_color);
     renderer->frame_buffer_count++;
 
     return layer_index;
 }
 
 internal Vec4
-color_to_vec4(Color c)
+color_v4(Color hex)
 {
-    return (Vec4){.r = c.r / 255.0F, .g = c.g / 255.0F, .b = c.b / 255.0F, .a = c.a / 255.0F};
+    Vec4 result;
+    result.r = (hex >> 24 & ((1 << 8) - 1)) / 255.0f;
+    result.g = (hex >> 16 & ((1 << 8) - 1)) / 255.0f;
+    result.b = (hex >> 8 & ((1 << 8) - 1)) / 255.0f;
+    result.a = (hex >> 0 & ((1 << 8) - 1)) / 255.0f;
+    return result;
 }
 
 internal Color
 vec4_to_color(Vec4 c)
 {
-    return (Color){.r = c.r * 255.0F, .g = c.g * 255.0F, .b = c.b * 255.0F, .a = c.a * 255.0F};
+    uint32 r = (uint8)(c.r * 255.f) << 24;
+    uint32 g = (uint8)(c.g * 255.f) << 16;
+    uint32 b = (uint8)(c.b * 255.f) << 8;
+    uint32 a = (uint8)(c.a * 255.f) << 0;
+    return r + g + b + a;
 }
 
 internal void
-renderer_v2_render(Renderer* renderer, float32 dt)
+r_render(Renderer* renderer, float32 dt)
 {
     xassert(renderer->pass_count > 0, "At least ONE render pass must be configured!");
     Camera* camera = &renderer->camera;
@@ -508,7 +517,6 @@ texture_shader_data_set(Renderer* renderer, const Texture* texture)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-/** V2 */
 internal R_Batch*
 r_batch_from_key(RenderKey key, uint64 element_count)
 {

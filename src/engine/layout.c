@@ -92,6 +92,16 @@ rect_cut_bottom(Rect* r, float32 size)
 }
 
 internal Rect
+rect_at(Vec2 position, Vec2 size, Alignment alignment)
+{
+    Rect result;
+    result.center = position;
+    result.size   = size;
+    result        = rect_align(result, alignment);
+    return result;
+}
+
+internal Rect
 rect_aligned(float32 x, float32 y, float32 w, float32 h, Alignment alignment)
 {
     Rect result;

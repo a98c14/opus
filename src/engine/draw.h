@@ -140,13 +140,14 @@ internal void draw_context_pop();
 
 /* draw_functions */
 internal void draw_line(Vec2 start, Vec2 end, Color color, float32 thickness);
-internal void draw_line_2(Vec2 start, Vec2 end, Color color, float32 thickness, FrameBufferIndex frame_buffer_index, SortLayerIndex layer);
-internal void draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness, SortLayerIndex layer);
+internal void draw_heading(Vec2 origin, Vec2 heading, Color color, float32 thickness);
+internal void draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness);
 internal void draw_arrow(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness);
 internal void draw_triangle(Vec2 position, float32 rotation, Color color, float32 size);
 
 internal Rect draw_rect_rotated(Rect rect, float32 rotation, Color color);
 internal Rect draw_rect(Rect rect, Color color);
+internal Rect draw_rect_outline(Rect rect, Color color, float32 thickness);
 internal void draw_texture_aligned(Vec2 pos, Vec2 scale, TextureIndex texture);
 internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
 
