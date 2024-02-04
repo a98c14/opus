@@ -24,7 +24,7 @@ typedef struct
     Alignment child;
 } Anchor;
 
-//                                                         Center,  Bottom,   Top,  Right,  Left,  BottomLeft,  BottomRight,  TopLeft,  TopRight
+//                                                   Center,  Bottom,   Top,  Right,  Left,  BottomLeft,  BottomRight,  TopLeft,  TopRight
 const float32 AlignmentMultiplierX[AlignmentCount] = {0, 0, 0, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5};
 const float32 AlignmentMultiplierY[AlignmentCount] = {0, 0.5, -0.5, 0, 0, 0.5, 0.5, -0.5, -0.5};
 const float32 AnchorMultiplierX[AlignmentCount]    = {0, 0, 0, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5};
@@ -64,6 +64,14 @@ const Anchor ANCHOR_L_T   = {AlignmentLeft, AlignmentTop};
 const Anchor ANCHOR_L_L   = {AlignmentLeft, AlignmentLeft};
 const Anchor ANCHOR_L_B   = {AlignmentLeft, AlignmentBottom};
 const Anchor ANCHOR_L_R   = {AlignmentLeft, AlignmentRight};
+const Anchor ANCHOR_R_TL  = {AlignmentRight, AlignmentTopLeft};
+const Anchor ANCHOR_R_TR  = {AlignmentRight, AlignmentTopRight};
+const Anchor ANCHOR_R_BL  = {AlignmentRight, AlignmentBottomLeft};
+const Anchor ANCHOR_R_BR  = {AlignmentRight, AlignmentBottomRight};
+const Anchor ANCHOR_R_T   = {AlignmentRight, AlignmentTop};
+const Anchor ANCHOR_R_L   = {AlignmentRight, AlignmentLeft};
+const Anchor ANCHOR_R_B   = {AlignmentRight, AlignmentBottom};
+const Anchor ANCHOR_R_R   = {AlignmentRight, AlignmentRight};
 const Anchor ANCHOR_C_C   = {AlignmentCenter, AlignmentCenter};
 
 typedef struct

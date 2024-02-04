@@ -1,7 +1,4 @@
 #include "strings.h"
-#include <base/memory.h>
-#include <base/strings.h>
-
 internal String
 string_new(Arena* arena, uint64 length)
 {
@@ -65,7 +62,78 @@ string_pushf(Arena* arena, const char* fmt, ...)
     return result;
 }
 
-/* Utility */
+/** char helpers */
+internal bool32
+char_is_space(char c)
+{
+    return (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\f' || c == '\v');
+}
+
+internal bool32
+char_is_upper(char c)
+{
+    return ('A' <= c && c <= 'Z');
+}
+
+internal bool32
+char_is_lower(char c)
+{
+    return ('a' <= c && c <= 'z');
+}
+
+internal bool32
+char_is_alpha(char c)
+{
+    return (char_is_upper(c) || char_is_lower(c));
+}
+
+internal bool32
+char_is_slash(char c)
+{
+    return (c == '/' || c == '\\');
+}
+
+internal char
+char_to_lower(char c)
+{
+    if (char_is_upper(c))
+    {
+        c += ('a' - 'A');
+    }
+    return (c);
+}
+
+internal char
+char_to_upper(char c)
+{
+    if (char_is_lower(c))
+    {
+        c += ('A' - 'a');
+    }
+    return (c);
+}
+
+/** helpers */
+internal String
+string_skip(String str, uint64 amount)
+{
+    amount = min(amount, str.length);
+    str.value += amount;
+    str.length -= amount;
+    return (str);
+}
+
+internal String
+string_substr(String str, uint64 min, uint64 max)
+{
+    min = clamp_top(min, str.length);
+    max = clamp_top(max, str.length);
+    str.value += min;
+    str.length = max - min;
+    return str;
+}
+
+/* string list */
 internal void
 string_list_push(Arena* arena, StringList* list, String str)
 {

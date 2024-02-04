@@ -19,6 +19,8 @@
 #define mix(a, b, t)   ((a * (1.0 - t) + b * t))
 #define clamp(a, x, b) (((x) < (a)) ? (a) : ((b) < (x)) ? (b) \
                                                         : (x))
+#define clamp_top(a, x) min(a, x)
+#define clamp_bot(x, b) max(x, b)
 
 /* Constants */
 global float32 EPSILON_FLOAT32 = 1.1920929e-7f;

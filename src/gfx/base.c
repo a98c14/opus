@@ -576,7 +576,7 @@ r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_
     R_Pass*      source_pass         = &g_renderer->passes[source_index];
     FrameBuffer* source_frame_buffer = &g_renderer->frame_buffers[source_pass->frame_buffer];
 
-    Mat4      model = transform_quad_aligned(vec3_zero(), vec2(g_renderer->world_width, g_renderer->world_height));
+    Mat4      model = transform_quad_aligned(vec2_zero(), vec2(g_renderer->world_width, g_renderer->world_height));
     RenderKey key   = render_key_new(ViewTypeScreen, sort_layer, target_index, source_frame_buffer->texture_index, g_renderer->quad, material_index);
     r_draw_single(key, model, uniform_data);
 }

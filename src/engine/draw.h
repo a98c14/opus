@@ -2,6 +2,7 @@
 
 #include <base.h>
 #include <base/defines.h>
+#include <engine/color.h>
 #include <fonts/fonts.h>
 #include <gfx.h>
 
@@ -37,6 +38,7 @@ typedef struct
     Renderer* renderer;
     Camera*   camera;
     Arena*    persistent_arena;
+    Arena*    frame_arena;
 
     /* materials */
     MaterialIndex material_text;
@@ -164,6 +166,7 @@ internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, Sprite
 
 /** extra draw functions */
 internal Rect draw_debug_rect(Rect rect);
+internal Rect draw_debug_rect_b(Rect rect);
 internal Rect draw_sprite_rect(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect draw_sprite_rect_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha);
 internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);

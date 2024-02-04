@@ -1,8 +1,4 @@
 #include "draw.h"
-#include <base/defines.h>
-#include <engine/color.h>
-#include <engine/draw.h>
-#include <gfx/base.h>
 
 #ifndef SHADER_PATH
 #define SHADER_PATH "..\\src\\shaders"
@@ -17,6 +13,7 @@ draw_context_init(Arena* arena, Arena* temp_arena, Renderer* renderer, PassIndex
 {
     d_state                   = arena_push_struct_zero(arena, D_State);
     d_state->persistent_arena = arena;
+    d_state->frame_arena      = temp_arena;
     draw_context_push(d_default_node.sort_layer, d_default_node.view, default_pass);
 
     d_state->renderer = renderer;
@@ -167,7 +164,7 @@ draw_rect_rotated(Rect rect, float32 rotation, Color color)
 {
     RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
 
-    Mat4 model = rotation == 0 ? transform_quad_aligned(vec3_xy_z(rect.center, 0), rect.size)
+    Mat4 model = rotation == 0 ? transform_quad_aligned(rect.center, rect.size)
                                : transform_quad(rect.center, rect.size, rotation);
 
     ShaderDataRectRounded shader_data = {0};
@@ -192,7 +189,7 @@ draw_rect_outline(Rect rect, Color color, float32 thickness)
 {
     RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
 
-    Mat4 model = transform_quad_aligned(vec3_xy_z(rect.center, 0), rect.size);
+    Mat4 model = transform_quad_aligned(rect.center, rect.size);
 
     ShaderDataRectRounded shader_data = {0};
     shader_data.color                 = d_color_none;
@@ -210,7 +207,7 @@ draw_texture_aligned(Vec2 pos, Vec2 scale, TextureIndex texture)
 {
     RenderKey              key          = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, texture, g_renderer->quad, d_state->material_basic_texture);
     ShaderDataBasicTexture uniform_data = (ShaderDataBasicTexture){0};
-    r_draw_single(key, transform_quad_aligned(vec3_xy_z(pos, 0), scale), &uniform_data);
+    r_draw_single(key, transform_quad_aligned(pos, scale), &uniform_data);
 }
 
 internal void
@@ -218,7 +215,7 @@ draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color colo
 {
     RenderKey key   = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
     Rect      r     = rect((right + left) / 2, (top + bottom) / 2, right - left, top - bottom);
-    Mat4      model = transform_quad_aligned(vec3_xy_z(r.center, 0), r.size);
+    Mat4      model = transform_quad_aligned(r.center, r.size);
 
     ShaderDataRectRounded shader_data = {0};
     shader_data.color                 = d_color_none;
@@ -266,9 +263,10 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
 
     Vec2 position = rect_get(rect, anchor.parent);
     position.y += d_default_text_baseline;
-    RenderKey key    = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->font_open_sans->texture, g_renderer->quad, d_state->material_text);
-    R_Batch*  batch  = r_batch_from_key(key, str.length);
-    Rect      result = text_calculate_transforms_v2(d_state->font_open_sans, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
+    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->font_open_sans->texture, g_renderer->quad, d_state->material_text);
+
+    R_Batch* batch  = r_batch_from_key(key, str.length);
+    Rect     result = text_calculate_glyph_matrices(d_state->frame_arena, d_state->font_open_sans, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
 
     ShaderDataText shader_data    = {0};
     shader_data.color             = color_v4(color);
@@ -286,7 +284,6 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
     }
 
     return result;
-    return rect_from_wh(0, 0);
 }
 
 internal void
@@ -297,7 +294,7 @@ draw_circle(Vec2 pos, float32 radius, Color color)
     ShaderDataCircle shader_data = {0};
     shader_data.color            = color_v4(color);
     shader_data.slice_ratio      = 1;
-    r_draw_single(key, transform_quad_aligned(vec3_xy_z(pos, 0), vec2(radius, radius)), &shader_data);
+    r_draw_single(key, transform_quad_aligned(pos, vec2(radius, radius)), &shader_data);
 }
 
 internal void
@@ -309,7 +306,7 @@ draw_circle_filled(Vec2 pos, float32 radius, Color color)
     shader_data.color            = color_v4(color);
     shader_data.fill_ratio       = 1;
     shader_data.slice_ratio      = 1;
-    r_draw_single(key, transform_quad_aligned(vec3_xy_z(pos, 0), vec2(radius, radius)), &shader_data);
+    r_draw_single(key, transform_quad_aligned(pos, vec2(radius, radius)), &shader_data);
 }
 
 internal void
@@ -356,7 +353,7 @@ draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprit
     RenderKey key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
     Sprite    sprite_data = d_state->sprite_atlas->sprites[sprite];
 
-    Mat4 model = transform_quad_aligned(vec3_xy_z(position, 0), mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale));
+    Mat4 model = transform_quad_aligned(position, mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale));
 
     ShaderDataSprite shader_data    = {0};
     shader_data.sprite_index        = sprite;
@@ -401,6 +398,12 @@ internal Rect
 draw_debug_rect(Rect rect)
 {
     return draw_rect_outline(rect, ColorRed500, 4);
+}
+
+internal Rect
+draw_debug_rect_b(Rect rect)
+{
+    return draw_rect_outline(rect, ColorGreen500, 4);
 }
 
 internal Rect
