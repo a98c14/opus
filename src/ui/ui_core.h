@@ -28,6 +28,7 @@ typedef struct
 global UI_State* ui_state;
 
 internal void  ui_state_init(Arena* arena);
+internal void  ui_state_update();
 internal Rect  ui_rect();
 internal Rect* ui_rect_ref();
 internal Rect  ui_cut(CutSide cut_side, float32 size);

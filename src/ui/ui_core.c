@@ -8,6 +8,12 @@ ui_state_init(Arena* arena)
     ui_state->frame_arena      = make_arena_reserve(mb(32));
 }
 
+internal void
+ui_state_update()
+{
+    arena_reset(ui_state->frame_arena);
+}
+
 internal Rect
 ui_rect()
 {
