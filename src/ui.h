@@ -1,4 +1,3 @@
 #pragma once
 
-#include "ui/base.h"
-#include "ui/components.h"
+#include "ui/ui_core.h"

@@ -517,19 +517,11 @@ texture_shader_data_set(Renderer* renderer, const Texture* texture)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-internal R_Batch*
-r_batch_from_key(RenderKey key, uint64 element_count)
+internal R_BatchNode*
+r_batch_reserve(RenderKey key, uint64 element_count)
 {
     MaterialIndex material_index    = render_key_mask(key, RenderKeyMaterialIndexBitStart, RenderKeyMaterialIndexBitCount);
     uint64        uniform_data_size = g_renderer->materials[material_index].uniform_data_size;
-
-    PassIndex      pass_index       = render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
-    SortLayerIndex sort_layer_index = render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);
-    R_Pass*        pass             = &g_renderer->passes[pass_index];
-    pass->total_draw_count += element_count;
-
-    R_BatchGroup* batch_group = &pass->batch_groups[sort_layer_index];
-    batch_group->batch_count++;
 
     R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
     batch_node->v.key               = key;
@@ -537,7 +529,28 @@ r_batch_from_key(RenderKey key, uint64 element_count)
     batch_node->v.uniform_data_size = uniform_data_size;
     batch_node->v.model_buffer      = arena_push_array(g_renderer->frame_arena, Mat4, element_count);
     batch_node->v.uniform_buffer    = arena_push(g_renderer->frame_arena, uniform_data_size * element_count);
-    queue_push(batch_group->first, batch_group->last, batch_node);
+    return batch_node;
+}
+
+internal void
+r_batch_commit(R_BatchNode* node)
+{
+    RenderKey      key              = node->v.key;
+    PassIndex      pass_index       = render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
+    SortLayerIndex sort_layer_index = render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);
+    R_Pass*        pass             = &g_renderer->passes[pass_index];
+    pass->total_draw_count += node->v.element_count;
+
+    R_BatchGroup* batch_group = &pass->batch_groups[sort_layer_index];
+    batch_group->batch_count++;
+    queue_push(batch_group->first, batch_group->last, node);
+}
+
+internal R_Batch*
+r_batch_from_key(RenderKey key, uint64 element_count)
+{
+    R_BatchNode* batch_node = r_batch_reserve(key, element_count);
+    r_batch_commit(batch_node);
     return &batch_node->v;
 }
 
@@ -558,10 +571,15 @@ r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data)
 internal void
 r_draw_many_no_copy(RenderKey key, uint64 count, Mat4* models, void* uniform_data)
 {
-    R_BatchNode* batch_node      = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
-    batch_node->v.element_count  = count;
-    batch_node->v.model_buffer   = models;
-    batch_node->v.uniform_buffer = uniform_data;
+    MaterialIndex material_index    = render_key_mask(key, RenderKeyMaterialIndexBitStart, RenderKeyMaterialIndexBitCount);
+    uint64        uniform_data_size = g_renderer->materials[material_index].uniform_data_size;
+
+    R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
+    batch_node->v.key               = key;
+    batch_node->v.element_count     = count;
+    batch_node->v.uniform_data_size = uniform_data_size;
+    batch_node->v.model_buffer      = models;
+    batch_node->v.uniform_buffer    = uniform_data;
 
     PassIndex      pass_index       = render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
     SortLayerIndex sort_layer_index = render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);

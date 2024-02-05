@@ -29,6 +29,8 @@
 #include <engine/time.c>
 #include <engine/window.c>
 
+#include <ui/ui_core.c>
+
 #include <ecs/component.c>
 #include <ecs/events.c>
 #include <ecs/prefab.c>

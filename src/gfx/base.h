@@ -295,12 +295,14 @@ internal Color            vec4_to_color(Vec4 c);
 internal void             r_render(Renderer* renderer, float32 dt);
 internal void             texture_shader_data_set(Renderer* renderer, const Texture* texture);
 
-internal R_Batch* r_batch_from_key(RenderKey key, uint64 element_count);
-internal void     r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
-internal void     r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
-internal void     r_draw_many_no_copy(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
-internal void     r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_layer, MaterialIndex material_index, void* uniform_data);
-internal void     r_draw_batch_internal(Geometry* geometry, Material* material, uint64 element_count, Mat4* models, void* uniform_data);
+internal R_BatchNode* r_batch_reserve(RenderKey key, uint64 element_count);
+internal void         r_batch_commit(R_BatchNode* node);
+internal R_Batch*     r_batch_from_key(RenderKey key, uint64 element_count);
+internal void         r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
+internal void         r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
+internal void         r_draw_many_no_copy(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
+internal void         r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_layer, MaterialIndex material_index, void* uniform_data);
+internal void         r_draw_batch_internal(Geometry* geometry, Material* material, uint64 element_count, Mat4* models, void* uniform_data);
 
 /** camera */
 internal Camera camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);

@@ -32,6 +32,8 @@
 #include <engine/time.h>
 #include <engine/window.h>
 
+#include <ui/ui_core.h>
+
 #include <ecs/component.h>
 #include <ecs/events.h>
 #include <ecs/prefab.h>

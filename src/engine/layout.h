@@ -74,24 +74,6 @@ const Anchor ANCHOR_R_B   = {AlignmentRight, AlignmentBottom};
 const Anchor ANCHOR_R_R   = {AlignmentRight, AlignmentRight};
 const Anchor ANCHOR_C_C   = {AlignmentCenter, AlignmentCenter};
 
-typedef struct
-{
-    int32 columns;
-    int32 rows;
-    Vec2  padding;
-    Rect  base_container;
-    Vec2  cell_size;
-} LayoutGrid;
-
-typedef struct
-{
-    Vec2    padding;
-    Rect    base_container;
-    Rect    row;
-    float32 row_height;
-    float32 spacing;
-} LayoutStack;
-
 typedef enum
 {
     CutSideLeft,
@@ -134,21 +116,3 @@ internal Rect rect_move(Rect rect, Vec2 v);
 internal Rect rect_resize(Rect r, float32 w, float32 h, Alignment alignment);
 internal Rect rect_resize_height(Rect r, float32 h, Alignment alignment);
 internal Rect rect_resize_width(Rect r, float32 w, Alignment alignment);
-
-internal LayoutGrid layout_grid(Rect container, int32 columns, int32 rows, Vec2 padding);
-
-internal Rect layout_grid_container(LayoutGrid layout);
-
-internal Rect layout_grid_cell(LayoutGrid layout, int32 column, int32 row);
-
-internal Rect layout_grid_multicell(LayoutGrid layout, int32 column, int32 row, int32 column_count, int32 row_count);
-
-internal LayoutStack layout_stack(Rect container, float row_height, Vec2 padding, float32 spacing);
-
-internal Rect layout_stack_push(LayoutStack* layout);
-
-internal Rect layout_stack_push_scaled(LayoutStack* layout, float32 scale);
-
-internal Rect layout_stack_container(LayoutStack* layout);
-
-/** Rect Cut */

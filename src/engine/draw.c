@@ -359,7 +359,7 @@ draw_sprite_border(Rect rect, SpriteIndex sprite, uint32 protection)
 
     RenderKey key   = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite_border);
     Mat4      model = transform_quad_aligned(rect.center, rect.size);
-    draw_debug_rect(rect);
+
     ShaderDataSpriteBorder shader_data = {0};
     shader_data.sprite_index           = sprite;
     shader_data.texture_layer_index    = d_state->sprite_atlas->sprite_texture_indices[sprite];
@@ -375,10 +375,10 @@ draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprit
 {
     xassert(d_state->sprite_atlas, "`d_state->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
 
-    RenderKey key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
-    Sprite    sprite_data = d_state->sprite_atlas->sprites[sprite];
+    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
 
-    Mat4 model = transform_quad_aligned(position, mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale));
+    Sprite sprite_data = d_state->sprite_atlas->sprites[sprite];
+    Mat4   model       = transform_quad_aligned(position, mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale));
 
     ShaderDataSprite shader_data    = {0};
     shader_data.sprite_index        = sprite;
@@ -452,7 +452,7 @@ draw_sprite_rect_cut_colored(Rect* rect, CutSide side, SpriteIndex sprite, Ancho
     Rect sprite_rect = get_sprite_rect(sprite);
     Rect container   = rect_cut_r(rect, sprite_rect, side);
     Rect result      = rect_anchor(sprite_rect, container, anchor);
-    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(-1, 1), color, alpha);
+    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), color, alpha);
     return result;
 }
 
