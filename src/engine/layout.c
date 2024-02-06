@@ -55,7 +55,7 @@ internal Rect
 rect_cut_left(Rect* r, float32 size)
 {
     size        = min(r->w, size);
-    Rect result = rect(rect_left(*r) + size / 2.0f, r->y, size, r->h);
+    Rect result = rect_from_xy_wh(rect_left(*r) + size / 2.0f, r->y, size, r->h);
     r->w -= size;
     r->x += size / 2.0f;
     return result;
@@ -65,7 +65,7 @@ internal Rect
 rect_cut_right(Rect* r, float32 size)
 {
     size        = min(r->w, size);
-    Rect result = rect(rect_right(*r) - size / 2.0f, r->y, size, r->h);
+    Rect result = rect_from_xy_wh(rect_right(*r) - size / 2.0f, r->y, size, r->h);
     r->w -= size;
     r->x -= size / 2.0f;
     return result;
@@ -75,7 +75,7 @@ internal Rect
 rect_cut_top(Rect* r, float32 size)
 {
     size        = min(r->h, size);
-    Rect result = rect(r->x, rect_top(*r) - size / 2.0f, r->w, size);
+    Rect result = rect_from_xy_wh(r->x, rect_top(*r) - size / 2.0f, r->w, size);
     r->h -= size;
     r->y -= size / 2.0f;
     return result;
@@ -85,7 +85,7 @@ internal Rect
 rect_cut_bottom(Rect* r, float32 size)
 {
     size        = min(r->h, size);
-    Rect result = rect(r->x, rect_bottom(*r) + size / 2.0f, r->w, size);
+    Rect result = rect_from_xy_wh(r->x, rect_bottom(*r) + size / 2.0f, r->w, size);
     r->h -= size;
     r->y += size / 2.0f;
     return result;
@@ -209,7 +209,7 @@ rect_resize(Rect r, float32 w, float32 h, Alignment alignment)
     anchor.child  = alignment;
     anchor.parent = alignment;
 
-    Rect result = rect(0, 0, w, h);
+    Rect result = rect_from_xy_wh(0, 0, w, h);
     result      = rect_anchor(result, r, anchor);
     return result;
 }

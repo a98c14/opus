@@ -129,7 +129,7 @@ vec4(float32 x, float32 y, float32 z, float32 w)
 }
 
 internal Rect
-rect(float32 x, float32 y, float32 w, float32 h)
+rect_from_xy_wh(float32 x, float32 y, float32 w, float32 h)
 {
     Rect result;
     result.x = x;

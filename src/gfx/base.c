@@ -647,7 +647,7 @@ internal Rect
 camera_world_bounds(Camera camera)
 {
     Vec2 camera_position = camera.inverse_view.columns[3].xy;
-    return rect(camera_position.x, camera_position.y, camera.world_width, camera.world_height);
+    return rect_from_xy_wh(camera_position.x, camera_position.y, camera.world_width, camera.world_height);
 }
 
 internal float32
@@ -702,5 +702,5 @@ screen_width()
 internal Rect
 screen_rect()
 {
-    return rect(0, 0, screen_width(), screen_height());
+    return rect_from_xy_wh(0, 0, screen_width(), screen_height());
 }

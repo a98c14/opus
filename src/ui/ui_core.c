@@ -1,5 +1,13 @@
 #include "ui_core.h"
 
+internal UI_Key
+ui_key(String str)
+{
+    UI_Key result;
+    result.value = hash_string(str);
+    return result;
+}
+
 internal void
 ui_state_init(Arena* arena)
 {
@@ -29,7 +37,7 @@ ui_rect_ref()
 }
 
 internal Rect
-ui_cut(CutSide cut_side, float32 size)
+ui_cut_dynamic(CutSide cut_side, float32 size)
 {
     xassert(ui_state->layout_stack, "there are no active layouts!");
     return rect_cut(&ui_state->layout_stack->v.r, size, cut_side);
@@ -71,7 +79,7 @@ internal void
 ui_push_cut(CutSide cut_side, float32 size)
 {
     UI_LayoutNode* node = arena_push_struct_zero(ui_state->frame_arena, UI_LayoutNode);
-    node->v.r           = ui_cut(cut_side, size);
+    node->v.r           = ui_cut_dynamic(cut_side, size);
     stack_push(ui_state->layout_stack, node);
 }
 

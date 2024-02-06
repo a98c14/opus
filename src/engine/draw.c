@@ -221,7 +221,7 @@ internal void
 draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness)
 {
     RenderKey key   = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
-    Rect      r     = rect((right + left) / 2, (top + bottom) / 2, right - left, top - bottom);
+    Rect      r     = rect_from_xy_wh((right + left) / 2, (top + bottom) / 2, right - left, top - bottom);
     Mat4      model = transform_quad_aligned(r.center, r.size);
 
     ShaderDataRectRounded shader_data = {0};

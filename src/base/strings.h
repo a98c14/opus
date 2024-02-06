@@ -1,11 +1,11 @@
 #pragma once
 
-#include <base/strings.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <vadefs.h>
 
 #include "defines.h"
+#include "math.h"
 #include "memory.h"
 
 #define string(s)             \
@@ -19,6 +19,14 @@
         (char*)s, lengthof(s), \
     }
 
+typedef uint32 StringMatchFlags;
+enum
+{
+    StringMatchFlag_CaseInsensitive  = (1 << 0),
+    StringMatchFlag_RightSideSloppy  = (1 << 1),
+    StringMatchFlag_SlashInsensitive = (1 << 2),
+};
+
 typedef struct
 {
     char*  value;
@@ -31,10 +39,15 @@ internal String string_create(char* buffer, uint32 size);
 internal String string_null();
 internal String string_pushfv(Arena* arena, const char* fmt, va_list args);
 internal String string_pushf(Arena* arena, const char* fmt, ...);
+internal String string_range(char* first, char* one_past_last);
 
-/** helpers */
+/** slicing */
 internal String string_skip(String str, uint64 amount);
 internal String string_substr(String str, uint64 min, uint64 max);
+
+/** matching */
+internal bool32 string_match(String a, String b, StringMatchFlags flags);
+internal uint64 string_find(String string, String substr, uint64 start_pos, StringMatchFlags flags);
 
 /** char conversion */
 internal bool32 char_is_space(char c);

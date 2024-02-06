@@ -1,6 +1,6 @@
 #include "hash.h"
 
-internal uint32 
+internal uint32
 hash_uint64(uint64 value)
 {
     value = (value ^ (value >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
@@ -12,25 +12,25 @@ hash_uint64(uint64 value)
 internal uint32
 hash_xy(int32 x, int32 y)
 {
-    int32 result = (x * 92837111) ^ (y *689287499);
+    int32 result = (x * 92837111) ^ (y * 689287499);
     return abs(result);
 }
 
-internal uint64 
+internal uint64
 hash_chars(const char* buffer)
 {
     uint64 hash = 5381;
-    int32 c;
+    int32  c;
     while ((c = *buffer++))
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     return hash;
 }
 
-internal uint64 
+internal uint64
 hash_string(String str)
 {
     uint64 hash = 5381;
-    for(int i = 0; i < str.length; i++)
+    for (uint64 i = 0; i < str.length; i++)
         hash = ((hash << 5) + hash) + (int32)str.value[i]; /* hash * 33 + c */
     return hash;
 }
