@@ -423,6 +423,12 @@ norm_vec3(Vec3 a)
     return mul_vec3_f32(a, 1.0f / sqrtf(dot_vec3(a, a)));
 }
 
+internal Vec2
+clamp_vec2(float32 min, Vec2 a, float32 max)
+{
+    return mul_vec2_f32(norm_vec2_safe(a), clamp(min, len_vec2(a), max));
+}
+
 internal float32
 lensqr_vec2(Vec2 a)
 {

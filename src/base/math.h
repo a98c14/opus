@@ -1,7 +1,6 @@
 #pragma once
 #include "defines.h"
 #include <corecrt_math.h>
-#include <math.h>
 
 // NOTE(selim): Delete this if you don't wanna use SIMD
 #define OPUS_USE_SSE
@@ -264,6 +263,7 @@ internal float32 dot_vec3(Vec3 a, Vec3 b);
 internal Vec2    norm_vec2(Vec2 a);
 internal Vec2    norm_vec2_safe(Vec2 a);
 internal Vec3    norm_vec3(Vec3 a);
+internal Vec2    clamp_vec2(float32 min, Vec2 a, float32 max);
 internal float32 lensqr_vec2(Vec2 a);
 internal float32 len_vec2(Vec2 a);
 internal float32 distsqr_vec2(Vec2 a, Vec2 b);
