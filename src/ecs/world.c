@@ -1,4 +1,6 @@
 #include "world.h"
+#include <ecs/component.h>
+#include <ecs/world.h>
 
 internal Entity
 entity_null()
@@ -497,12 +499,10 @@ entity_manager_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeMan
 internal bool32
 component_data_exists_internal(Entity entity, ComponentType component_type)
 {
-    World*        world     = g_entity_manager->world;
-    EntityAddress address   = world->entity_addresses[entity.index];
-    Chunk*        chunk     = &world->chunks[address.chunk_index];
-    Archetype*    archetype = &world->archetypes[chunk->archetype_index];
-    xassert(chunk->entities[address.chunk_internal_index].version == entity.version, "given entity is not the same as the one in chunk");
-    return archetype->component_buffer_index_map[component_type] != -1;
+    World* world = g_entity_manager->world;
+    xassert(world->entities[entity.index].version == entity.version, "invalid entity");
+    EntityAddress address = world->entity_addresses[entity.index];
+    return component_type_field_is_set(&world->chunk_components[address.chunk_index], component_type);
 }
 
 internal void*

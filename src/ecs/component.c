@@ -119,6 +119,13 @@ component_type_field_set_group(ComponentTypeField* field, ComponentTypeField b)
         field->value[i] = field->value[i] | b.value[i];
 }
 
+internal void
+component_type_field_unset_group(ComponentTypeField* field, ComponentTypeField b)
+{
+    for (int i = 0; i < COMPONENT_TYPE_FIELD_LENGTH; i++)
+        field->value[i] = field->value[i] & ~(b.value[i]);
+}
+
 internal bool32
 component_type_field_is_set(ComponentTypeField* field, ComponentType type)
 {

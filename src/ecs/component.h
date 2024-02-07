@@ -75,6 +75,7 @@ internal ComponentTypeField component_type_field_union(ComponentTypeField a, Com
 internal void               component_type_field_set(ComponentTypeField* field, ComponentType type_index);
 internal void               component_type_field_unset(ComponentTypeField* field, ComponentType type_index);
 internal void               component_type_field_set_group(ComponentTypeField* field, ComponentTypeField b);
+internal void               component_type_field_unset_group(ComponentTypeField* field, ComponentTypeField b);
 
 internal bool32 component_type_field_contains(ComponentTypeField a, ComponentTypeField b);
 internal bool32 component_type_field_is_same(ComponentTypeField a, ComponentTypeField b);

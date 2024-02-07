@@ -24,15 +24,40 @@ prefab_create_as_child(Prefab* parent, ComponentTypeField types)
 internal Entity
 prefab_instantiate(Prefab prefab)
 {
-    return prefab_instantiate_modified(prefab, (ComponentTypeField){0});
+    return prefab_instantiate_with(prefab, (ComponentTypeField){0});
 }
 
 internal Entity
-prefab_instantiate_modified(Prefab prefab, ComponentTypeField additional_types)
+prefab_instantiate_with(Prefab prefab, ComponentTypeField with)
 {
     ComponentTypeField types = entity_get_types(prefab.entity);
     component_type_field_unset(&types, CTT_PrefabComponent);
-    component_type_field_set_group(&types, additional_types);
+    component_type_field_set_group(&types, with);
+    Entity entity = entity_create(types);
+    entity_copy_data(prefab.entity, entity);
+
+    PrefabNode* child = prefab.first_child;
+    while (child)
+    {
+        ComponentTypeField types = entity_get_types(child->value.entity);
+        component_type_field_unset(&types, CTT_PrefabComponent);
+        component_type_field_set(&types, CTT_ParentComponent);
+
+        Entity child_entity = entity_create(types);
+        entity_copy_data(child->value.entity, child_entity);
+        entity_add_child(entity, child_entity);
+
+        child = child->next;
+    }
+    return entity;
+}
+
+internal Entity
+prefab_instantiate_without(Prefab prefab, ComponentTypeField without)
+{
+    ComponentTypeField types = entity_get_types(prefab.entity);
+    component_type_field_unset(&types, CTT_PrefabComponent);
+    component_type_field_unset_group(&types, without);
     Entity entity = entity_create(types);
     entity_copy_data(prefab.entity, entity);
 
