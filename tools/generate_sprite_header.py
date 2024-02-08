@@ -9,9 +9,13 @@ import argparse
 def log_info(message):
     print(f"[info] {message}")
 
+def is_animation(filename):
+    return filename.split('.')[0].split('_')[-1].isdigit()
+
+
 def parse_sprite_name(filename):
     # 'basic/base_robot_4.png' -> 'BASE_ROBOT_4'
-    return filename.split('/')[-1].split('.')[0].upper()
+    return filename.replace('/', '_').split('.')[0].upper()
 
 def parse_animation_name(filename):
     # 'basic/base_robot_4.png' -> 'BASE_ROBOT'
@@ -49,6 +53,9 @@ if __name__ == "__main__":
         animations = {}
         if not any(texture_fullname.startswith(s) for s in texture_exclude):
             for frame in frames:
+                if not is_animation(frame['filename']):
+                    continue
+                
                 animation_name = parse_animation_name(frame['filename'])
                 animation_fullname = f"ANIMATION_{texture}_{animation_name}"
                 if any(animation_fullname.startswith(s) for s in animation_exclude): 
