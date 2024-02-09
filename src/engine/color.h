@@ -7,6 +7,7 @@ global const Color ColorClear                = 0x0f172a00;
 global const Color ColorBlack                = 0x000000ff;
 global const Color ColorBlackA               = 0x000000aa;
 global const Color ColorBlackAA              = 0x00000088;
+global const Color ColorBlackAAA             = 0x00000088;
 global const Color ColorInvisible            = 0x00000000;
 global const Color ColorInvisibleWhite       = 0xffffff00;
 global const Color ColorWhite                = 0xffffffff;

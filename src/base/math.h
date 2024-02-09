@@ -224,6 +224,8 @@ internal Vec2 vec2_up();
 internal Vec3 vec3(float32 x, float32 y, float32 z);
 internal Vec3 vec3_zero();
 internal Vec3 vec3_one();
+internal Vec3 vec3_x_y(float32 x, float32 y);
+internal Vec3 vec3_xy(Vec2 xy);
 internal Vec3 vec3_xy_z(Vec2 xy, float32 z);
 internal Vec4 vec4(float32 x, float32 y, float32 z, float32 w);
 

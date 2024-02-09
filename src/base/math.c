@@ -109,6 +109,25 @@ vec3_one()
 }
 
 internal Vec3
+vec3_x_y(float32 x, float32 y)
+{
+    Vec3 result;
+    result.x = x;
+    result.x = y;
+    result.z = 0;
+    return result;
+}
+
+internal Vec3
+vec3_xy(Vec2 xy)
+{
+    Vec3 result;
+    result.xy = xy;
+    result.z  = 0;
+    return result;
+}
+
+internal Vec3
 vec3_xy_z(Vec2 xy, float32 z)
 {
     Vec3 result;
