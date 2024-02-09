@@ -114,6 +114,11 @@ typedef struct
     uint32       height;
     uint32       buffer_id;
     TextureIndex texture_index;
+
+    uint32 blend_src_rgb;
+    uint32 blend_dst_rgb;
+    uint32 blend_src_alpha;
+    uint32 blend_dst_alpha;
 } FrameBuffer;
 
 typedef struct
@@ -289,7 +294,8 @@ internal uint64    render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_c
 
 internal void             frame_buffer_begin(FrameBuffer* frame_buffer);
 internal TextureIndex     frame_buffer_texture(Renderer* renderer, FrameBufferIndex frame_buffer_index);
-internal FrameBufferIndex renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color);
+internal FrameBufferIndex r_frame_buffer_new(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color);
+internal void             r_frame_buffer_set_blend(FrameBufferIndex frame_buffer_index, uint32 blend_src_rgb, uint32 blend_dst_rgb, uint32 blend_src_alpha, uint32 blend_dst_alpha);
 internal Vec4             color_v4(Color hex);
 internal Color            vec4_to_color(Vec4 c);
 internal void             r_render(Renderer* renderer, float32 dt);

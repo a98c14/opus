@@ -81,7 +81,7 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     _pixel_per_unit = g_renderer->ppu;
 
     glEnable(GL_BLEND);
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+
     Vec4 clear_color = color_v4(configuration->clear_color);
     glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
 
@@ -118,12 +118,16 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
 
     // Initialize default frame buffer
     g_renderer->frame_buffer_count += 1;
-    FrameBuffer* frame_buffer   = &g_renderer->frame_buffers[FRAME_BUFFER_INDEX_DEFAULT];
-    frame_buffer->texture_index = TEXTURE_INDEX_NULL;
-    frame_buffer->buffer_id     = 0;
-    frame_buffer->clear_color   = clear_color;
-    frame_buffer->width         = configuration->window_width;
-    frame_buffer->height        = configuration->window_height;
+    FrameBuffer* frame_buffer     = &g_renderer->frame_buffers[FRAME_BUFFER_INDEX_DEFAULT];
+    frame_buffer->texture_index   = TEXTURE_INDEX_NULL;
+    frame_buffer->buffer_id       = 0;
+    frame_buffer->clear_color     = clear_color;
+    frame_buffer->width           = configuration->window_width;
+    frame_buffer->height          = configuration->window_height;
+    frame_buffer->blend_src_rgb   = GL_SRC_ALPHA;
+    frame_buffer->blend_dst_rgb   = GL_ONE_MINUS_SRC_ALPHA;
+    frame_buffer->blend_src_alpha = GL_ONE;
+    frame_buffer->blend_dst_alpha = GL_ONE;
 
     /** frequently used primitives */
     g_renderer->quad     = geometry_quad_create(g_renderer);
@@ -340,6 +344,7 @@ frame_buffer_begin(FrameBuffer* frame_buffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer->buffer_id);
     glViewport(0, 0, frame_buffer->width, frame_buffer->height);
+    glBlendFuncSeparate(frame_buffer->blend_src_rgb, frame_buffer->blend_dst_rgb, frame_buffer->blend_src_alpha, frame_buffer->blend_dst_alpha);
     glClearColor(frame_buffer->clear_color.x, frame_buffer->clear_color.y, frame_buffer->clear_color.z, frame_buffer->clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -351,7 +356,7 @@ frame_buffer_texture(Renderer* renderer, FrameBufferIndex frame_buffer_index)
 }
 
 internal FrameBufferIndex
-renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color)
+r_frame_buffer_new(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color)
 {
     TextureIndex texture_index = texture_new(renderer, width, height, 4, filter, NULL);
 
@@ -383,9 +388,24 @@ renderer_frame_buffer_init(Renderer* renderer, uint32 width, uint32 height, uint
     frame_buffer->width           = width;
     frame_buffer->height          = height;
     frame_buffer->clear_color     = color_v4(clear_color);
+
+    frame_buffer->blend_src_rgb   = GL_SRC_ALPHA;
+    frame_buffer->blend_dst_rgb   = GL_ONE_MINUS_SRC_ALPHA;
+    frame_buffer->blend_src_alpha = GL_ONE;
+    frame_buffer->blend_dst_alpha = GL_ONE;
     renderer->frame_buffer_count++;
 
     return layer_index;
+}
+
+internal void
+r_frame_buffer_set_blend(FrameBufferIndex frame_buffer_index, uint32 blend_src_rgb, uint32 blend_dst_rgb, uint32 blend_src_alpha, uint32 blend_dst_alpha)
+{
+    FrameBuffer* frame_buffer     = &g_renderer->frame_buffers[frame_buffer_index];
+    frame_buffer->blend_src_rgb   = blend_src_rgb;
+    frame_buffer->blend_dst_rgb   = blend_dst_rgb;
+    frame_buffer->blend_src_alpha = blend_src_alpha;
+    frame_buffer->blend_dst_alpha = blend_dst_alpha;
 }
 
 internal Vec4
