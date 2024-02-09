@@ -280,6 +280,7 @@ internal Vec2    inverse_heading_to_vec2(Vec2 start, Vec2 end);
 internal Vec2    direction_to_vec2(Vec2 start, Vec2 end, float32 scale);
 internal Vec2    inverse_direction_to_vec2(Vec2 start, Vec2 end, float32 scale);
 internal Vec2    move_towards_vec2(Vec2 from, Vec2 to, float32 length);
+internal Vec2    move_vec2(Vec2 from, Vec2 heading, float32 length);
 
 /* Matrix Operations*/
 internal Mat2 mat2_identity(void);

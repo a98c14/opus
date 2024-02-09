@@ -503,6 +503,12 @@ move_towards_vec2(Vec2 from, Vec2 to, float32 length)
 }
 
 internal Vec2
+move_vec2(Vec2 from, Vec2 heading, float32 length)
+{
+    return add_vec2(from, mul_vec2_f32(heading, length));
+}
+
+internal Vec2
 rotate_vec2(Vec2 v, float angle)
 {
     Mat2 rotation = mat2_rotation(angle);
