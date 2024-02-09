@@ -589,3 +589,9 @@ entity_get_parent(Entity entity)
 {
     return g_entity_manager->world->entity_parents[entity.index];
 }
+
+internal EntityList
+entity_get_children(Entity entity)
+{
+    return g_entity_manager->world->entity_children[entity.index];
+}

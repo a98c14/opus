@@ -45,6 +45,14 @@ random_point_in_circle(Vec2 center, float32 radius)
 }
 
 internal Vec2
+random_direction(float32 radius)
+{
+    float32 angle = random_between_f32(-180, 180);
+    float32 scale = random_between_f32(0, radius);
+    return direction_vec2(angle, scale);
+}
+
+internal Vec2
 random_point_between_circle(Vec2 center, float32 min_radius, float32 max_radius)
 {
     float32 angle = random_between_f32(-180, 180);

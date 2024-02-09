@@ -128,6 +128,7 @@ typedef struct
 } Parent;
 
 internal Entity        entity_get_parent(Entity entity);
+internal EntityList    entity_get_children(Entity entity);
 internal EntityAddress entity_address_null();
 internal bool32        entity_address_is_null(EntityAddress address);
 internal bool32        entity_is_same(Entity a, Entity b);

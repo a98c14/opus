@@ -14,3 +14,4 @@ internal float32 random_f32(float32 max);
 internal Vec2    random_point_in_circle(Vec2 center, float32 radius);
 internal Vec2    random_point_between_circle(Vec2 center, float32 min_radius, float32 max_radius);
 internal void    random_shuffle(int32* numbers, uint32 count);
+internal Vec2    random_direction(float32 radius);
