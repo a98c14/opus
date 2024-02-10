@@ -1,4 +1,5 @@
 #include "draw.h"
+#include <engine/color.h>
 #include <engine/draw.h>
 
 #ifndef SHADER_PATH
@@ -265,7 +266,7 @@ draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, C
 internal Rect
 draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color color)
 {
-    return draw_text_at_internal(str, pos, alignment, size, color, d_color_black);
+    return draw_text_at_internal(str, pos, alignment, size, color, ColorBlack);
 }
 
 internal Rect

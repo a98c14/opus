@@ -27,6 +27,7 @@ if __name__ == "__main__":
     if os.path.exists(args.out):
         os.remove(args.out)
         
+    name = args.name
     glyphs = []
     with open(args.data, 'r') as data_file, open(args.out, 'w') as output_file:
         data = json.load(data_file)
@@ -38,26 +39,32 @@ if __name__ == "__main__":
         output_file.write("#include <base/math.h>\n")
         output_file.write("#include <engine/text.h>\n")
         
-        output_file.write("\nglobal const GlyphAtlasInfo FONT_OPEN_SANS_ATLAS_INFO =\n{\n")
-        output_file.write(f"\t.width = {data['atlas']['width']}\n")
-        output_file.write(f"\t.height = {data['atlas']['height']}\n")
-        output_file.write(f"\t.size = {data['atlas']['size']}\n")
-        output_file.write(f"\t.distance_range = {data['atlas']['distanceRange']}\n")
-        output_file.write(f"\t.line_height = {data['metrics']['lineHeight']}\n")
-        output_file.write(f"\t.ascender = {data['metrics']['ascender']}\n")
-        output_file.write(f"\t.underline_y = {data['metrics']['underlineY']}\n")
+        output_file.write(f"\nglobal const GlyphAtlasInfo FONT_{name.upper()}_INFO =\n{{\n")
+        output_file.write(f"\t.width = {data['atlas']['width']},\n")
+        output_file.write(f"\t.height = {data['atlas']['height']},\n")
+        output_file.write(f"\t.size = {data['atlas']['size']},\n")
+        output_file.write(f"\t.distance_range = {data['atlas']['distanceRange']},\n")
+        output_file.write(f"\t.line_height = {data['metrics']['lineHeight']},\n")
+        output_file.write(f"\t.ascender = {data['metrics']['ascender']},\n")
+        output_file.write(f"\t.underline_y = {data['metrics']['underlineY']},\n")
         output_file.write(f"\t.underline_thickness = {data['metrics']['underlineThickness']}\n")
         output_file.write("};\n")
         
-        output_file.write("\nglobal const Glyph FONT_OPEN_SANS_GLYPHS =\n{\n")
-        for glyph in data['glyphs']:
+        # .plane_bounds = {.left = 0.000000, .bottom = 0.000000, .right = 0.000000, .top = 0.000000},   
+        output_file.write(f"\nglobal const Glyph FONT_{name.upper()}_GLYPHS[{len(data['glyphs'])}] =\n{{\n")
+        for glyph in data['glyphs']:            
             output_file.write("\t{")
             output_file.write(f" .unicode = {glyph['unicode']:4}")
             output_file.write(f", .advance = {glyph['advance']:8.6f}")
             if 'planeBounds' in glyph:
                 output_file.write(f", .plane_bounds = {{ .left = {glyph['planeBounds']['left']:10.6f}, .bottom = {glyph['planeBounds']['bottom']:10.6f}, .right = {glyph['planeBounds']['right']:10.6f}, .top = {glyph['planeBounds']['top']:10.6f} }}")
+            else: 
+                output_file.write(", .plane_bounds = { .left = 0.000000, .bottom = 0.000000, .right = 0.000000, .top = 0.000000 }")
             if 'atlasBounds' in glyph:
                 output_file.write(f", .atlas_bounds = {{ .left = {glyph['atlasBounds']['left']:6.2f}, .bottom = {glyph['atlasBounds']['bottom']:6.2f}, .right = {glyph['atlasBounds']['right']:6.2f}, .top = {glyph['atlasBounds']['top']:6.2f} }}")
+            else:
+                output_file.write(", .atlas_bounds = { .left = 0.000000, .bottom = 0.000000, .right = 0.000000, .top = 0.000000 }")
+                
             output_file.write("},\n")
         output_file.write("};\n")
             
