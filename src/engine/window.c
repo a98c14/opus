@@ -30,7 +30,7 @@ window_create(Arena* arena, uint32 width, uint32 height, char* name, WindowKeyCa
     glfwSetKeyCallback(window->glfw_window, key_callback);
     glfwMakeContextCurrent(window->glfw_window);
     gladLoadGL(glfwGetProcAddress);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
     renderer_enable_debug();
     log_debug("window created");
     return window;

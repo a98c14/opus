@@ -164,10 +164,10 @@ internal void   component_remove_many(Entity entity, ComponentTypeField componen
 internal bool32 component_data_exists_internal(Entity entity, ComponentType component_type);
 internal void*  component_data_ref_internal(Entity entity, ComponentType component_type);
 internal void   component_copy(Entity src, Entity dst, ComponentType component_type);
-#define component_add_ref(entity, component_type)     ((component_type*)component_add_ref_internal(entity, CT_##component_type))
-#define component_data_exists(entity, component_type) component_data_exists_internal(entity, CT_##component_type)
-#define component_data_get(entity, component_type)    (*((component_type*)component_data_ref_internal(entity, CT_##component_type)))
-#define component_data_ref(entity, component_type)    ((component_type*)component_data_ref_internal(entity, CT_##component_type))
+#define component_add_ref(entity, component_type)  ((component_type*)component_add_ref_internal(entity, CT_##component_type))
+#define component_exists(entity, component_type)   component_data_exists_internal(entity, CT_##component_type)
+#define component_data_get(entity, component_type) (*((component_type*)component_data_ref_internal(entity, CT_##component_type)))
+#define component_data_ref(entity, component_type) ((component_type*)component_data_ref_internal(entity, CT_##component_type))
 
 internal World* world_new(Arena* arena);
 internal void   entity_manager_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);

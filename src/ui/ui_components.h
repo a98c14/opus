@@ -3,4 +3,4 @@
 #include "ui_core.h"
 
 internal void
-ui_widget_animation(UI_Key key, AnimationIndex start_animation_index, bool32 loop);
+ui_widget_animated_label(UI_Key key, String text, AnimationIndex animation, bool32 loop);

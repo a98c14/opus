@@ -1,14 +1,13 @@
 #include "ui_components.h"
 
 internal void
-ui_widget_animation(UI_Key key, AnimationIndex start_animation_index, bool32 loop)
+ui_widget_animated_label(UI_Key key, String text, AnimationIndex animation, bool32 loop)
 {
-    xassert(ui_state->sprite_atlas, "SpriteAtlas needs to be loaded before calling `ui_widget_animation`");
+    xassert(ui_state->sprite_atlas, "SpriteAtlas needs to be loaded before calling `ui_widget_animated_label`");
+    Animation animation_data = ui_state->sprite_atlas->animations[animation];
 
-    Animation animation      = ui_state->sprite_atlas->animations[start_animation_index];
-    Rect      animation_rect = ui_animation_rect(animation.sprite_start_index);
-
-    uint16 start_animation_length = animation_length(animation);
+    Rect   animation_rect         = rect_shrink(ui_animation_rect(animation_data.sprite_start_index), vec2(8, 4));
+    uint16 start_animation_length = animation_length(animation_data);
     ui_create_with_key(key, CutSideTop, animation_rect.h)
     {
         UI_SpriteAnimator* animator = ui_animator_get(key);
@@ -24,7 +23,7 @@ ui_widget_animation(UI_Key key, AnimationIndex start_animation_index, bool32 loo
         animator->last_rect  = rect;
         animator->updated_at = ui_state->time.current_frame_time;
 
-        draw_sprite_rect(rect, animation.sprite_start_index + current_frame, ANCHOR_C_C);
-        draw_text(string("Texter"), ui_rect(), ANCHOR_L_L, 8, ColorWhite);
+        draw_sprite_rect(rect, animation_data.sprite_start_index + current_frame, ANCHOR_C_C);
+        draw_text(text, ui_rect(), ANCHOR_L_L, 8, ColorWhite);
     }
 }
