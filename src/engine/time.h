@@ -7,9 +7,8 @@
 
 typedef struct
 {
-    // TODO(selim): these are not frames, rename to something else. Represents time since start
-    float32 last_frame;
-    float32 current_frame;
+    float32 last_frame_time; // TODO(selim): Do we need this?
+    float32 current_frame_time;
     float32 dt;
 } EngineTime;
 

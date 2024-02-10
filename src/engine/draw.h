@@ -61,7 +61,6 @@ typedef struct
     /** atlas */
     GlyphAtlas*  font_open_sans;
     SpriteAtlas* sprite_atlas;
-
 } D_State;
 global D_State* d_state;
 

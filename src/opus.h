@@ -32,7 +32,7 @@
 #include <engine/time.h>
 #include <engine/window.h>
 
-#include <ui/ui_core.h>
+#include <ui.h>
 
 #include <ecs/component.h>
 #include <ecs/events.h>

@@ -10,6 +10,13 @@
 typedef uint32 SpriteIndex;
 typedef uint32 AnimationIndex;
 
+typedef int8 AnimationState;
+enum
+{
+    AnimationStateLoop   = 1 << 0,
+    AnimationStateLocked = 1 << 1
+};
+
 typedef struct
 {
     Rect rect;
