@@ -163,6 +163,7 @@ internal Rect draw_rect_outline(Rect rect, Color color, float32 thickness);
 internal void draw_texture_aligned(Vec2 pos, Vec2 scale, TextureIndex texture);
 internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
 
+internal Rect draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, Color color, Color outline_color);
 internal Rect draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color color);
 internal Rect draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color);
 internal void draw_circle(Vec2 pos, float32 radius, Color color);

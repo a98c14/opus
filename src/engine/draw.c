@@ -1,4 +1,5 @@
 #include "draw.h"
+#include <engine/draw.h>
 
 #ifndef SHADER_PATH
 #define SHADER_PATH "..\\src\\shaders"
@@ -235,7 +236,7 @@ draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color colo
 }
 
 internal Rect
-draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color color)
+draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, Color color, Color outline_color)
 {
     if (str.length <= 0)
         return rect_from_wh(0, 0);
@@ -243,7 +244,7 @@ draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color colo
     pos.y += d_default_text_baseline;
     ShaderDataText shader_data    = {0};
     shader_data.color             = color_v4(color);
-    shader_data.outline_color     = d_color_black;
+    shader_data.outline_color     = color_v4(outline_color);
     shader_data.thickness         = d_default_text_thickness;
     shader_data.softness          = d_default_text_softness;
     shader_data.outline_thickness = d_default_text_outline_thickness;
@@ -259,7 +260,12 @@ draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color colo
         memcpy(&shader_data_buffer[i], &shader_data, sizeof(ShaderDataText));
     }
     return bounds;
-    return rect_from_wh(0, 0);
+}
+
+internal Rect
+draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color color)
+{
+    return draw_text_at_internal(str, pos, alignment, size, color, d_color_black);
 }
 
 internal Rect

@@ -33,6 +33,18 @@ typedef struct
     uint64 length;
 } String;
 
+typedef struct
+{
+    char   value[4];
+    uint32 length;
+} String4;
+
+typedef struct
+{
+    char   value[8];
+    uint32 length;
+} String8;
+
 /* base */
 internal String string_new(Arena* arena, uint64 length);
 internal String string_create(char* buffer, uint32 size);

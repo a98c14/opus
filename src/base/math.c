@@ -113,7 +113,7 @@ vec3_x_y(float32 x, float32 y)
 {
     Vec3 result;
     result.x = x;
-    result.x = y;
+    result.y = y;
     result.z = 0;
     return result;
 }

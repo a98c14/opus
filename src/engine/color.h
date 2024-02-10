@@ -34,6 +34,7 @@ global const Color ColorRed300               = 0xe57373ff;
 global const Color ColorRed400               = 0xef5350ff;
 global const Color ColorRed400AA             = 0xef535033;
 global const Color ColorRed500               = 0xf44336ff;
+global const Color ColorRed500AA             = 0xf4433699;
 global const Color ColorRed600               = 0xe53935ff;
 global const Color ColorRed700               = 0xd32f2fff;
 global const Color ColorRed800               = 0xc62828ff;
