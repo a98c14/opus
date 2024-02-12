@@ -10,14 +10,9 @@ typedef struct PrefabNode PrefabNode;
 
 typedef uint32 PrefabIndex;
 
-typedef struct
-{
-    Entity entity;
-} Prefab;
-
 struct PrefabNode
 {
-    Prefab value;
+    Entity entity;
 
     PrefabNode* first_child;
     PrefabNode* last_child;
@@ -26,12 +21,29 @@ struct PrefabNode
     PrefabNode* prev;
 };
 
+typedef struct PrefabIndexNode PrefabIndexNode;
+struct PrefabIndexNode
+{
+    PrefabIndex value;
+
+    PrefabIndexNode* next;
+    PrefabIndexNode* prev;
+};
+
+typedef struct
+{
+    uint32 count;
+
+    PrefabIndexNode* first;
+    PrefabIndexNode* last;
+} PrefabList;
+
 typedef struct PrefabGroupNode PrefabGroupNode;
 struct PrefabGroupNode
 {
-    Prefab value;
-    int16  min_count;
-    int16  max_count;
+    PrefabIndex value;
+    int16       min_count;
+    int16       max_count;
 
     PrefabGroupNode* next;
 };
@@ -56,9 +68,10 @@ internal PrefabIndex prefab_create(ComponentTypeField types);
 internal PrefabIndex prefab_create_as_child(PrefabIndex parent, ComponentTypeField types);
 internal Entity      prefab_entity(PrefabIndex prefab);
 
-internal Entity prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types);
-internal Entity prefab_instantiate(PrefabIndex prefab);
-internal Entity prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with);
-internal Entity prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without);
-internal void   prefab_add_child(PrefabIndex parent, PrefabIndex child);
-internal void   prefab_copy_data(PrefabIndex src, PrefabIndex dst);
+internal Entity      prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types);
+internal Entity      prefab_instantiate(PrefabIndex prefab);
+internal Entity      prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with);
+internal Entity      prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without);
+internal void        prefab_add_child(PrefabIndex parent, PrefabIndex child);
+internal void        prefab_copy_data(PrefabIndex src, PrefabIndex dst);
+internal PrefabIndex prefab_duplicate(PrefabIndex prefab);

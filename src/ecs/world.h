@@ -36,7 +36,6 @@ typedef struct
 } Entity;
 
 typedef struct EntityNode EntityNode;
-
 struct EntityNode
 {
     Entity value;

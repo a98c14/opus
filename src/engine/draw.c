@@ -205,7 +205,7 @@ draw_rect_outline(Rect rect, Color color, float32 thickness)
     shader_data.edge_color            = color_v4(color);
     shader_data.round                 = vec4(1, 1, 1, 1);
     shader_data.scale                 = rect.size;
-    shader_data.softness              = 1;
+    shader_data.softness              = 2;
     shader_data.edge_thickness        = thickness;
     r_draw_single(key, model, &shader_data);
     return rect;
