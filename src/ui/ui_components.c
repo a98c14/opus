@@ -8,6 +8,7 @@ ui_widget_animated_label(UI_Key key, String text, AnimationIndex animation, bool
 
     Rect   animation_rect         = rect_shrink(ui_animation_rect(animation_data.sprite_start_index), vec2(8, 4));
     uint16 start_animation_length = animation_length(animation_data);
+
     ui_create_with_key(key, CutSideTop, animation_rect.h)
     {
         UI_SpriteAnimator* animator = ui_animator_get(key);

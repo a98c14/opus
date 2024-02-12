@@ -90,7 +90,7 @@ typedef struct
     Entity*        entities;
     EntityAddress* entity_addresses;
 
-    // relations
+    /** entities */
     Entity*     entity_parents;
     EntityList* entity_children;
 

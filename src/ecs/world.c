@@ -1,6 +1,4 @@
 #include "world.h"
-#include <ecs/component.h>
-#include <ecs/world.h>
 
 internal Entity
 entity_null()

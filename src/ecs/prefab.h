@@ -5,30 +5,60 @@
 #include "component.h"
 #include "world.h"
 
+#define PREFAB_CAPACTIY 512
 typedef struct PrefabNode PrefabNode;
+
+typedef uint32 PrefabIndex;
 
 typedef struct
 {
     Entity entity;
-
-    // TODO(selim): Prefab should not contain any pointers! Use prefab index instead?
-    PrefabNode* first_child;
-    PrefabNode* last_child;
 } Prefab;
 
 struct PrefabNode
 {
     Prefab value;
 
+    PrefabNode* first_child;
+    PrefabNode* last_child;
+
     PrefabNode* next;
+    PrefabNode* prev;
 };
 
-internal Prefab prefab_create(ComponentTypeField types);
-internal Prefab prefab_create_as_child(Prefab* parent, ComponentTypeField types);
-internal Entity prefab_instantiate(Prefab prefab);
+typedef struct PrefabGroupNode PrefabGroupNode;
+struct PrefabGroupNode
+{
+    Prefab value;
+    int16  min_count;
+    int16  max_count;
 
-// Instantiates the prefab with extra types added beforehand
-internal Entity prefab_instantiate_with(Prefab prefab, ComponentTypeField with);
-internal Entity prefab_instantiate_without(Prefab prefab, ComponentTypeField without);
-internal void   prefab_add_child(Prefab* parent, Prefab child);
-internal void   prefab_copy_data(Prefab src, Prefab dst);
+    PrefabGroupNode* next;
+};
+
+typedef struct
+{
+    uint32 count;
+
+    PrefabGroupNode* first;
+    PrefabGroupNode* last;
+} PrefabGroupList;
+
+typedef struct
+{
+    uint32      prefab_count;
+    PrefabNode* prefabs;
+} PrefabManager;
+global PrefabManager* g_prefab_manager;
+
+internal void        prefab_manager_init(Arena* arena);
+internal PrefabIndex prefab_create(ComponentTypeField types);
+internal PrefabIndex prefab_create_as_child(PrefabIndex parent, ComponentTypeField types);
+internal Entity      prefab_entity(PrefabIndex prefab);
+
+internal Entity prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types);
+internal Entity prefab_instantiate(PrefabIndex prefab);
+internal Entity prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with);
+internal Entity prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without);
+internal void   prefab_add_child(PrefabIndex parent, PrefabIndex child);
+internal void   prefab_copy_data(PrefabIndex src, PrefabIndex dst);

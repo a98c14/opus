@@ -1,100 +1,106 @@
 #include "prefab.h"
-#include <ecs/component.h>
-#include <ecs/world.h>
 
-internal Prefab
+internal void
+prefab_manager_init(Arena* arena)
+{
+    g_prefab_manager          = arena_push_struct_zero(arena, PrefabManager);
+    g_prefab_manager->prefabs = arena_push_array_zero(arena, PrefabNode, PREFAB_CAPACTIY);
+}
+
+internal PrefabIndex
 prefab_create(ComponentTypeField types)
 {
     component_type_field_set(&types, CTT_PrefabComponent);
     Entity entity = entity_create(types);
 
-    Prefab result = {0};
-    result.entity = entity;
-    return result;
+    PrefabIndex index = g_prefab_manager->prefab_count;
+    g_prefab_manager->prefab_count++;
+    g_prefab_manager->prefabs[index].value.entity = entity;
+
+    return index;
 }
 
-internal Prefab
-prefab_create_as_child(Prefab* parent, ComponentTypeField types)
+internal PrefabIndex
+prefab_create_as_child(PrefabIndex parent, ComponentTypeField types)
 {
-    Prefab result = prefab_create(types);
+    PrefabIndex result = prefab_create(types);
     prefab_add_child(parent, result);
     return result;
 }
 
 internal Entity
-prefab_instantiate(Prefab prefab)
+prefab_entity(PrefabIndex prefab)
+{
+    return g_prefab_manager->prefabs[prefab].value.entity;
+}
+
+internal Entity
+prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types)
+{
+    Entity entity = entity_create(types);
+    entity_copy_data(p->value.entity, entity);
+
+    PrefabNode* child = p->first_child;
+    while (child)
+    {
+        ComponentTypeField types = entity_get_types(child->value.entity);
+        component_type_field_unset(&types, CTT_PrefabComponent);
+        component_type_field_set(&types, CTT_ParentComponent);
+
+        Entity child_entity = entity_create(types);
+        entity_copy_data(child->value.entity, child_entity);
+        entity_add_child(entity, child_entity);
+
+        child = child->next;
+    }
+    return entity;
+}
+
+internal Entity
+prefab_instantiate(PrefabIndex prefab)
 {
     return prefab_instantiate_with(prefab, (ComponentTypeField){0});
 }
 
 internal Entity
-prefab_instantiate_with(Prefab prefab, ComponentTypeField with)
+prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with)
 {
-    ComponentTypeField types = entity_get_types(prefab.entity);
+    PrefabNode* p = &g_prefab_manager->prefabs[prefab];
+
+    ComponentTypeField types = entity_get_types(p->value.entity);
     component_type_field_unset(&types, CTT_PrefabComponent);
     component_type_field_set_group(&types, with);
-    Entity entity = entity_create(types);
-    entity_copy_data(prefab.entity, entity);
 
-    PrefabNode* child = prefab.first_child;
-    while (child)
-    {
-        ComponentTypeField types = entity_get_types(child->value.entity);
-        component_type_field_unset(&types, CTT_PrefabComponent);
-        component_type_field_set(&types, CTT_ParentComponent);
-
-        Entity child_entity = entity_create(types);
-        entity_copy_data(child->value.entity, child_entity);
-        entity_add_child(entity, child_entity);
-
-        child = child->next;
-    }
-    return entity;
+    return prefab_instantiate_internal(p, types);
 }
 
 internal Entity
-prefab_instantiate_without(Prefab prefab, ComponentTypeField without)
+prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without)
 {
-    ComponentTypeField types = entity_get_types(prefab.entity);
+    PrefabNode* p = &g_prefab_manager->prefabs[prefab];
+
+    ComponentTypeField types = entity_get_types(p->value.entity);
     component_type_field_unset(&types, CTT_PrefabComponent);
     component_type_field_unset_group(&types, without);
-    Entity entity = entity_create(types);
-    entity_copy_data(prefab.entity, entity);
 
-    PrefabNode* child = prefab.first_child;
-    while (child)
-    {
-        ComponentTypeField types = entity_get_types(child->value.entity);
-        component_type_field_unset(&types, CTT_PrefabComponent);
-        component_type_field_set(&types, CTT_ParentComponent);
-
-        Entity child_entity = entity_create(types);
-        entity_copy_data(child->value.entity, child_entity);
-        entity_add_child(entity, child_entity);
-
-        child = child->next;
-    }
-    return entity;
+    return prefab_instantiate_internal(p, types);
 }
 
 internal void
-prefab_add_child(Prefab* parent, Prefab child)
+prefab_add_child(PrefabIndex parent, PrefabIndex child)
 {
     PrefabNode* node = arena_push_struct(g_entity_manager->persistent_arena, PrefabNode);
-    node->value      = child;
+    node->value      = g_prefab_manager->prefabs[child].value;
 
-    if (!parent->first_child)
-        parent->first_child = node;
-
-    if (parent->last_child)
-        parent->last_child->next = node;
-
-    parent->last_child = node;
+    PrefabNode* parent_node = &g_prefab_manager->prefabs[parent];
+    queue_push(parent_node->first_child, parent_node->last_child, node);
 }
 
 internal void
-prefab_copy_data(Prefab src, Prefab dst)
+prefab_copy_data(PrefabIndex src, PrefabIndex dst)
 {
-    xassert(!entity_is_same(src.entity, dst.entity), "cannot copy prefab to itself");
-    entity_copy_data(src.entity, dst.entity);
+    PrefabNode* src_prefab = &g_prefab_manager->prefabs[src];
+    PrefabNode* dst_prefab = &g_prefab_manager->prefabs[dst];
+    xassert(!entity_is_same(src_prefab->value.entity, dst_prefab->value.entity), "cannot copy prefab to itself");
+    entity_copy_data(src_prefab->value.entity, dst_prefab->value.entity);
 }
