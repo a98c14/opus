@@ -85,7 +85,7 @@ text_lines_from_string(Arena* frame_arena, GlyphAtlas* atlas, String str, float3
         }
 
         width = new_width;
-    };
+    }
     text_line_add(frame_arena, lines, remaining, vec2(width, size));
     return lines;
 }
@@ -147,9 +147,10 @@ text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str,
 #endif
 
     TextLineNode* line_node;
+    Rect          lines_rect = string_bounds;
     for_each(line_node, lines->first)
     {
-        Rect   line_rect       = rect_cut_top(&string_bounds, line_node->v.size.h);
+        Rect   line_rect       = rect_cut_top(&lines_rect, line_node->v.size.h);
         Rect   inner_line_rect = rect_from_wh(line_node->v.size.w, line_node->v.size.h);
         Anchor a               = {.child = alignment, .parent = alignment};
         inner_line_rect        = rect_anchor(inner_line_rect, line_rect, a);

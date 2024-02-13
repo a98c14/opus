@@ -241,3 +241,28 @@ string_list_push(Arena* arena, StringList* list, String str)
     list->last = node;
     list->count++;
 }
+
+/** string storage */
+internal void
+string_storage_init(Arena* arena, uint64 capacity)
+{
+    g_static_string_storage                 = arena_push_struct_zero(arena, StaticStringStorage);
+    g_static_string_storage->static_strings = arena_push_array(arena, String, capacity);
+    g_static_string_storage->arena          = arena;
+}
+
+internal StaticStringIndex
+string_static_new(String str)
+{
+    StaticStringIndex index                        = g_static_string_storage->count;
+    g_static_string_storage->static_strings[index] = string_new(g_static_string_storage->arena, str.length);
+    memcpy(g_static_string_storage->static_strings[index].value, str.value, str.length);
+    g_static_string_storage->count++;
+    return index;
+}
+
+internal String
+string_static_get(StaticStringIndex index)
+{
+    return g_static_string_storage->static_strings[index];
+}

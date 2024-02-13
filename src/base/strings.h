@@ -88,3 +88,20 @@ typedef struct
 } StringList;
 
 internal void string_list_push(Arena* arena, StringList* list, String str);
+
+/** string storage */
+typedef uint64 StaticStringIndex;
+
+typedef struct
+{
+    Arena* arena;
+
+    uint64  capacity;
+    uint64  count;
+    String* static_strings;
+} StaticStringStorage;
+global StaticStringStorage* g_static_string_storage;
+
+internal void              string_storage_init(Arena* arena, uint64 capacity);
+internal StaticStringIndex string_static_new(String str);
+internal String            string_static_get(StaticStringIndex index);
