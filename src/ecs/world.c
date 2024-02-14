@@ -75,6 +75,12 @@ archetype_get_or_create(ComponentTypeField components)
     return archtype_index;
 }
 
+internal uint32
+chunk_available_space(Chunk* chunk)
+{
+    return chunk->entity_capacity - chunk->entity_count;
+}
+
 internal bool32
 chunk_has_space(Chunk* chunk, uint32 count)
 {
@@ -82,15 +88,9 @@ chunk_has_space(Chunk* chunk, uint32 count)
 }
 
 internal ChunkIndex
-chunk_get_or_create(ComponentTypeField components, uint32 space_required, uint32 capacity)
+chunk_create(ComponentTypeField components, uint32 capacity)
 {
-    World* world = g_entity_manager->world;
-    for (int i = 0; i < world->chunk_count; i++)
-    {
-        if (component_type_field_is_same(world->chunk_components[i], components) && chunk_has_space(&world->chunks[i], space_required))
-            return i;
-    }
-
+    World*         world           = g_entity_manager->world;
     ArchetypeIndex archetype_index = archetype_get_or_create(components);
     Archetype*     archetype       = &world->archetypes[archetype_index];
 
@@ -102,7 +102,7 @@ chunk_get_or_create(ComponentTypeField components, uint32 space_required, uint32
     chunk->entities        = arena_push_array_zero(g_entity_manager->persistent_arena, Entity, capacity);
     chunk->data_buffers    = arena_push_array_zero(g_entity_manager->persistent_arena, DataBuffer, archetype->component_count);
 
-    for (int i = 0; i < archetype->component_count; i++)
+    for (int32 i = 0; i < archetype->component_count; i++)
     {
         ComponentType component_index = archetype->components[i];
 
@@ -120,6 +120,41 @@ chunk_get_or_create(ComponentTypeField components, uint32 space_required, uint32
     world->chunk_components[chunk_index] = components;
     world->chunk_count++;
     return chunk_index;
+}
+
+internal ChunkFindSpaceResult
+chunk_find_space(Arena* arena, ComponentTypeField components, uint32 space_required)
+{
+    ChunkFindSpaceResult result = {0};
+
+    uint32 remaining = space_required;
+    World* world     = g_entity_manager->world;
+    for (uint32 i = 0; i < world->chunk_count && remaining > 0; i++)
+    {
+        if (component_type_field_is_same(world->chunk_components[i], components))
+        {
+            uint32 available_space = chunk_available_space(&world->chunks[i]);
+            if (available_space > 0)
+            {
+                remaining -= min(remaining, available_space);
+                ChunkIndexNode* n = arena_push_struct_zero(arena, ChunkIndexNode);
+                n->chunk_handle   = i;
+                stack_push(result.first_chunk, n);
+                result.chunk_count++;
+            }
+        }
+    }
+
+    if (remaining > 0)
+    {
+        ChunkIndex new_chunk = chunk_create(components, max(remaining, DEFAULT_CHUNK_CAPACITY));
+        result.chunk_count++;
+        ChunkIndexNode* n = arena_push_struct_zero(arena, ChunkIndexNode);
+        n->chunk_handle   = new_chunk;
+        stack_push(result.first_chunk, n);
+    }
+    xassert(result.first_chunk, "could not find the requested chunk space");
+    return result;
 }
 
 /** Deletes the entity data at the given internal index. Does not handle parent/child relationships or entity addresses.  */
@@ -244,9 +279,10 @@ entity_node_free(EntityNode* node)
 internal Entity
 entity_create(ComponentTypeField components)
 {
-    World*     world       = g_entity_manager->world;
-    ChunkIndex chunk_index = chunk_get_or_create(components, 1, DEFAULT_CHUNK_CAPACITY);
-    Chunk*     chunk       = &world->chunks[chunk_index];
+    World*               world       = g_entity_manager->world;
+    ChunkFindSpaceResult chunks      = chunk_find_space(g_entity_manager->temp_arena, components, 1);
+    ChunkIndex           chunk_index = chunks.first_chunk->chunk_handle;
+    Chunk*               chunk       = &world->chunks[chunk_index];
 
     uint32 entity_index                                        = entity_reserve_free();
     int32  entity_chunk_index                                  = chunk->entity_count;
@@ -259,9 +295,43 @@ entity_create(ComponentTypeField components)
 
     chunk->entity_count++;
     world->entity_count++;
-    g_entity_manager->world->chunk_count;
-
     return *entity;
+}
+
+internal Entity*
+entity_create_many(Arena* arena, ComponentTypeField components, uint32 count)
+{
+    Entity* result = arena_push_array_zero(arena, Entity, count);
+
+    World*               world  = g_entity_manager->world;
+    ChunkFindSpaceResult chunks = chunk_find_space(g_entity_manager->temp_arena, components, count);
+    ChunkIndexNode*      n;
+    uint32               remaining = count;
+    for_each(n, chunks.first_chunk)
+    {
+        ChunkIndex chunk_index = n->chunk_handle;
+        Chunk*     chunk       = &world->chunks[chunk_index];
+        uint32     will_use    = min(remaining, chunk_available_space(chunk));
+
+        // SPEED: can we do this without loop?
+        for (uint32 i = 0; i < will_use; i++)
+        {
+            uint32 entity_index                                        = entity_reserve_free();
+            int32  entity_chunk_index                                  = chunk->entity_count;
+            world->entity_addresses[entity_index].chunk_index          = chunk_index;
+            world->entity_addresses[entity_index].chunk_internal_index = entity_chunk_index;
+
+            Entity* entity = &world->entities[entity_index];
+            entity->version += 1;
+            chunk->entities[entity_chunk_index] = *entity;
+            chunk->entity_count++;
+            world->entity_count++;
+        }
+
+        remaining -= will_use;
+    }
+
+    return result;
 }
 
 internal void
@@ -350,7 +420,8 @@ component_add_many(Entity entity, ComponentTypeField components)
         return;
     }
 
-    ChunkIndex new_chunk_index = chunk_get_or_create(new_components, 1, DEFAULT_CHUNK_CAPACITY);
+    ChunkFindSpaceResult chunks          = chunk_find_space(g_entity_manager->temp_arena, new_components, 1);
+    ChunkIndex           new_chunk_index = chunks.first_chunk->chunk_handle;
     entity_move(entity, new_chunk_index);
 }
 
@@ -387,7 +458,8 @@ component_remove_many(Entity entity, ComponentTypeField components)
         return;
     }
 
-    ChunkIndex new_chunk_index = chunk_get_or_create(new_components, 1, DEFAULT_CHUNK_CAPACITY);
+    ChunkFindSpaceResult chunks          = chunk_find_space(g_entity_manager->temp_arena, new_components, 1);
+    ChunkIndex           new_chunk_index = chunks.first_chunk->chunk_handle;
     entity_move(entity, new_chunk_index);
 }
 

@@ -35,7 +35,7 @@ prefab_entity(PrefabIndex prefab)
 }
 
 internal Entity
-prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types)
+prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types, uint32 count)
 {
     Entity entity = entity_create(types);
     entity_copy_data(p->entity, entity);
@@ -59,11 +59,17 @@ prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types)
 internal Entity
 prefab_instantiate(PrefabIndex prefab)
 {
-    return prefab_instantiate_with(prefab, (ComponentTypeField){0});
+    return prefab_instantiate_with(prefab, (ComponentTypeField){0}, 1);
 }
 
 internal Entity
-prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with)
+prefab_instantiate_many(PrefabIndex prefab, uint32 count)
+{
+    return prefab_instantiate_with(prefab, (ComponentTypeField){0}, count);
+}
+
+internal Entity
+prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with, uint32 count)
 {
     PrefabNode* p = &g_prefab_manager->prefabs[prefab];
 
@@ -71,11 +77,11 @@ prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with)
     component_type_field_unset(&types, CTT_PrefabComponent);
     component_type_field_set_group(&types, with);
 
-    return prefab_instantiate_internal(p, types);
+    return prefab_instantiate_internal(p, types, count);
 }
 
 internal Entity
-prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without)
+prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without, uint32 count)
 {
     PrefabNode* p = &g_prefab_manager->prefabs[prefab];
 
@@ -83,7 +89,7 @@ prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without)
     component_type_field_unset(&types, CTT_PrefabComponent);
     component_type_field_unset_group(&types, without);
 
-    return prefab_instantiate_internal(p, types);
+    return prefab_instantiate_internal(p, types, count);
 }
 
 internal void

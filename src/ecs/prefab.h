@@ -36,25 +36,7 @@ typedef struct
 
     PrefabIndexNode* first;
     PrefabIndexNode* last;
-} PrefabList;
-
-typedef struct PrefabGroupNode PrefabGroupNode;
-struct PrefabGroupNode
-{
-    PrefabIndex value;
-    int16       min_count;
-    int16       max_count;
-
-    PrefabGroupNode* next;
-};
-
-typedef struct
-{
-    uint32 count;
-
-    PrefabGroupNode* first;
-    PrefabGroupNode* last;
-} PrefabGroupList;
+} PrefabIndexList;
 
 typedef struct
 {
@@ -68,10 +50,11 @@ internal PrefabIndex prefab_create(ComponentTypeField types);
 internal PrefabIndex prefab_create_as_child(PrefabIndex parent, ComponentTypeField types);
 internal Entity      prefab_entity(PrefabIndex prefab);
 
-internal Entity      prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types);
+internal Entity      prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types, uint32 count);
 internal Entity      prefab_instantiate(PrefabIndex prefab);
-internal Entity      prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with);
-internal Entity      prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without);
+internal Entity      prefab_instantiate_many(PrefabIndex prefab, uint32 count);
+internal Entity      prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with, uint32 count);
+internal Entity      prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without, uint32 count);
 internal void        prefab_add_child(PrefabIndex parent, PrefabIndex child);
 internal void        prefab_copy_data(PrefabIndex src, PrefabIndex dst);
 internal PrefabIndex prefab_duplicate(PrefabIndex prefab);

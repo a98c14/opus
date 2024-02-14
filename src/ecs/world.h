@@ -14,6 +14,14 @@
 typedef int32 ArchetypeIndex;
 typedef int32 ChunkIndex;
 
+typedef struct ChunkIndexNode ChunkIndexNode;
+struct ChunkIndexNode
+{
+    ChunkIndex chunk_handle;
+
+    ChunkIndexNode* next;
+};
+
 typedef struct
 {
     int32 component_count;
@@ -126,6 +134,12 @@ typedef struct
     Entity value;
 } Parent;
 
+typedef struct
+{
+    uint32          chunk_count;
+    ChunkIndexNode* first_chunk;
+} ChunkFindSpaceResult;
+
 internal Entity        entity_get_parent(Entity entity);
 internal EntityList    entity_get_children(Entity entity);
 internal EntityAddress entity_address_null();
@@ -136,16 +150,19 @@ internal Entity        entity_null();
 
 internal ArchetypeIndex archetype_get_or_create(ComponentTypeField types);
 
-internal bool32     chunk_has_space(Chunk* chunk, uint32 count);
-internal ChunkIndex chunk_get_or_create(ComponentTypeField components, uint32 space_required, uint32 capacity);
-internal void       chunk_delete_entity_data(EntityAddress address);
-internal void       chunk_copy_data(EntityAddress src, EntityAddress dst);
+internal uint32               chunk_available_space(Chunk* chunk);
+internal bool32               chunk_has_space(Chunk* chunk, uint32 count);
+internal ChunkIndex           chunk_create(ComponentTypeField components, uint32 capacity);
+internal ChunkFindSpaceResult chunk_find_space(Arena* arena, ComponentTypeField components, uint32 space_required);
+internal void                 chunk_delete_entity_data(EntityAddress address);
+internal void                 chunk_copy_data(EntityAddress src, EntityAddress dst);
 
 internal uint32      entity_reserve_free();
 internal void        entity_free(Entity e);
 internal EntityNode* entity_node_alloc();
 internal void        entity_node_free(EntityNode* node);
 internal Entity      entity_create(ComponentTypeField types);
+internal Entity*     entity_create_many(Arena* arena, ComponentTypeField components, uint32 count);
 internal void        entity_destroy(Entity entity);
 internal void        entity_activate(Entity entity);
 internal void        entity_deactivate(Entity entity);
