@@ -1,4 +1,5 @@
 #include "prefab.h"
+#include <ecs/world.h>
 
 internal void
 prefab_manager_init(Arena* arena)
@@ -34,42 +35,39 @@ prefab_entity(PrefabIndex prefab)
     return g_prefab_manager->prefabs[prefab].entity;
 }
 
-internal Entity
-prefab_instantiate_internal(PrefabNode* p, ComponentTypeField types, uint32 count)
+internal EntityBuffer
+prefab_instantiate_internal(Arena* arena, PrefabNode* p, ComponentTypeField types, uint32 count)
 {
-    Entity entity = entity_create(types);
-    entity_copy_data(p->entity, entity);
-
-    PrefabNode* child = p->first_child;
-    while (child)
+    EntityBuffer result = entity_create_many(arena, types, count);
+    for (uint32 i = 0; i < result.count; i++)
     {
-        ComponentTypeField types = entity_get_types(child->entity);
-        component_type_field_unset(&types, CTT_PrefabComponent);
-        component_type_field_set(&types, CTT_ParentComponent);
+        entity_copy_data(p->entity, result.entities[i]);
 
-        Entity child_entity = entity_create(types);
-        entity_copy_data(child->entity, child_entity);
-        entity_add_child(entity, child_entity);
+        PrefabNode* child = p->first_child;
+        while (child)
+        {
+            ComponentTypeField types = entity_get_types(child->entity);
+            component_type_field_unset(&types, CTT_PrefabComponent);
+            component_type_field_set(&types, CTT_ParentComponent);
 
-        child = child->next;
+            Entity child_entity = entity_create(types);
+            entity_copy_data(child->entity, child_entity);
+            entity_add_child(result.entities[i], child_entity);
+
+            child = child->next;
+        }
     }
-    return entity;
+    return result;
 }
 
-internal Entity
-prefab_instantiate(PrefabIndex prefab)
+internal EntityBuffer
+prefab_instantiate_many(Arena* arena, PrefabIndex prefab, uint32 count)
 {
-    return prefab_instantiate_with(prefab, (ComponentTypeField){0}, 1);
+    return prefab_instantiate_with(arena, prefab, (ComponentTypeField){0}, count);
 }
 
-internal Entity
-prefab_instantiate_many(PrefabIndex prefab, uint32 count)
-{
-    return prefab_instantiate_with(prefab, (ComponentTypeField){0}, count);
-}
-
-internal Entity
-prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with, uint32 count)
+internal EntityBuffer
+prefab_instantiate_with(Arena* arena, PrefabIndex prefab, ComponentTypeField with, uint32 count)
 {
     PrefabNode* p = &g_prefab_manager->prefabs[prefab];
 
@@ -77,11 +75,11 @@ prefab_instantiate_with(PrefabIndex prefab, ComponentTypeField with, uint32 coun
     component_type_field_unset(&types, CTT_PrefabComponent);
     component_type_field_set_group(&types, with);
 
-    return prefab_instantiate_internal(p, types, count);
+    return prefab_instantiate_internal(arena, p, types, count);
 }
 
-internal Entity
-prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without, uint32 count)
+internal EntityBuffer
+prefab_instantiate_without(Arena* arena, PrefabIndex prefab, ComponentTypeField without, uint32 count)
 {
     PrefabNode* p = &g_prefab_manager->prefabs[prefab];
 
@@ -89,7 +87,14 @@ prefab_instantiate_without(PrefabIndex prefab, ComponentTypeField without, uint3
     component_type_field_unset(&types, CTT_PrefabComponent);
     component_type_field_unset_group(&types, without);
 
-    return prefab_instantiate_internal(p, types, count);
+    return prefab_instantiate_internal(arena, p, types, count);
+}
+
+internal Entity
+prefab_instantiate(PrefabIndex prefab)
+{
+    EntityBuffer buffer = prefab_instantiate_with(g_entity_manager->temp_arena, prefab, (ComponentTypeField){0}, 1);
+    return buffer.entities[0];
 }
 
 internal void

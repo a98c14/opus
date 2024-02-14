@@ -6,10 +6,10 @@
 
 #include "component.h"
 
-#define DEFAULT_CHUNK_CAPACITY 2048
-#define ENTITY_CAPACITY        65536
-#define CHUNK_CAPACITY         512
-#define ARCHETYPE_CAPACITY     256
+#define DEFAULT_CHUNK_ENTITY_CAPACITY 128
+#define ENTITY_CAPACITY               65536
+#define CHUNK_CAPACITY                512
+#define ARCHETYPE_CAPACITY            256
 
 typedef int32 ArchetypeIndex;
 typedef int32 ChunkIndex;
@@ -61,6 +61,12 @@ struct EntityList
     EntityNode* first;
     EntityNode* last;
 };
+
+typedef struct
+{
+    uint32  count;
+    Entity* entities;
+} EntityBuffer;
 
 typedef struct
 {
@@ -157,15 +163,15 @@ internal ChunkFindSpaceResult chunk_find_space(Arena* arena, ComponentTypeField 
 internal void                 chunk_delete_entity_data(EntityAddress address);
 internal void                 chunk_copy_data(EntityAddress src, EntityAddress dst);
 
-internal uint32      entity_reserve_free();
-internal void        entity_free(Entity e);
-internal EntityNode* entity_node_alloc();
-internal void        entity_node_free(EntityNode* node);
-internal Entity      entity_create(ComponentTypeField types);
-internal Entity*     entity_create_many(Arena* arena, ComponentTypeField components, uint32 count);
-internal void        entity_destroy(Entity entity);
-internal void        entity_activate(Entity entity);
-internal void        entity_deactivate(Entity entity);
+internal uint32       entity_reserve_free();
+internal void         entity_free(Entity e);
+internal EntityNode*  entity_node_alloc();
+internal void         entity_node_free(EntityNode* node);
+internal Entity       entity_create(ComponentTypeField types);
+internal EntityBuffer entity_create_many(Arena* arena, ComponentTypeField components, uint32 count);
+internal void         entity_destroy(Entity entity);
+internal void         entity_activate(Entity entity);
+internal void         entity_deactivate(Entity entity);
 
 internal void               entity_add_child(Entity parent, Entity child);
 internal ComponentTypeField entity_get_types(Entity entity);
