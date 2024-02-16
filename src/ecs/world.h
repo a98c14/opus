@@ -142,9 +142,10 @@ typedef struct
 
 typedef struct
 {
-    uint32          chunk_count;
-    ChunkIndexNode* first_chunk;
-} ChunkFindSpaceResult;
+    uint32          entity_count;
+    uint32          count;
+    ChunkIndexNode* first;
+} ChunkList;
 
 internal Entity        entity_get_parent(Entity entity);
 internal EntityList    entity_get_children(Entity entity);
@@ -156,12 +157,14 @@ internal Entity        entity_null();
 
 internal ArchetypeIndex archetype_get_or_create(ComponentTypeField types);
 
-internal uint32               chunk_available_space(Chunk* chunk);
-internal bool32               chunk_has_space(Chunk* chunk, uint32 count);
-internal ChunkIndex           chunk_create(ComponentTypeField components, uint32 capacity);
-internal ChunkFindSpaceResult chunk_find_space(Arena* arena, ComponentTypeField components, uint32 space_required);
-internal void                 chunk_delete_entity_data(EntityAddress address);
-internal void                 chunk_copy_data(EntityAddress src, EntityAddress dst);
+internal uint32             chunk_available_space(Chunk* chunk);
+internal bool32             chunk_has_space(Chunk* chunk, uint32 count);
+internal Chunk*             chunk_get(ChunkIndex chunk_index);
+internal ComponentTypeField chunk_types(ChunkIndex chunk_index);
+internal ChunkIndex         chunk_create(ComponentTypeField components, uint32 capacity);
+internal ChunkList          chunk_find_space(Arena* arena, ComponentTypeField components, uint32 space_required);
+internal void               chunk_delete_entity_data(EntityAddress address);
+internal void               chunk_copy_data(EntityAddress src, EntityAddress dst);
 
 internal uint32       entity_reserve_free();
 internal void         entity_free(Entity e);
@@ -178,6 +181,7 @@ internal ComponentTypeField entity_get_types(Entity entity);
 internal void               entity_copy_data(Entity src, Entity dst);
 internal void               entity_move(Entity entity, ChunkIndex destination);
 
+internal void*  component_buffer_internal(Chunk* chunk, ComponentType type);
 internal void   component_add(Entity entity, ComponentType type);
 internal void   component_add_many(Entity entity, ComponentTypeField components);
 internal void*  component_add_ref_internal(Entity entity, ComponentType type);
@@ -186,6 +190,7 @@ internal void   component_remove_many(Entity entity, ComponentTypeField componen
 internal bool32 component_data_exists_internal(Entity entity, ComponentType component_type);
 internal void*  component_data_ref_internal(Entity entity, ComponentType component_type);
 internal void   component_copy(Entity src, Entity dst, ComponentType component_type);
+#define component_buffer(entity, component_type)   ((component_type*)component_buffer_internal(entity, CT_##component_type))
 #define component_add_ref(entity, component_type)  ((component_type*)component_add_ref_internal(entity, CT_##component_type))
 #define component_exists(entity, component_type)   component_data_exists_internal(entity, CT_##component_type)
 #define component_data_get(entity, component_type) (*((component_type*)component_data_ref_internal(entity, CT_##component_type)))
@@ -197,5 +202,6 @@ internal void   entity_manager_init(Arena* persistent_arena, Arena* temp_arena, 
 /** Entity Query */
 internal EntityQuery       entity_query_default();
 internal EntityQueryResult entity_get_all(Arena* arena, EntityQuery query);
+internal ChunkList         chunk_get_all(Arena* arena, EntityQuery query);
 internal bool32            entity_is_alive(Entity entity);
 internal Entity            entity_get_parent(Entity entity);
