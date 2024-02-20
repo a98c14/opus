@@ -318,8 +318,8 @@ draw_circle_filled(Vec2 pos, float32 radius, Color color)
 
     ShaderDataCircle shader_data = {0};
     shader_data.color            = color_v4(color);
-    shader_data.fill_ratio       = 1;
-    shader_data.slice_ratio      = 1;
+    shader_data.fill_ratio       = 1.1;
+    shader_data.slice_ratio      = 1.1;
     r_draw_single(key, transform_quad_aligned(pos, vec2(radius, radius)), &shader_data);
 }
 

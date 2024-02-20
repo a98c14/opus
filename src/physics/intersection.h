@@ -36,4 +36,7 @@ internal Projection project_vertices(Vec2* vertices, uint32 vertex_count, Vec2 l
 internal bool32     projection_overlaps(Projection p0, Projection p1);
 internal bool32     projection_overlaps_point(Projection p, float32 v);
 internal float32    projection_overlap_amount(Projection p0, Projection p1);
-internal Vec2       minimum_translation_vector(Vec2 normal, Projection p0, Projection p1, Vec2 center_0, Vec2 center_1);
+
+internal Vec2 closest_point_rect(Rect r, Vec2 v);
+
+internal Vec2 minimum_translation_vector(Vec2 normal, Projection p0, Projection p1, Vec2 center_0, Vec2 center_1);
