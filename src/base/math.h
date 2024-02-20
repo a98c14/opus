@@ -318,6 +318,7 @@ internal Vec2    rect_cr(Rect rect);
 internal Vec2    rect_cb(Rect rect);
 internal Vec2    rect_ct(Rect rect);
 
+internal Vec2   bounds_center(Bounds bounds);
 internal Bounds bounds_shrink(Bounds bounds, Vec2 amount);
 internal Bounds bounds_from_circle(Circle c);
 

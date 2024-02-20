@@ -823,6 +823,15 @@ b32_flip(bool32* b)
     *b = !(*b);
 }
 
+internal Vec2
+bounds_center(Bounds bounds)
+{
+    Vec2 result;
+    result.x = (bounds.bl.x + bounds.tr.x) / 2;
+    result.y = (bounds.bl.y + bounds.tr.y) / 2;
+    return result;
+}
+
 internal Bounds
 bounds_shrink(Bounds bounds, Vec2 amount)
 {
