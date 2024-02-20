@@ -162,10 +162,10 @@ internal Rect
 rect_from_bl_tr(Vec2 bl, Vec2 tr)
 {
     Rect    result;
-    float32 w = tr.x - bl.x;
-    float32 h = tr.y - bl.y;
-    result.x  = bl.x + w / 2.0f;
-    result.y  = bl.y + h / 2.0f;
+    float32 w = fabs(tr.x - bl.x);
+    float32 h = fabs(tr.y - bl.y);
+    result.x  = min(bl.x, tr.x) + w / 2.0f;
+    result.y  = min(bl.y, tr.y) + h / 2.0f;
     result.w  = w;
     result.h  = h;
     return result;

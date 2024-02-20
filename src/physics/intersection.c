@@ -72,12 +72,12 @@ intersects_rect(Rect a, Rect b)
     if (!result.intersects)
         return result;
 
-    bool32 x_bigger_than_y = projection_overlap_amount(projection_ax, projection_bx) > projection_overlaps(projection_ay, projection_by);
-    result.mtv             = x_bigger_than_y
-                                 ? minimum_translation_vector(normal_x, projection_ax, projection_bx, a.center, b.center)
-                                 : minimum_translation_vector(normal_y, projection_ay, projection_by, a.center, b.center);
+    bool32 x_smaller_than_y = projection_overlap_amount(projection_ax, projection_bx) < projection_overlap_amount(projection_ay, projection_by);
+    result.mtv              = x_smaller_than_y
+                                  ? minimum_translation_vector(normal_x, projection_ax, projection_bx, a.center, b.center)
+                                  : minimum_translation_vector(normal_y, projection_ay, projection_by, a.center, b.center);
 
-    result.position = add_vec2(a.center, result.mtv);
+    result.position = lerp_vec2(a.center, b.center, 0.5);
     return result;
 }
 
@@ -110,8 +110,8 @@ project_circle(Circle c, Vec2 line)
 {
     Projection result;
     float32    dot = dot_vec2(c.center, line);
-    result.min     = dot - c.radius;
-    result.max     = dot + c.radius;
+    result.min     = dot - c.radius / 2.0f;
+    result.max     = dot + c.radius / 2.0f;
     return result;
 }
 
