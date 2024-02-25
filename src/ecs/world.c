@@ -40,7 +40,7 @@ internal ArchetypeIndex
 archetype_get_or_create(ComponentTypeField components)
 {
     World* world = g_entity_manager->world;
-    for (int i = 0; i < world->archetype_count; i++)
+    for (uint32 i = 0; i < world->archetype_count; i++)
     {
         if (component_type_field_is_same(world->archetype_components[i], components))
             return i;
@@ -125,8 +125,8 @@ chunk_create(ComponentTypeField components, uint32 capacity)
         usize component_size         = g_entity_manager->type_manager->component_sizes[component_index];
         int32 component_buffer_index = archetype->component_buffer_index_map[component_index];
 
-        chunk->data_buffers[component_buffer_index].type = component_index;
-        chunk->data_buffers[component_buffer_index].data = arena_push_zero(g_entity_manager->persistent_arena, component_size * capacity);
+        chunk->data_buffers[component_buffer_index].element_size = component_size;
+        chunk->data_buffers[component_buffer_index].data         = arena_push_zero(g_entity_manager->persistent_arena, component_size * capacity);
     }
 
     world->chunk_components[chunk_index] = components;
@@ -187,7 +187,7 @@ chunk_delete_entity_data(EntityAddress address)
         for (int i = 0; i < archetype->component_count; i++)
         {
             DataBuffer* data_buffer    = &chunk->data_buffers[i];
-            usize       component_size = g_entity_manager->type_manager->component_sizes[data_buffer->type];
+            usize       component_size = data_buffer->element_size;
             memcpy(((uint8*)data_buffer->data) + (component_size * address.chunk_internal_index), ((uint8*)data_buffer->data) + (component_size * last_entity_address->chunk_internal_index), component_size);
         }
 
@@ -315,7 +315,7 @@ entity_create_many(Arena* arena, ComponentTypeField components, uint32 count)
 {
     EntityBuffer result = {0};
     result.count        = count;
-    result.entities     = arena_push_array_zero(arena, Entity, count);
+    result.entities     = arena_push_array(arena, Entity, count);
 
     World*          world  = g_entity_manager->world;
     ChunkList       chunks = chunk_find_space(g_entity_manager->temp_arena, components, count);

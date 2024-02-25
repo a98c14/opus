@@ -443,9 +443,18 @@ norm_vec3(Vec3 a)
 }
 
 internal Vec2
-clamp_vec2(float32 min, Vec2 a, float32 max)
+clamp_vec2_length(float32 min, Vec2 a, float32 max)
 {
     return mul_vec2_f32(norm_vec2_safe(a), clamp(min, len_vec2(a), max));
+}
+
+internal Vec2
+clamp_vec2(Vec2 a, Rect r)
+{
+    Vec2 result;
+    result.x = clamp(rect_left(r), a.x, rect_right(r));
+    result.y = clamp(rect_bottom(r), a.y, rect_top(r));
+    return result;
 }
 
 internal float32

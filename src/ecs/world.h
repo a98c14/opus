@@ -11,6 +11,12 @@
 #define CHUNK_CAPACITY                512
 #define ARCHETYPE_CAPACITY            256
 
+#define ecs_id(T) ECS_ID_##T
+
+#define ECS_ENTITY_INDEX_RESERVE 128
+
+const uint64 ecs_id(Relation) = 2;
+
 typedef int32 ArchetypeIndex;
 typedef int32 ChunkIndex;
 
@@ -21,6 +27,14 @@ struct ChunkIndexNode
 
     ChunkIndexNode* next;
 };
+
+typedef struct
+{
+    uint32          entity_count;
+    uint32          count;
+    ChunkIndexNode* first;
+    ChunkIndexNode* last;
+} ChunkList;
 
 typedef struct
 {
@@ -35,6 +49,8 @@ typedef struct
     // stores how many bytes is required per entity (doesn't include chunk
     // components)
     uint32 byte_per_entity;
+
+    ChunkList chunks;
 } Archetype;
 
 typedef struct
@@ -70,17 +86,18 @@ typedef struct
 
 typedef struct
 {
-    ComponentType type;
-    void*         data;
+    usize element_size;
+    void* data;
 } DataBuffer;
 
 typedef struct
 {
     ArchetypeIndex archetype_index;
-    uint32         entity_capacity;
-    uint32         entity_count;
-    Entity*        entities;
-    DataBuffer*    data_buffers;
+
+    uint32      entity_capacity;
+    uint32      entity_count;
+    Entity*     entities;
+    DataBuffer* data_buffers;
 } Chunk;
 
 typedef struct
@@ -103,7 +120,7 @@ typedef struct
     Entity*        entities;
     EntityAddress* entity_addresses;
 
-    /** entities */
+    /** now */
     Entity*     entity_parents;
     EntityList* entity_children;
 
@@ -139,13 +156,6 @@ typedef struct
 {
     Entity value;
 } Parent;
-
-typedef struct
-{
-    uint32          entity_count;
-    uint32          count;
-    ChunkIndexNode* first;
-} ChunkList;
 
 internal Entity        entity_get_parent(Entity entity);
 internal EntityList    entity_get_children(Entity entity);

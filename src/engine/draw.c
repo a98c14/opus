@@ -129,7 +129,7 @@ draw_heading(Vec2 origin, Vec2 heading, Color color, float32 thickness)
 {
     RenderKey      key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
     ShaderDataLine shader_data = {.color = color_v4(color)};
-    r_draw_single(key, transform_line(origin, add_vec2(origin, heading), thickness), &shader_data);
+    r_draw_single(key, transform_line(origin, add_vec2(origin, mul_vec2_f32(heading, 20)), thickness), &shader_data);
 }
 
 internal void
