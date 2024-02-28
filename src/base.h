@@ -6,5 +6,8 @@
 #include "base/log.h"
 #include "base/math.h"
 #include "base/memory.h"
+#include "base/print.h"
 #include "base/random.h"
+#include "base/sort.h"
 #include "base/strings.h"
+

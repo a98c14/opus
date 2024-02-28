@@ -1,4 +1,5 @@
 #include "world.h"
+#include <ecs/world.h>
 
 internal Entity
 entity_null()
@@ -197,6 +198,32 @@ chunk_delete_entity_data(EntityAddress address)
     }
 
     chunk->entity_count--;
+}
+
+internal void
+chunk_copy_data_buffer(ChunkIndex src_chunk_index, ChunkIndex dst_chunk_index, ComponentType src, ComponentType dst)
+{
+    World*                world         = g_entity_manager->world;
+    ComponentTypeManager* type_manager  = g_entity_manager->type_manager;
+    Chunk*                src_chunk     = &world->chunks[src_chunk_index];
+    Chunk*                dst_chunk     = &world->chunks[dst_chunk_index];
+    Archetype*            src_archetype = &world->archetypes[src_chunk->archetype_index];
+    Archetype*            dst_archetype = &world->archetypes[dst_chunk->archetype_index];
+
+    int32 src_buffer_index = src_archetype->component_buffer_index_map[src];
+    int32 dst_buffer_index = dst_archetype->component_buffer_index_map[dst];
+    xassert(type_manager->component_sizes[dst] == type_manager->component_sizes[src], "component sizes must be equal when copying data buffers");
+    DataBuffer* src_buffer     = &src_chunk->data_buffers[src_buffer_index];
+    DataBuffer* dst_buffer     = &dst_chunk->data_buffers[dst_buffer_index];
+    usize       component_size = type_manager->component_sizes[dst];
+    memcpy((uint8*)dst_buffer->data, (uint8*)src_buffer->data, component_size * src_chunk->entity_count);
+}
+
+internal void
+chunk_copy_data_buffer_in_place(ChunkIndex chunk_index, ComponentType src, ComponentType dst)
+{
+    xassert(src != dst, "cannot copy component onto itself");
+    chunk_copy_data_buffer(chunk_index, chunk_index, src, dst);
 }
 
 internal void

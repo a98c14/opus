@@ -7,7 +7,9 @@
 #include <base/log.c>
 #include <base/math.c>
 #include <base/memory.c>
+#include <base/print.c>
 #include <base/random.c>
+#include <base/sort.c>
 #include <base/strings.c>
 
 #include <gfx/base.c>

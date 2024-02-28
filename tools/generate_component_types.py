@@ -62,6 +62,11 @@ if __name__ == "__main__":
             for match in matches:
                 component_types.append(match)
                 
+            # typedef ActorStateComponent PreviousActorStateComponent;
+            matches = re.findall(r'(typedef\s\w+\s)(\w+)(?=;)', data_contents)
+            for match in matches:
+                component_types.append(match[1])
+                
             matches = re.findall(r'(?<=TagComponent\s)\w+(?=;)', data_contents)
             for match in matches:
                 tag_component_types.append(match)

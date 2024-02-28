@@ -43,6 +43,11 @@ if __name__ == "__main__":
                 tag_components.append({'name': match.groups()[0], 'fields': []})
                 continue
             
+            match = re.match(r"typedef \w+\s*(?P<struct_name>\w+);\s*$", line)
+            if match is not None:
+                components.append({'name': match.groups()[0], 'fields': []})
+                continue
+            
         struct_end_match = re.match(r"}\s+(?P<struct_name>\w+);\s*$", line)
         if struct_end_match is not None:
             current_struct['name'] = struct_end_match.groups()[0]
