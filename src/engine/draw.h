@@ -175,8 +175,6 @@ internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation
 internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
 
-internal void draw_sprite_border(Rect rect, SpriteIndex sprite, uint32 protection);
-
 /** extra draw functions */
 internal Rect draw_debug_rect(Rect rect);
 internal Rect draw_debug_rect_b(Rect rect);
@@ -185,4 +183,5 @@ internal Rect draw_sprite_rect_colored(Rect rect, SpriteIndex sprite, Anchor anc
 internal Rect draw_sprite_rect_cut(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect draw_sprite_rect_cut_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha);
 internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
-internal Rect get_sprite_rect(SpriteIndex sprite);
+internal Rect sprite_rect(SpriteIndex sprite);
+internal Rect sprite_rect_with_pivot(SpriteIndex sprite, Vec2 position, Vec2 flip, float32 scale_multiplier);

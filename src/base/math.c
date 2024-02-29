@@ -422,6 +422,15 @@ dot_vec3(Vec3 a, Vec3 b)
 }
 
 internal Vec2
+fabs_vec2(Vec2 a)
+{
+    Vec2 result;
+    result.x = fabs(a.x);
+    result.y = fabs(a.y);
+    return result;
+}
+
+internal Vec2
 norm_vec2(Vec2 a)
 {
     return mul_vec2_f32(a, 1.0f / sqrtf(dot_vec2(a, a)));

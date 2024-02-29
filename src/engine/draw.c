@@ -1,6 +1,10 @@
 #include "draw.h"
+#include <base/math.h>
 #include <engine/color.h>
 #include <engine/draw.h>
+#include <engine/layout.h>
+#include <gfx/math.h>
+#include <ui/ui_core.h>
 
 #ifndef SHADER_PATH
 #define SHADER_PATH "..\\src\\shaders"
@@ -360,7 +364,7 @@ draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex 
 }
 
 internal void
-draw_sprite_border(Rect rect, SpriteIndex sprite, uint32 protection)
+draw_sprite_edges(Rect rect, SpriteIndex sprite, uint32 protection)
 {
     xassert(d_state->sprite_atlas, "`d_state->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
 
@@ -441,8 +445,8 @@ draw_debug_rect_b(Rect rect)
 internal Rect
 draw_sprite_rect_colored(Rect rect, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha)
 {
-    Rect sprite_rect = get_sprite_rect(sprite);
-    Rect result      = rect_anchor(sprite_rect, rect, anchor);
+    Rect r      = sprite_rect(sprite);
+    Rect result = rect_anchor(r, rect, anchor);
     draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), color, alpha);
     return result;
 }
@@ -456,9 +460,9 @@ draw_sprite_rect(Rect rect, SpriteIndex sprite, Anchor anchor)
 internal Rect
 draw_sprite_rect_cut_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha)
 {
-    Rect sprite_rect = get_sprite_rect(sprite);
-    Rect container   = rect_cut_r(rect, sprite_rect, side);
-    Rect result      = rect_anchor(sprite_rect, container, anchor);
+    Rect r         = sprite_rect(sprite);
+    Rect container = rect_cut_r(rect, r, side);
+    Rect result    = rect_anchor(r, container, anchor);
     draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), color, alpha);
     return result;
 }
@@ -472,17 +476,27 @@ draw_sprite_rect_cut(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor
 internal Rect
 draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor)
 {
-    Rect sprite_rect = get_sprite_rect(sprite);
-    Rect container   = rect_cut_r(rect, sprite_rect, side);
-    Rect result      = rect_anchor(sprite_rect, container, anchor);
+    Rect r         = sprite_rect(sprite);
+    Rect container = rect_cut_r(rect, r, side);
+    Rect result    = rect_anchor(r, container, anchor);
     draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(-1, 1), ColorInvisible, 1);
     return container;
 }
 
 internal Rect
-get_sprite_rect(SpriteIndex sprite)
+sprite_rect(SpriteIndex sprite)
 {
     const Sprite* s = &d_state->sprite_atlas->sprites[sprite];
     // NOTE(selim): -2 is removed because by default all our sprites have 1 px padding on each side
     return rect_from_wh(s->size.w - 2, s->size.h - 2);
+}
+
+internal Rect
+sprite_rect_with_pivot(SpriteIndex sprite, Vec2 position, Vec2 flip, float32 scale_multiplier)
+{
+    Sprite sprite_data   = d_state->sprite_atlas->sprites[sprite];
+    Vec2   pivot         = sprite_get_pivot(sprite_data, vec2(scale_multiplier, scale_multiplier), flip);
+    Vec2   scale         = mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale_multiplier);
+    Vec2   rect_position = add_vec2(position, pivot);
+    return rect_at(rect_position, fabs_vec2(scale), AlignmentCenter);
 }
