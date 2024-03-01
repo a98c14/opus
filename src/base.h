@@ -1,3 +1,4 @@
+#pragma once
 #include "base/bitfield.h"
 #include "base/datetime.h"
 #include "base/easing.h"

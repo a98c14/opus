@@ -1,10 +1,4 @@
 #include "draw.h"
-#include <base/math.h>
-#include <engine/color.h>
-#include <engine/draw.h>
-#include <engine/layout.h>
-#include <gfx/math.h>
-#include <ui/ui_core.h>
 
 #ifndef SHADER_PATH
 #define SHADER_PATH "..\\src\\shaders"

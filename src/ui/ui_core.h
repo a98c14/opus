@@ -1,12 +1,5 @@
 #pragma once
 
-#include <base.h>
-#include <base/defines.h>
-#include <engine/draw.h>
-#include <engine/layout.h>
-#include <engine/time.h>
-#include <gfx/sprite.h>
-
 #define UI_MAX_ANIMATION_COUNT   16
 #define UI_ANIMATION_UPDATE_RATE 24.0f
 
