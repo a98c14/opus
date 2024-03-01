@@ -1,5 +1,5 @@
 #include "world.h"
-#include <ecs/world.h>
+#include <base/thread_context.h>
 
 internal Entity
 entity_null()
@@ -138,10 +138,9 @@ chunk_create(ComponentTypeField components, uint32 capacity)
 internal ChunkList
 chunk_find_space(Arena* arena, ComponentTypeField components, uint32 space_required)
 {
-    ChunkList result = {0};
-
-    uint32 remaining = space_required;
-    World* world     = g_entity_manager->world;
+    ChunkList result    = {0};
+    uint32    remaining = space_required;
+    World*    world     = g_entity_manager->world;
     for (uint32 i = 0; i < world->chunk_count && remaining > 0; i++)
     {
         if (component_type_field_is_same(world->chunk_components[i], components))
@@ -318,8 +317,9 @@ entity_node_free(EntityNode* node)
 internal Entity
 entity_create(ComponentTypeField components)
 {
+    ArenaTemp  temp        = scratch_begin(0, 0);
     World*     world       = g_entity_manager->world;
-    ChunkList  chunks      = chunk_find_space(g_entity_manager->temp_arena, components, 1);
+    ChunkList  chunks      = chunk_find_space(temp.arena, components, 1);
     ChunkIndex chunk_index = chunks.first->chunk_handle;
     Chunk*     chunk       = &world->chunks[chunk_index];
 
@@ -334,18 +334,19 @@ entity_create(ComponentTypeField components)
 
     chunk->entity_count++;
     world->entity_count++;
+    scratch_end(temp);
     return *entity;
 }
 
 internal EntityBuffer
 entity_create_many(Arena* arena, ComponentTypeField components, uint32 count)
 {
-    EntityBuffer result = {0};
-    result.count        = count;
-    result.entities     = arena_push_array(arena, Entity, count);
-
+    EntityBuffer result    = {0};
+    result.count           = count;
+    result.entities        = arena_push_array(arena, Entity, count);
+    ArenaTemp       temp   = scratch_begin(&arena, 1);
     World*          world  = g_entity_manager->world;
-    ChunkList       chunks = chunk_find_space(g_entity_manager->temp_arena, components, count);
+    ChunkList       chunks = chunk_find_space(temp.arena, components, count);
     ChunkIndexNode* n;
     uint32          remaining             = count;
     uint32          internal_entity_index = 0;
@@ -374,6 +375,7 @@ entity_create_many(Arena* arena, ComponentTypeField components, uint32 count)
 
         remaining -= will_use;
     }
+    scratch_end(temp);
 
     return result;
 }
@@ -476,9 +478,11 @@ component_add_many(Entity entity, ComponentTypeField components)
         return;
     }
 
-    ChunkList  chunks          = chunk_find_space(g_entity_manager->temp_arena, new_components, 1);
+    ArenaTemp  temp            = scratch_begin(0, 0);
+    ChunkList  chunks          = chunk_find_space(temp.arena, new_components, 1);
     ChunkIndex new_chunk_index = chunks.first->chunk_handle;
     entity_move(entity, new_chunk_index);
+    scratch_end(temp);
 }
 
 internal void
@@ -514,8 +518,10 @@ component_remove_many(Entity entity, ComponentTypeField components)
         return;
     }
 
-    ChunkList  chunks          = chunk_find_space(g_entity_manager->temp_arena, new_components, 1);
+    ArenaTemp  temp            = scratch_begin(0, 0);
+    ChunkList  chunks          = chunk_find_space(temp.arena, new_components, 1);
     ChunkIndex new_chunk_index = chunks.first->chunk_handle;
+    scratch_end(temp);
     entity_move(entity, new_chunk_index);
 }
 
@@ -617,7 +623,6 @@ entity_manager_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeMan
 {
     g_entity_manager                   = arena_push_struct_zero(persistent_arena, EntityManager);
     g_entity_manager->persistent_arena = persistent_arena;
-    g_entity_manager->temp_arena       = temp_arena;
     g_entity_manager->world            = world_new(persistent_arena);
     g_entity_manager->type_manager     = type_manager;
 }
@@ -670,12 +675,8 @@ entity_query_default()
 internal EntityQueryResult
 entity_get_all(Arena* arena, EntityQuery query)
 {
-    World* world = g_entity_manager->world;
-
-    // TODO(selim): cache query results (invalidate on chunk add/remove)
-    // What happens if `temp_arena` and `arena` are the same?
-    // Use `ScratchArena` here
-    ArenaTemp temp         = arena_begin_temp(g_entity_manager->temp_arena);
+    World*    world        = g_entity_manager->world;
+    ArenaTemp temp         = scratch_begin(0, 0);
     Chunk*    chunks       = arena_push_array(temp.arena, Chunk, 128);
     bool32    chunk_count  = 0;
     uint32    entity_count = 0;
@@ -702,7 +703,7 @@ entity_get_all(Arena* arena, EntityQuery query)
         memcpy(result.entities + result.count, chunks[i].entities, sizeof(Entity) * chunks[i].entity_count);
         result.count += chunks[i].entity_count;
     }
-    arena_end_temp(temp);
+    scratch_end(temp);
     return result;
 }
 

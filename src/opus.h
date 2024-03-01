@@ -14,6 +14,7 @@
 #include <base/random.h>
 #include <base/sort.h>
 #include <base/strings.h>
+#include <base/thread_context.h>
 
 #include <gfx/base.h>
 #include <gfx/debug.h>

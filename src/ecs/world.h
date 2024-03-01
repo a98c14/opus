@@ -3,6 +3,7 @@
 #include "base/defines.h"
 #include "base/log.h"
 #include "base/memory.h"
+#include "base/thread_context.h"
 
 #include "component.h"
 
@@ -131,9 +132,7 @@ typedef struct
 
 typedef struct
 {
-    Arena* persistent_arena;
-    Arena* temp_arena;
-
+    Arena*                persistent_arena;
     ComponentTypeManager* type_manager;
     World*                world;
 } EntityManager;

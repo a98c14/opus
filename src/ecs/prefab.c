@@ -1,4 +1,5 @@
 #include "prefab.h"
+#include <base/thread_context.h>
 #include <ecs/world.h>
 
 internal void
@@ -93,8 +94,11 @@ prefab_instantiate_without(Arena* arena, PrefabIndex prefab, ComponentTypeField 
 internal Entity
 prefab_instantiate(PrefabIndex prefab)
 {
-    EntityBuffer buffer = prefab_instantiate_with(g_entity_manager->temp_arena, prefab, (ComponentTypeField){0}, 1);
-    return buffer.entities[0];
+    ArenaTemp    temp   = scratch_begin(0, 0);
+    EntityBuffer buffer = prefab_instantiate_with(temp.arena, prefab, (ComponentTypeField){0}, 1);
+    Entity       result = buffer.entities[0];
+    scratch_end(temp);
+    return result;
 }
 
 internal void
