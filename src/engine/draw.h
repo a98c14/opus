@@ -1,7 +1,6 @@
 #pragma once
 
 #include <base.h>
-#include <base/defines.h>
 #include <engine/color.h>
 #include <fonts/fonts.h>
 #include <gfx.h>
@@ -10,12 +9,32 @@
 #include "layout.h"
 #include "text.h"
 
+typedef struct
+{
+    float32 thickness;
+    Vec4    outline_color;
+    float32 outline_thickness;
+    float32 softness;
+} DrawStyleFont;
+
+global read_only DrawStyleFont d_default_font_style = {
+    0.55,
+    {.r = 0, .b = 0, .g = 0, .a = 0},
+    0.3,
+    30
+};
+
 typedef struct DrawContextNode DrawContextNode;
 struct DrawContextNode
 {
+    /** render info */
     ViewType       view;
     SortLayerIndex sort_layer;
     PassIndex      pass;
+
+    /** styling */
+    GlyphAtlas*   font_atlas;
+    DrawStyleFont font_style;
 
     DrawContextNode* next;
 };
@@ -26,12 +45,9 @@ global read_only DrawContextNode d_default_node = {
 };
 
 /** default settings */
-global read_only float32 d_default_text_baseline          = 1;
-global read_only float32 d_default_text_thickness         = 0.55;
-global read_only float32 d_default_text_softness          = 30;
-global read_only float32 d_default_text_outline_thickness = 0.3;
-global read_only Vec4    d_color_none                     = {.r = 0, .b = 0, .g = 0, .a = 0};
-global read_only Vec4    d_color_black                    = {.r = 0, .b = 0, .g = 0, .a = 1};
+global read_only float32 d_default_text_baseline = 1;
+global read_only Vec4    d_color_none            = {.r = 0, .b = 0, .g = 0, .a = 0};
+global read_only Vec4    d_color_black           = {.r = 0, .b = 0, .g = 0, .a = 1};
 
 typedef struct
 {
@@ -59,7 +75,6 @@ typedef struct
     DrawContextNode* ctx;
 
     /** atlas */
-    GlyphAtlas*  font_open_sans;
     SpriteAtlas* sprite_atlas;
 } D_State;
 global D_State* d_state;
@@ -146,6 +161,8 @@ internal void draw_context_init(Arena* arena, Arena* temp_arena, Renderer* rende
 internal void draw_context_activate_atlas(SpriteAtlas* atlas);
 
 /** context push */
+internal void draw_activate_font(GlyphAtlas* font);
+internal void draw_context_set_font_style(DrawStyleFont style);
 internal void draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass);
 internal void draw_context_pop();
 #define draw_scope(sort_layer, view_type, pass) defer_loop(draw_context_push(sort_layer, view_type, pass), draw_context_pop())
@@ -163,7 +180,7 @@ internal Rect draw_rect_outline(Rect rect, Color color, float32 thickness);
 internal void draw_texture_aligned(Vec2 pos, Vec2 scale, TextureIndex texture);
 internal void draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness);
 
-internal Rect draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, Color color, Color outline_color);
+internal Rect draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, Color color);
 internal Rect draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color color);
 internal Rect draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color);
 internal void draw_circle(Vec2 pos, float32 radius, Color color);
