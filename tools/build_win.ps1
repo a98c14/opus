@@ -1,6 +1,6 @@
 $app_name = "main";
 $output_path = ".\dist";
-$source_file_path = ".\examples\sprite\main.c";
+$source_file_path = ".\examples\font_rendering\main.c";
 
 $compile_args = @(
     "/O2",
@@ -13,6 +13,8 @@ $compile_args = @(
     "/DSTB_IMAGE_IMPLEMENTATION",
     ".\lib\glfw3dll.lib",
     ".\lib\glfw3.lib",
+    ".\lib\glfw3.lib",
+    ".\lib\freetype.lib",
     ".\lib\gl.obj",
     "opengl32.lib");
 
