@@ -12,7 +12,8 @@
 #define CHUNK_CAPACITY                512
 #define ARCHETYPE_CAPACITY            256
 
-#define ecs_id(T) ECS_ID_##T
+#define ecs_id(T)  ECS_ID_##T
+#define comp_id(T) CT_##T
 
 #define ECS_ENTITY_INDEX_RESERVE 128
 
@@ -193,19 +194,21 @@ internal void               entity_copy_data(Entity src, Entity dst);
 internal void               entity_move(Entity entity, ChunkIndex destination);
 
 internal void*  component_buffer_internal(Chunk* chunk, ComponentType type);
-internal void   component_add(Entity entity, ComponentType type);
+internal void   component_add_internal(Entity entity, ComponentType type);
 internal void   component_add_many(Entity entity, ComponentTypeField components);
 internal void*  component_add_ref_internal(Entity entity, ComponentType type);
-internal void   component_remove(Entity entity, ComponentType type);
+internal void   component_remove_internal(Entity entity, ComponentType type);
 internal void   component_remove_many(Entity entity, ComponentTypeField components);
 internal bool32 component_data_exists_internal(Entity entity, ComponentType component_type);
 internal void*  component_data_ref_internal(Entity entity, ComponentType component_type);
 internal void   component_copy(Entity src, Entity dst, ComponentType component_type);
-#define component_buffer(chunk, component_type)   ((component_type*)component_buffer_internal(chunk, CT_##component_type))
-#define component_add_ref(entity, component_type) ((component_type*)component_add_ref_internal(entity, CT_##component_type))
-#define component_exists(entity, component_type)  component_data_exists_internal(entity, CT_##component_type)
-#define component_get(entity, component_type)     (*((component_type*)component_data_ref_internal(entity, CT_##component_type)))
-#define component_ref(entity, component_type)     ((component_type*)component_data_ref_internal(entity, CT_##component_type))
+#define component_buffer(chunk, component)   ((component*)component_buffer_internal(chunk, comp_id(component)))
+#define component_add(entity, component)     (component_add_ref_internal(entity, comp_id(component)))
+#define component_add_ref(entity, component) ((component*)component_add_ref_internal(entity, comp_id(component)))
+#define component_remove(entity, component)  (component_remove_internal(entity, comp_id(component)))
+#define component_exists(entity, component)  component_data_exists_internal(entity, comp_id(component))
+#define component_get(entity, component)     (*((component*)component_data_ref_internal(entity, comp_id(component))))
+#define component_ref(entity, component)     ((component*)component_data_ref_internal(entity, comp_id(component)))
 
 internal World* world_new(Arena* arena);
 internal void   entity_manager_init(Arena* persistent_arena, Arena* temp_arena, ComponentTypeManager* type_manager);

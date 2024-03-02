@@ -1,5 +1,4 @@
 #pragma once
-
 #define UI_MAX_ANIMATION_COUNT   16
 #define UI_ANIMATION_UPDATE_RATE 24.0f
 

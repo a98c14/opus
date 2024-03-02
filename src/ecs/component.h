@@ -1,12 +1,7 @@
 #pragma once
 
+#include <base.h>
 #include <intrin.h>
-
-#include <base/asserts.h>
-#include <base/defines.h>
-#include <base/log.h>
-#include <base/memory.h>
-#include <base/strings.h>
 
 #ifndef COMPONENT_COUNT
 #define COMPONENT_COUNT 1
@@ -15,7 +10,7 @@
 #define COMPONENT_TYPE_FIELD_LENGTH ((COMPONENT_COUNT / COMPONENT_TYPE_FIELD_SIZE) + 1)
 
 #define COMPONENT_CAPACITY 8192
-typedef uint16 ComponentType;
+typedef uint64 ComponentType;
 
 /** Used by component code-generation script.
  * Define the tag component as follows

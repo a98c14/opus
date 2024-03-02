@@ -1,5 +1,4 @@
 #include "world.h"
-#include <base/thread_context.h>
 
 internal Entity
 entity_null()
@@ -420,14 +419,14 @@ entity_activate(Entity entity)
     if (!component_data_exists_internal(entity, CTT_InactiveComponent))
         return;
 
-    component_remove(entity, CTT_InactiveComponent);
+    component_remove_internal(entity, CTT_InactiveComponent);
     EntityList* children = &world->entity_children[entity.index];
     if (children->count > 0)
     {
         EntityNode* child = children->first;
         while (child && child->value.version > 0)
         {
-            component_remove(child->value, CTT_InactiveComponent);
+            component_remove_internal(child->value, CTT_InactiveComponent);
             child = child->next;
         }
     }
@@ -437,14 +436,14 @@ internal void
 entity_deactivate(Entity entity)
 {
     World* world = g_entity_manager->world;
-    component_add(entity, CTT_InactiveComponent);
+    component_add_internal(entity, CTT_InactiveComponent);
     EntityList* children = &world->entity_children[entity.index];
     if (children->count > 0)
     {
         EntityNode* child = children->first;
         while (child && child->value.version > 0)
         {
-            component_add(child->value, CTT_InactiveComponent);
+            component_add_internal(child->value, CTT_InactiveComponent);
             child = child->next;
         }
     }
@@ -486,7 +485,7 @@ component_add_many(Entity entity, ComponentTypeField components)
 }
 
 internal void
-component_add(Entity entity, ComponentType type)
+component_add_internal(Entity entity, ComponentType type)
 {
     ComponentTypeField field = {0};
     component_type_field_set(&field, type);
@@ -526,7 +525,7 @@ component_remove_many(Entity entity, ComponentTypeField components)
 }
 
 internal void
-component_remove(Entity entity, ComponentType type)
+component_remove_internal(Entity entity, ComponentType type)
 {
     ComponentTypeField field = {0};
     component_type_field_set(&field, type);
