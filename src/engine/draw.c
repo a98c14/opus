@@ -104,9 +104,16 @@ draw_context_init(Arena* arena, Arena* temp_arena, Renderer* renderer, PassIndex
         sizeof(ShaderDataText),
         true);
 
+    d_state->material_text_free_type_sdf = material_new(
+        g_renderer,
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\freetype_text_sdf.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\freetype_text_sdf.frag")),
+        sizeof(ShaderDataText),
+        true);
+
     String        font_path = string(ASSET_PATH "\\open_sans.ttf");
     String        font_name = string("open_sans");
-    FontFaceIndex face      = font_load(font_name, font_path);
+    FontFaceIndex face      = font_load(font_name, font_path, GlyphAtlasTypeFreeType);
     draw_activate_font(face);
     log_debug("initialized draw context");
 }
@@ -258,7 +265,7 @@ draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, C
     shader_data.outline_thickness = d_state->ctx->font_style.outline_thickness;
 
     GlyphAtlas*     atlas              = font_get_atlas(d_state->ctx->font_face, size);
-    MaterialIndex   material           = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text;
+    MaterialIndex   material           = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text_free_type_sdf;
     RenderKey       key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
     R_Batch*        batch              = r_batch_from_key(key, str.length);
     Rect            bounds             = text_calculate_transforms(atlas, str, size, pos, alignment, batch->model_buffer, 0);
@@ -288,12 +295,10 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
     position.y += d_default_text_baseline;
 
     GlyphAtlas*   atlas    = font_get_atlas(d_state->ctx->font_face, size);
-    MaterialIndex material = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text;
-    size                   = atlas->type == GlyphAtlasTypeFreeType ? 1 : size;
-
-    RenderKey key    = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
-    R_Batch*  batch  = r_batch_from_key(key, str.length);
-    Rect      result = text_calculate_glyph_matrices(d_state->frame_arena, atlas, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
+    MaterialIndex material = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text_free_type_sdf;
+    RenderKey     key      = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
+    R_Batch*      batch    = r_batch_from_key(key, str.length);
+    Rect          result   = text_calculate_glyph_matrices(d_state->frame_arena, atlas, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
 
     ShaderDataText shader_data    = {0};
     shader_data.color             = color_v4(color);

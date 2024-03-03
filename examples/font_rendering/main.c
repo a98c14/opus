@@ -38,12 +38,12 @@ main(void)
     r_pipeline_init(config);
     font_cache_init(persistent_arena);
     draw_context_init(persistent_arena, frame_arena, g_renderer, pass_default);
-    FontFaceIndex ibx_mono = font_load(string("ibx_mono"), string(ASSET_PATH "\\IBMPlexMono-Bold.ttf"));
+    FontFaceIndex ibx_mono = font_load(string("ibx_mono"), string(ASSET_PATH "\\IBMPlexMono-Bold.ttf"), GlyphAtlasTypeFreeType);
     draw_activate_font(ibx_mono);
 
     EngineTime time = engine_time_new();
 
-    const read_only uint32 font_size = 12;
+    const uint32 font_size = 24;
 
     /* main loop */
     while (!glfwWindowShouldClose(window->glfw_window))
@@ -51,12 +51,6 @@ main(void)
         arena_reset(frame_arena);
         if (input_key_pressed(window, GLFW_KEY_RIGHT_BRACKET))
             break;
-
-        // draw_circle_filled(vec2_zero(), 100, ColorWhite);
-        // draw_rect(rect_from_wh(200, 200), ColorWhite);
-
-        // String test_string = string("Do small fonts look ok? ggg");
-        // String english     = string("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890~!@#$%^&*()-_+=[{]}\\|;:'\",<.>/?");
 
         ShaderDataText shader_data    = {0};
         shader_data.color             = d_color_white;

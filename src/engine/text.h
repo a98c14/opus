@@ -99,9 +99,10 @@ internal Rect text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atla
 typedef uint32 FontFaceIndex;
 typedef struct
 {
-    uint64  hash;
-    String  name;
-    FT_Face freetype_face;
+    GlyphAtlasType atlas_type;
+    uint64         hash;
+    String         name;
+    FT_Face        freetype_face;
 } FontFace;
 
 typedef struct
@@ -142,5 +143,5 @@ typedef struct
 FontCache* g_font_cache;
 
 internal void          font_cache_init(Arena* arena);
-internal FontFaceIndex font_load(String font_name, String font_path);
+internal FontFaceIndex font_load(String font_name, String font_path, GlyphAtlasType atlas_type);
 internal GlyphAtlas*   font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size);

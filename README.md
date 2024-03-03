@@ -1,6 +1,6 @@
 ## TODO
 - Add SDF fonts to font cache
-- Fix TopLeft TopRight anchoring
+  - SDF fonts don't care about getting rasterized per pixel size so we can cache them using 0 size or something
 
 
 

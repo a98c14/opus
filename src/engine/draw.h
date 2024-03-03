@@ -63,6 +63,7 @@ typedef struct
     /* materials */
     MaterialIndex material_text;
     MaterialIndex material_text_free_type;
+    MaterialIndex material_text_free_type_sdf;
     MaterialIndex material_basic;
     MaterialIndex material_line;
     MaterialIndex material_basic_texture;
