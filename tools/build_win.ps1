@@ -3,7 +3,7 @@ $output_path = ".\dist";
 $source_file_path = ".\examples\font_rendering\main.c";
 
 $compile_args = @(
-    "/O2",
+    # "/O2",
     "/Zi",
     "/nologo",
     "/Fd:""$output_path\$app_name.pdb""",
