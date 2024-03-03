@@ -253,7 +253,6 @@ texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, ui
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
 
-    // TODO(selim): Why do we need to put this? Also should be enabled/disabled from function parameters
     texture->gl_texture_type = GL_TEXTURE_2D;
     texture->width           = width;
     texture->height          = height;
@@ -272,6 +271,7 @@ texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, ui
         texture->format = GL_RED;
         break;
     case 1:
+        // TODO(selim): Why do we need to put this? Also should be enabled/disabled from function parameters
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         texture->format = GL_RED;
         break;
