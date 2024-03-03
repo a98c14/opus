@@ -293,7 +293,6 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
 
     Vec2 position = rect_get(rect, anchor.parent);
     position.y += d_default_text_baseline;
-
     GlyphAtlas*   atlas    = font_get_atlas(d_state->ctx->font_face, size);
     MaterialIndex material = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text_free_type_sdf;
     RenderKey     key      = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);

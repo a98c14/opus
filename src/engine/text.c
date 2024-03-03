@@ -230,8 +230,9 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
 {
     FontFace* font_face = &g_font_cache->font_faces[font_face_index];
     xassert(font_face, "Could not find given font face");
-    uint32 size = font_face->atlas_type == GlyphAtlasTypeFreeType ? pixel_size : 32;
-
+    // TODO(selim): I didn't understand why I need to divide this 100%
+    pixel_size /= g_renderer->ppu;
+    uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? pixel_size : 32;
     uint64         params[]    = {font_face_index, size};
     uint64         hash        = hash_array_uint64(params, array_count(params));
     FontCacheList* font_bucket = &g_font_cache->rasterized_font_cache[hash % g_font_cache->rasterized_font_cache_capacity];
@@ -267,7 +268,7 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
             exit(1);
         }
 
-        atlas->atlas_info.width += font_face->freetype_face->glyph->bitmap.width;
+        atlas->atlas_info.width += font_face->freetype_face->glyph->bitmap.width + 2;
         if (atlas->atlas_info.height < font_face->freetype_face->glyph->bitmap.rows)
         {
             atlas->atlas_info.height = font_face->freetype_face->glyph->bitmap.rows;
@@ -307,7 +308,7 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, glyph->bitmap.width, glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
-        x += glyph->bitmap.width;
+        x += glyph->bitmap.width + 2;
     }
 
     node                    = arena_push_struct_zero(g_font_cache->arena, FontCacheNode);
