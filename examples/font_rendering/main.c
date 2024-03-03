@@ -58,7 +58,7 @@ main(void)
         shader_data.softness          = d_default_text_softness;
         shader_data.outline_thickness = d_default_text_outline_thickness;
 
-        Rect r = rect_at(vec2(-500, 0), vec2(1000, 500), AlignmentLeft);
+        Rect r = rect_at(vec2(-500, 0), vec2(600, 500), AlignmentLeft);
 
         draw_debug_rect_b(r);
         r = rect_shrink_f32(r, 10);
@@ -68,12 +68,14 @@ main(void)
         draw_text(string("TopLeft"), r, ANCHOR_TL_TL, font_size, ColorWhite100);
         draw_text(string("TopRight"), r, ANCHOR_TR_TR, font_size, ColorWhite100);
 
-        Rect box = rect_at(vec2(-100, 0), vec2(100, 100), AlignmentBottomLeft);
+        Rect box = rect_at(vec2(-100, 0), vec2(600, 100), AlignmentBottomLeft);
         draw_debug_rect(box);
-        draw_text(string("Line 1"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
-        draw_text(string("Line 2"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
-        draw_text(string("Line 3"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
-        draw_text(string("Line 4"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
+        draw_text(string("Here we go again"), rect_cut_top(&box, font_size), ANCHOR_TL_TL, font_size, ColorWhite100);
+        draw_text(string("Second line"), rect_cut_top(&box, font_size), ANCHOR_TL_TL, font_size, ColorWhite100);
+        draw_text(string("Third line"), rect_cut_top(&box, font_size), ANCHOR_TL_TL, font_size, ColorWhite100);
+        // draw_text(string("Line 2"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
+        // draw_text(string("Line 3"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
+        // draw_text(string("Line 4"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
 
         r_render(g_renderer, time.dt);
         window_update(window);

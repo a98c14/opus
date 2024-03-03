@@ -47,7 +47,7 @@ text_line_add(Arena* frame_arena, TextLineList* lines, String str, Vec2 size)
     line->v.str        = str;
     queue_push(lines->first, lines->last, line);
     lines->size.w = max(lines->size.w, line->v.size.x);
-    lines->size.h += max(lines->size.h, line->v.size.y);
+    lines->size.h += line->v.size.y;
     lines->count++;
 }
 
@@ -66,7 +66,6 @@ text_lines_from_string(Arena* frame_arena, GlyphAtlas* atlas, String str, float3
     for (uint32 i = 0; i < remaining.length; i++)
     {
         glyph = glyph_get(atlas, remaining.value[i]);
-
         if (char_is_space(remaining.value[i]))
         {
             // NOTE(selim): glyph width is added to cover the last letter of the string
@@ -85,10 +84,9 @@ text_lines_from_string(Arena* frame_arena, GlyphAtlas* atlas, String str, float3
             continue;
         }
 
-        height = max(height, glyph_height(glyph, size));
-        width  = new_width;
+        width = new_width;
     }
-    text_line_add(frame_arena, lines, remaining, vec2(width, height));
+    text_line_add(frame_arena, lines, remaining, vec2(width, size));
     return lines;
 }
 
