@@ -1,5 +1,6 @@
 #pragma once
-
+#include "ft2build.h"
+#include FT_FREETYPE_H
 #include <corecrt_math.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -7,9 +8,6 @@
 
 #define SHADER_PATH "..\\src\\shaders"
 #define ASSET_PATH  "..\\assets"
-
-#include "ft2build.h"
-#include FT_FREETYPE_H
 
 #include <opus.h>
 

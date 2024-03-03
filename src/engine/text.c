@@ -29,12 +29,12 @@ glyph_position(Glyph glyph, float32 size, Vec2 base_offset)
 }
 
 internal GlyphAtlas*
-glyph_atlas_load(Arena* arena, const GlyphAtlasInfo* atlas_info, const Glyph* glyphs, uint32 glyph_count, TextureIndex texture)
+glyph_atlas_load(Arena* arena, GlyphAtlasInfo* atlas_info, Glyph* glyphs, uint32 glyph_count, TextureIndex texture)
 {
     GlyphAtlas* atlas  = arena_push_struct_zero(arena, GlyphAtlas);
     atlas->glyphs      = glyphs;
     atlas->glyph_count = glyph_count;
-    atlas->atlas_info  = atlas_info;
+    atlas->atlas_info  = *atlas_info;
     atlas->texture     = texture;
     return atlas;
 }
@@ -177,4 +177,132 @@ text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str,
     }
 
     return string_bounds;
+}
+
+/** freetype */
+internal void
+font_cache_init(Arena* arena)
+{
+    g_font_cache = arena_push_struct_zero(arena, FontCache);
+    int32 error  = FT_Init_FreeType(&g_font_cache->library);
+    if (error)
+    {
+        log_error("could not initialize freetype");
+        return;
+    }
+    g_font_cache->arena           = arena;
+    g_font_cache->font_face_count = 64;
+    g_font_cache->font_faces      = arena_push_array_zero(arena, FontFace, g_font_cache->font_face_count);
+
+    g_font_cache->rasterized_font_cache_capacity = 128;
+    g_font_cache->rasterized_font_cache          = arena_push_array_zero(arena, FontCacheList, g_font_cache->rasterized_font_cache_capacity);
+}
+
+internal FontFaceIndex
+font_load(String font_name, String font_path)
+{
+    FontFace face  = {0};
+    int32    error = FT_New_Face(g_font_cache->library, font_path.value, 0, &face.freetype_face);
+    if (error == FT_Err_Unknown_File_Format)
+    {
+        log_error("could not load font face, unknown format");
+    }
+    else if (error)
+    {
+        log_error("could not load font face");
+    }
+
+    // TODO(selim): Check if font face is already loaded
+    FontFaceIndex face_index                                = g_font_cache->font_face_count;
+    g_font_cache->font_faces[g_font_cache->font_face_count] = face;
+    g_font_cache->font_face_count++;
+    return face_index;
+}
+
+internal GlyphAtlas*
+font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
+{
+    uint64         params[]    = {font_face_index, pixel_size};
+    uint64         hash        = hash_array_uint64(params, array_count(params));
+    FontCacheList* font_bucket = &g_font_cache->rasterized_font_cache[hash % g_font_cache->rasterized_font_cache_capacity];
+    FontCacheNode* node;
+    for_each(node, font_bucket->first)
+    {
+        if (node->hash == hash)
+        {
+            return node->v.atlas;
+        }
+    }
+
+    FontFace*   font_face  = &g_font_cache->font_faces[font_face_index];
+    GlyphAtlas* atlas      = arena_push_struct_zero(g_font_cache->arena, GlyphAtlas);
+    atlas->glyph_count     = 128;
+    atlas->glyphs          = arena_push_array_zero(g_font_cache->arena, Glyph, atlas->glyph_count);
+    atlas->type            = GlyphAtlasTypeFreeType;
+    atlas->atlas_info.size = pixel_size;
+
+    uint32 error = FT_Set_Pixel_Sizes(font_face->freetype_face, 0, pixel_size);
+    if (error)
+    {
+        fprintf(stderr, "ERROR: Could not set pixel size to %u\n", pixel_size);
+        return 0;
+    }
+
+    // TODO(selim): Load non-ASCII characters as well
+    for (int i = 32; i < 128; ++i)
+    {
+        if (FT_Load_Char(font_face->freetype_face, i, FT_LOAD_DEFAULT))
+        {
+            fprintf(stderr, "ERROR: could not load glyph of a character with code %d\n", i);
+            exit(1);
+        }
+
+        atlas->atlas_info.width += font_face->freetype_face->glyph->bitmap.width;
+        if (atlas->atlas_info.height < font_face->freetype_face->glyph->bitmap.rows)
+        {
+            atlas->atlas_info.height = font_face->freetype_face->glyph->bitmap.rows;
+        }
+    }
+
+    atlas->texture      = texture_new(g_renderer, atlas->atlas_info.width, atlas->atlas_info.height, 1, GL_LINEAR, NULL);
+    FT_Int32 load_flags = FT_LOAD_RENDER;
+
+    int32 x = 0;
+    for (uint32 i = 32; i < 128; ++i)
+    {
+        if (FT_Load_Char(font_face->freetype_face, i, load_flags))
+        {
+            fprintf(stderr, "ERROR: could not load glyph of a character with code %d\n", i);
+            exit(1);
+        }
+
+        FT_GlyphSlot glyph = font_face->freetype_face->glyph;
+        if (FT_Render_Glyph(glyph, FT_RENDER_MODE_NORMAL))
+        {
+            fprintf(stderr, "ERROR: could not render glyph of a character with code %d\n", i);
+            exit(1);
+        }
+
+        atlas->glyphs[i - 32].advance             = glyph->advance.x >> 6;
+        atlas->glyphs[i - 32].advance_y           = glyph->advance.y >> 6;
+        atlas->glyphs[i - 32].atlas_bounds.left   = x;
+        atlas->glyphs[i - 32].atlas_bounds.bottom = 0;
+        atlas->glyphs[i - 32].atlas_bounds.right  = x + glyph->bitmap.width;
+        atlas->glyphs[i - 32].atlas_bounds.top    = glyph->bitmap.rows;
+        atlas->glyphs[i - 32].plane_bounds.left   = glyph->bitmap_left;
+        atlas->glyphs[i - 32].plane_bounds.bottom = glyph->bitmap_top - (int32)glyph->bitmap.rows;
+        atlas->glyphs[i - 32].plane_bounds.right  = glyph->bitmap_left + (int32)glyph->bitmap.width;
+        atlas->glyphs[i - 32].plane_bounds.top    = glyph->bitmap_top;
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, glyph->bitmap.width, glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
+        x += glyph->bitmap.width;
+    }
+
+    node                    = arena_push_struct_zero(g_font_cache->arena, FontCacheNode);
+    node->v.font_face_index = font_face_index;
+    node->v.atlas           = atlas;
+    node->v.size            = pixel_size;
+    node->hash              = hash;
+    queue_push(font_bucket->first, font_bucket->last, node);
+    return node->v.atlas;
 }

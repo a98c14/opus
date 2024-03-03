@@ -1,4 +1,6 @@
 #pragma once
+#include "ft2build.h"
+#include FT_FREETYPE_H
 
 #include <base.h>
 #include <gfx.h>
@@ -12,10 +14,17 @@
 const float32 FontAlignmentMultiplierX[AlignmentCount] = {0, 0, 0, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5};
 const float32 FontAlignmentMultiplierY[AlignmentCount] = {0, -0.5, 0.5, 0, 0, 0.5, 0.5, 0.5, 0.5};
 
+typedef enum
+{
+    GlyphAtlasTypeSDF,
+    GlyphAtlasTypeFreeType
+} GlyphAtlasType;
+
 typedef struct
 {
     uint32  unicode;
-    float32 advance;
+    float32 advance; // TODO(selim): Make this `Vec2` and combine with `y`
+    float32 advance_y;
     Bounds  plane_bounds;
     Bounds  atlas_bounds;
 } Glyph;
@@ -35,10 +44,11 @@ typedef struct
 
 typedef struct
 {
-    uint32                glyph_count;
-    const Glyph*          glyphs;
-    const GlyphAtlasInfo* atlas_info;
-    TextureIndex          texture;
+    GlyphAtlasType type;
+    uint32         glyph_count;
+    Glyph*         glyphs;
+    GlyphAtlasInfo atlas_info;
+    TextureIndex   texture;
 } GlyphAtlas;
 
 typedef struct
@@ -71,7 +81,7 @@ typedef struct
     TextLineNode* last;
 } TextLineList;
 
-internal GlyphAtlas* glyph_atlas_load(Arena* arena, const GlyphAtlasInfo* atlas_info, const Glyph* glyphs, uint32 glyph_count, TextureIndex texture);
+internal GlyphAtlas* glyph_atlas_load(Arena* arena, GlyphAtlasInfo* atlas_info, Glyph* glyphs, uint32 glyph_count, TextureIndex texture);
 
 internal Glyph   glyph_get(GlyphAtlas* atlas, char c);
 internal float32 glyph_width(Glyph glyph, float32 size);
@@ -84,3 +94,53 @@ internal TextLineList* text_lines_from_string(Arena* frame_arena, GlyphAtlas* at
 internal Rect text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, String str, float32 size);
 internal Rect text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, Mat4* dst_matrices, uint32 dst_index);
 internal Rect text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, Mat4* dst_matrices, uint32 dst_index);
+
+/** freetype */
+typedef uint32 FontFaceIndex;
+typedef struct
+{
+    uint64  hash;
+    String  name;
+    FT_Face freetype_face;
+} FontFace;
+
+typedef struct
+{
+    uint32        size;
+    GlyphAtlas*   atlas;
+    FontFaceIndex font_face_index;
+} RasterizedFont;
+
+typedef struct FontCacheNode FontCacheNode;
+struct FontCacheNode
+{
+    uint64         hash;
+    RasterizedFont v;
+
+    FontCacheNode* next;
+};
+
+typedef struct
+{
+    uint32         count;
+    FontCacheNode* first;
+    FontCacheNode* last;
+} FontCacheList;
+
+typedef struct
+{
+    Arena*     arena;
+    FT_Library library;
+
+    uint64    font_face_capacity;
+    uint64    font_face_count;
+    FontFace* font_faces;
+
+    uint64         rasterized_font_cache_capacity;
+    FontCacheList* rasterized_font_cache;
+} FontCache;
+FontCache* g_font_cache;
+
+internal void          font_cache_init(Arena* arena);
+internal FontFaceIndex font_load(String font_name, String font_path);
+internal GlyphAtlas*   font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size);

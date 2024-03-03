@@ -33,7 +33,7 @@ struct DrawContextNode
     PassIndex      pass;
 
     /** styling */
-    GlyphAtlas*   font_atlas;
+    FontFaceIndex font_face;
     DrawStyleFont font_style;
 
     DrawContextNode* next;
@@ -62,6 +62,7 @@ typedef struct
 
     /* materials */
     MaterialIndex material_text;
+    MaterialIndex material_text_free_type;
     MaterialIndex material_basic;
     MaterialIndex material_line;
     MaterialIndex material_basic_texture;
@@ -165,7 +166,7 @@ internal void draw_context_init(Arena* arena, Arena* temp_arena, Renderer* rende
 internal void draw_context_activate_atlas(SpriteAtlas* atlas);
 
 /** context push */
-internal void draw_activate_font(GlyphAtlas* font);
+internal void draw_activate_font(FontFaceIndex font_face);
 internal void draw_context_set_font_style(DrawStyleFont style);
 internal void draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass);
 internal void draw_context_pop();

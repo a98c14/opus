@@ -4,7 +4,7 @@
 #include <base/math.h>
 #include <engine/text.h>
 
-global const GlyphAtlasInfo FONT_OPEN_SANS_ATLAS_INFO =
+global GlyphAtlasInfo FONT_OPEN_SANS_ATLAS_INFO =
     {
         .width               = 520,
         .height              = 520,
@@ -15,7 +15,7 @@ global const GlyphAtlasInfo FONT_OPEN_SANS_ATLAS_INFO =
         .underline_y         = -0.061035,
         .underline_thickness = 0.024414};
 
-global const Glyph FONT_OPEN_SANS_GLYPHS[] =
+global Glyph FONT_OPEN_SANS_GLYPHS[] =
     {
         {.unicode = 32,  .advance = 0.259766, .plane_bounds = {.left = 0.000000, .bottom = 0.000000, .right = 0.000000, .top = 0.000000},   .atlas_bounds = {.left = 0.000000, .bottom = 0.000000, .right = 0.000000, .top = 0.000000}        },
         {.unicode = 33,  .advance = 0.264160, .plane_bounds = {.left = -0.056152, .bottom = -0.142090, .right = 0.318848, .top = 0.842285}, .atlas_bounds = {.left = 495.500000, .bottom = 375.500000, .right = 519.500000, .top = 438.500000}},

@@ -43,3 +43,12 @@ hash_array_int32(int32* arr, uint32 count)
         hash = ((hash << 5) + hash) + (int32)arr[i]; /* hash * 33 + c */
     return hash;
 }
+
+internal inline uint64
+hash_array_uint64(uint64* arr, uint32 count)
+{
+    uint64 hash = 5381;
+    for (uint64 i = 0; i < count; i++)
+        hash = ((hash << 5) + hash) + (uint64)arr[i]; /* hash * 33 + c */
+    return hash;
+}

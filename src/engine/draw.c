@@ -20,83 +20,94 @@ draw_context_init(Arena* arena, Arena* temp_arena, Renderer* renderer, PassIndex
     d_state->renderer = renderer;
     d_state->camera   = &renderer->camera;
 
+    ArenaTemp temp          = scratch_begin(&arena, 1);
     d_state->material_basic = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\basic_instanced.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\basic_instanced.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\basic_instanced.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\basic_instanced.frag")),
         sizeof(ShaderDataBasic),
         true);
-
     d_state->material_line = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\line.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\line.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\line.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\line.frag")),
         sizeof(ShaderDataLine),
         false);
 
     d_state->material_basic_texture = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\basic_texture.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\basic_texture.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\basic_texture.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\basic_texture.frag")),
         sizeof(ShaderDataBasicTexture),
         false);
 
     d_state->material_triangle = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\triangle.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\triangle.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\triangle.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\triangle.frag")),
         sizeof(ShaderDataTriangle),
         false);
 
     d_state->material_rounded_rect = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\rect_rounded.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\rect_rounded.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\rect_rounded.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\rect_rounded.frag")),
         sizeof(ShaderDataRectRounded),
         false);
 
     d_state->material_boid = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\boid_instanced.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\boid_instanced.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\boid_instanced.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\boid_instanced.frag")),
         sizeof(ShaderDataBoid),
         true);
 
     d_state->material_circle = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\circle.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\circle.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\circle.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\circle.frag")),
         sizeof(ShaderDataCircle),
         false);
 
     d_state->material_circle_instanced = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\circle_instanced.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\circle_instanced.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\circle_instanced.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\circle_instanced.frag")),
         sizeof(ShaderDataCircle),
         true);
 
     d_state->material_text = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\text.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\text.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\text.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\text.frag")),
         sizeof(ShaderDataText),
         true);
 
     d_state->material_sprite = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\sprite.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\sprite.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\sprite.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\sprite.frag")),
         sizeof(ShaderDataSprite),
         false);
 
     d_state->material_sprite_border = material_new(
         renderer,
-        file_read_all_as_string(arena, string(SHADER_PATH "\\sprite_border.vert")),
-        file_read_all_as_string(arena, string(SHADER_PATH "\\sprite_border.frag")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\sprite_border.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\sprite_border.frag")),
         sizeof(ShaderDataSpriteBorder),
         false);
 
+    d_state->material_text_free_type = material_new(
+        g_renderer,
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\freetype_text.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\freetype_text.frag")),
+        sizeof(ShaderDataText),
+        true);
+
+    String        font_path = string(ASSET_PATH "\\open_sans.ttf");
+    String        font_name = string("open_sans");
+    FontFaceIndex face      = font_load(font_name, font_path);
+    draw_activate_font(face);
     log_debug("initialized draw context");
 }
 
@@ -246,13 +257,15 @@ draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, C
     shader_data.softness          = d_state->ctx->font_style.softness;
     shader_data.outline_thickness = d_state->ctx->font_style.outline_thickness;
 
-    RenderKey       key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->ctx->font_atlas->texture, g_renderer->quad, d_state->material_text);
+    GlyphAtlas*     atlas              = font_get_atlas(d_state->ctx->font_face, size);
+    MaterialIndex   material           = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text;
+    RenderKey       key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
     R_Batch*        batch              = r_batch_from_key(key, str.length);
-    Rect            bounds             = text_calculate_transforms(d_state->ctx->font_atlas, str, size, pos, alignment, batch->model_buffer, 0);
+    Rect            bounds             = text_calculate_transforms(atlas, str, size, pos, alignment, batch->model_buffer, 0);
     ShaderDataText* shader_data_buffer = (ShaderDataText*)batch->uniform_buffer;
     for (uint32 i = 0; i < str.length; i++)
     {
-        Glyph glyph              = glyph_get(d_state->ctx->font_atlas, str.value[i]);
+        Glyph glyph              = glyph_get(atlas, str.value[i]);
         shader_data.glyph_bounds = glyph.atlas_bounds.v;
         memcpy(&shader_data_buffer[i], &shader_data, sizeof(ShaderDataText));
     }
@@ -273,10 +286,14 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
 
     Vec2 position = rect_get(rect, anchor.parent);
     position.y += d_default_text_baseline;
-    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->ctx->font_atlas->texture, g_renderer->quad, d_state->material_text);
 
-    R_Batch* batch  = r_batch_from_key(key, str.length);
-    Rect     result = text_calculate_glyph_matrices(d_state->frame_arena, d_state->ctx->font_atlas, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
+    GlyphAtlas*   atlas    = font_get_atlas(d_state->ctx->font_face, size);
+    MaterialIndex material = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text;
+    size                   = atlas->type == GlyphAtlasTypeFreeType ? 1 : size;
+
+    RenderKey key    = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
+    R_Batch*  batch  = r_batch_from_key(key, str.length);
+    Rect      result = text_calculate_glyph_matrices(d_state->frame_arena, atlas, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
 
     ShaderDataText shader_data    = {0};
     shader_data.color             = color_v4(color);
@@ -288,7 +305,7 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
     ShaderDataText* shader_data_buffer = (ShaderDataText*)batch->uniform_buffer;
     for (uint32 i = 0; i < str.length; i++)
     {
-        Glyph glyph              = glyph_get(d_state->ctx->font_atlas, str.value[i]);
+        Glyph glyph              = glyph_get(atlas, str.value[i]);
         shader_data.glyph_bounds = glyph.atlas_bounds.v;
         memcpy(&shader_data_buffer[i], &shader_data, sizeof(ShaderDataText));
     }
@@ -401,10 +418,10 @@ draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, 
 
 /** context push */
 internal void
-draw_activate_font(GlyphAtlas* font)
+draw_activate_font(FontFaceIndex font_face)
 {
     xassert(d_state->ctx, "draw_context is null");
-    d_state->ctx->font_atlas = font;
+    d_state->ctx->font_face = font_face;
 }
 
 internal void
@@ -417,7 +434,7 @@ draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass)
     node->sort_layer = sort_layer;
     node->view       = view_type;
     node->pass       = pass;
-    node->font_atlas = d_state->ctx ? d_state->ctx->font_atlas : 0;
+    node->font_face  = d_state->ctx ? d_state->ctx->font_face : 0;
     node->font_style = d_state->ctx ? d_state->ctx->font_style : (DrawStyleFont){0};
     stack_push(d_state->ctx, node);
 }
