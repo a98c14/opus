@@ -56,6 +56,7 @@ text_lines_from_string(Arena* frame_arena, GlyphAtlas* atlas, String str, float3
 {
     int32   space_index    = -1;
     float32 width          = 0;
+    float32 height         = 0;
     float32 width_at_space = 0;
 
     TextLineList* lines = arena_push_struct_zero(frame_arena, TextLineList);
@@ -84,9 +85,10 @@ text_lines_from_string(Arena* frame_arena, GlyphAtlas* atlas, String str, float3
             continue;
         }
 
-        width = new_width;
+        height = max(height, glyph_height(glyph, 1));
+        width  = new_width;
     }
-    text_line_add(frame_arena, lines, remaining, vec2(width, size));
+    text_line_add(frame_arena, lines, remaining, vec2(width, height));
     return lines;
 }
 

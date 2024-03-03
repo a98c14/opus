@@ -38,7 +38,12 @@ main(void)
     r_pipeline_init(config);
     font_cache_init(persistent_arena);
     draw_context_init(persistent_arena, frame_arena, g_renderer, pass_default);
+    FontFaceIndex ibx_mono = font_load(string("ibx_mono"), string(ASSET_PATH "\\IBMPlexMono-Bold.ttf"));
+    draw_activate_font(ibx_mono);
+
     EngineTime time = engine_time_new();
+
+    const read_only uint32 font_size = 12;
 
     /* main loop */
     while (!glfwWindowShouldClose(window->glfw_window))
@@ -50,8 +55,8 @@ main(void)
         // draw_circle_filled(vec2_zero(), 100, ColorWhite);
         // draw_rect(rect_from_wh(200, 200), ColorWhite);
 
-        String test_string = string("Do small fonts look ok? ggg");
-        String english     = string("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890~!@#$%^&*()-_+=[{]}\\|;:'\",<.>/?");
+        // String test_string = string("Do small fonts look ok? ggg");
+        // String english     = string("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890~!@#$%^&*()-_+=[{]}\\|;:'\",<.>/?");
 
         ShaderDataText shader_data    = {0};
         shader_data.color             = d_color_white;
@@ -59,9 +64,23 @@ main(void)
         shader_data.softness          = d_default_text_softness;
         shader_data.outline_thickness = d_default_text_outline_thickness;
 
-        Vec2 pos = vec2(-200, 50);
-        draw_line(pos, vec2(200, pos.y), ColorRed500, 3);
-        draw_text(english, rect_at(pos, vec2(200, 0), AlignmentBottomLeft), ANCHOR_BL_BL, 20, ColorWhite100);
+        Rect r = rect_at(vec2(-500, 0), vec2(1000, 500), AlignmentLeft);
+
+        draw_debug_rect_b(r);
+        r = rect_shrink_f32(r, 10);
+
+        draw_text(string("BottomLeft"), r, ANCHOR_BL_BL, font_size, ColorWhite100);
+        draw_text(string("BottomRight"), r, ANCHOR_BR_BR, font_size, ColorWhite100);
+        draw_text(string("TopLeft"), r, ANCHOR_TL_TL, font_size, ColorWhite100);
+        draw_text(string("TopRight"), r, ANCHOR_TR_TR, font_size, ColorWhite100);
+
+        Rect box = rect_at(vec2(-100, 0), vec2(100, 100), AlignmentBottomLeft);
+        draw_debug_rect(box);
+        draw_text(string("Line 1"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
+        draw_text(string("Line 2"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
+        draw_text(string("Line 3"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
+        draw_text(string("Line 4"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
+
         r_render(g_renderer, time.dt);
         window_update(window);
     }

@@ -1,7 +1,9 @@
-# Inverse Kinematics
-- angle constraint in panel (min max slider)
-- compression
-- ghost mode for angle constraints
+## TODO
+- Add SDF fonts to font cache
+- Fix TopLeft TopRight anchoring
+
+
+
 
 ## Commands
 ### Build & Run
