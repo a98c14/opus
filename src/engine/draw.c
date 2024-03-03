@@ -15,6 +15,7 @@ draw_context_init(Arena* arena, Arena* temp_arena, Renderer* renderer, PassIndex
     d_state->persistent_arena = arena;
     d_state->frame_arena      = temp_arena;
     draw_context_push(d_default_node.sort_layer, d_default_node.view, default_pass);
+    draw_context_set_font_style(d_default_font_style);
 
     d_state->renderer = renderer;
     d_state->camera   = &renderer->camera;
@@ -96,16 +97,13 @@ draw_context_init(Arena* arena, Arena* temp_arena, Renderer* renderer, PassIndex
         sizeof(ShaderDataSpriteBorder),
         false);
 
-    /* Fonts */
-    TextureIndex font_texture = texture_new_from_file(renderer, string(ASSET_PATH "\\open_sans.png"), 0, 1);
-    d_state->font_open_sans   = glyph_atlas_load(
-        arena,
-        &FONT_OPEN_SANS_ATLAS_INFO,
-        FONT_OPEN_SANS_GLYPHS,
-        countof(FONT_OPEN_SANS_GLYPHS),
-        font_texture);
-
     log_debug("initialized draw context");
+}
+
+internal void
+draw_context_set_font_style(DrawStyleFont style)
+{
+    d_state->ctx->font_style = style;
 }
 
 internal void
@@ -235,7 +233,7 @@ draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color colo
 }
 
 internal Rect
-draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, Color color, Color outline_color)
+draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, Color color)
 {
     if (str.length <= 0)
         return rect_from_wh(0, 0);
@@ -243,18 +241,18 @@ draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, C
     pos.y += d_default_text_baseline;
     ShaderDataText shader_data    = {0};
     shader_data.color             = color_v4(color);
-    shader_data.outline_color     = color_v4(outline_color);
-    shader_data.thickness         = d_default_text_thickness;
-    shader_data.softness          = d_default_text_softness;
-    shader_data.outline_thickness = d_default_text_outline_thickness;
+    shader_data.outline_color     = d_state->ctx->font_style.outline_color;
+    shader_data.thickness         = d_state->ctx->font_style.thickness;
+    shader_data.softness          = d_state->ctx->font_style.softness;
+    shader_data.outline_thickness = d_state->ctx->font_style.outline_thickness;
 
-    RenderKey       key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->font_open_sans->texture, g_renderer->quad, d_state->material_text);
+    RenderKey       key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->ctx->font_atlas->texture, g_renderer->quad, d_state->material_text);
     R_Batch*        batch              = r_batch_from_key(key, str.length);
-    Rect            bounds             = text_calculate_transforms(d_state->font_open_sans, str, size, pos, alignment, batch->model_buffer, 0);
+    Rect            bounds             = text_calculate_transforms(d_state->ctx->font_atlas, str, size, pos, alignment, batch->model_buffer, 0);
     ShaderDataText* shader_data_buffer = (ShaderDataText*)batch->uniform_buffer;
     for (uint32 i = 0; i < str.length; i++)
     {
-        Glyph glyph              = glyph_get(d_state->font_open_sans, str.value[i]);
+        Glyph glyph              = glyph_get(d_state->ctx->font_atlas, str.value[i]);
         shader_data.glyph_bounds = glyph.atlas_bounds.v;
         memcpy(&shader_data_buffer[i], &shader_data, sizeof(ShaderDataText));
     }
@@ -264,7 +262,7 @@ draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, C
 internal Rect
 draw_text_at(String str, Vec2 pos, Alignment alignment, float32 size, Color color)
 {
-    return draw_text_at_internal(str, pos, alignment, size, color, ColorBlack);
+    return draw_text_at_internal(str, pos, alignment, size, color);
 }
 
 internal Rect
@@ -275,22 +273,22 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
 
     Vec2 position = rect_get(rect, anchor.parent);
     position.y += d_default_text_baseline;
-    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->font_open_sans->texture, g_renderer->quad, d_state->material_text);
+    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->ctx->font_atlas->texture, g_renderer->quad, d_state->material_text);
 
     R_Batch* batch  = r_batch_from_key(key, str.length);
-    Rect     result = text_calculate_glyph_matrices(d_state->frame_arena, d_state->font_open_sans, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
+    Rect     result = text_calculate_glyph_matrices(d_state->frame_arena, d_state->ctx->font_atlas, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
 
     ShaderDataText shader_data    = {0};
     shader_data.color             = color_v4(color);
-    shader_data.outline_color     = d_color_black;
-    shader_data.thickness         = d_default_text_thickness;
-    shader_data.softness          = d_default_text_softness;
-    shader_data.outline_thickness = d_default_text_outline_thickness;
+    shader_data.outline_color     = d_state->ctx->font_style.outline_color;
+    shader_data.thickness         = d_state->ctx->font_style.thickness;
+    shader_data.softness          = d_state->ctx->font_style.softness;
+    shader_data.outline_thickness = d_state->ctx->font_style.outline_thickness;
 
     ShaderDataText* shader_data_buffer = (ShaderDataText*)batch->uniform_buffer;
     for (uint32 i = 0; i < str.length; i++)
     {
-        Glyph glyph              = glyph_get(d_state->font_open_sans, str.value[i]);
+        Glyph glyph              = glyph_get(d_state->ctx->font_atlas, str.value[i]);
         shader_data.glyph_bounds = glyph.atlas_bounds.v;
         memcpy(&shader_data_buffer[i], &shader_data, sizeof(ShaderDataText));
     }
@@ -403,6 +401,13 @@ draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, 
 
 /** context push */
 internal void
+draw_activate_font(GlyphAtlas* font)
+{
+    xassert(d_state->ctx, "draw_context is null");
+    d_state->ctx->font_atlas = font;
+}
+
+internal void
 draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass)
 {
     DrawContextNode* node = d_state->free_nodes;
@@ -412,6 +417,8 @@ draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass)
     node->sort_layer = sort_layer;
     node->view       = view_type;
     node->pass       = pass;
+    node->font_atlas = d_state->ctx ? d_state->ctx->font_atlas : 0;
+    node->font_style = d_state->ctx ? d_state->ctx->font_style : (DrawStyleFont){0};
     stack_push(d_state->ctx, node);
 }
 
