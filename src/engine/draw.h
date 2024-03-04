@@ -50,6 +50,7 @@ global read_only float32 d_default_text_thickness         = 0.52;
 global read_only float32 d_default_text_softness          = 20;
 global read_only float32 d_default_text_outline_thickness = 0.2;
 global read_only Vec4    d_color_none                     = {.r = 0, .b = 0, .g = 0, .a = 0};
+global read_only Vec4    d_color_none_white               = {.r = 1, .b = 1, .g = 1, .a = 0};
 global read_only Vec4    d_color_black                    = {.r = 0, .b = 0, .g = 0, .a = 1};
 global read_only Vec4    d_color_white                    = {.r = 1, .b = 1, .g = 1, .a = 1};
 
