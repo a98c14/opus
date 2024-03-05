@@ -314,7 +314,23 @@ entity_node_free(EntityNode* node)
 }
 
 internal Entity
-entity_create(ComponentTypeField components)
+entity_create()
+{
+    ArenaTemp temp  = scratch_begin(0, 0);
+    World*    world = g_entity_manager->world;
+
+    uint32 entity_index                   = entity_reserve_free();
+    world->entity_addresses[entity_index] = entity_address_null();
+
+    Entity* entity = &world->entities[entity_index];
+    entity->version += 1;
+    world->entity_count++;
+    scratch_end(temp);
+    return *entity;
+}
+
+internal Entity
+entity_create_from_type(ComponentTypeField components)
 {
     ArenaTemp  temp        = scratch_begin(0, 0);
     World*     world       = g_entity_manager->world;
@@ -467,21 +483,30 @@ component_add_many(Entity entity, ComponentTypeField components)
     World*        world           = g_entity_manager->world;
     EntityAddress current_address = world->entity_addresses[entity.index];
 
-    xassert(!entity_address_is_null(current_address), "entity address is not valid");
-
-    ComponentTypeField current_components = world->chunk_components[current_address.chunk_index];
-    ComponentTypeField new_components     = component_type_field_union(current_components, components);
-    if (component_type_field_is_same(current_components, new_components))
+    if (!entity_address_is_null(current_address))
     {
-        log_warn("trying to add a component that is already added! entity id %d", entity.index);
-        return;
-    }
+        ComponentTypeField current_components = world->chunk_components[current_address.chunk_index];
+        ComponentTypeField new_components     = component_type_field_union(current_components, components);
+        if (component_type_field_is_same(current_components, new_components))
+        {
+            log_warn("trying to add a component that is already added! entity id %d", entity.index);
+            return;
+        }
 
-    ArenaTemp  temp            = scratch_begin(0, 0);
-    ChunkList  chunks          = chunk_find_space(temp.arena, new_components, 1);
-    ChunkIndex new_chunk_index = chunks.first->chunk_handle;
-    entity_move(entity, new_chunk_index);
-    scratch_end(temp);
+        ArenaTemp  temp            = scratch_begin(0, 0);
+        ChunkList  chunks          = chunk_find_space(temp.arena, new_components, 1);
+        ChunkIndex new_chunk_index = chunks.first->chunk_handle;
+        entity_move(entity, new_chunk_index);
+        scratch_end(temp);
+    }
+    else
+    {
+        ArenaTemp  temp            = scratch_begin(0, 0);
+        ChunkList  chunks          = chunk_find_space(temp.arena, components, 1);
+        ChunkIndex new_chunk_index = chunks.first->chunk_handle;
+        entity_move(entity, new_chunk_index);
+        scratch_end(temp);
+    }
 }
 
 internal void
@@ -575,9 +600,6 @@ entity_move(Entity entity, ChunkIndex destination)
 {
     World* world = g_entity_manager->world;
 
-    EntityAddress src_address = world->entity_addresses[entity.index];
-    xassert(!entity_address_is_null(src_address), "invalid entity during copy");
-
     Chunk*        dst_chunk          = &world->chunks[destination];
     EntityAddress dst_address        = {0};
     dst_address.chunk_index          = destination;
@@ -587,8 +609,13 @@ entity_move(Entity entity, ChunkIndex destination)
     dst_chunk->entity_count++;
     world->entity_addresses[entity.index] = dst_address;
 
-    chunk_copy_data(src_address, dst_address);
-    chunk_delete_entity_data(src_address);
+    /** move entity data from its current chunk to new chunk if it exists */
+    EntityAddress src_address = world->entity_addresses[entity.index];
+    if (!entity_address_is_null(src_address))
+    {
+        chunk_copy_data(src_address, dst_address);
+        chunk_delete_entity_data(src_address);
+    }
 }
 
 internal World*

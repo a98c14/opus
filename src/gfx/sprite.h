@@ -14,7 +14,8 @@ typedef int8 AnimationState;
 enum
 {
     AnimationStateLoop   = 1 << 0,
-    AnimationStateLocked = 1 << 1
+    AnimationStateLocked = 1 << 1,
+    AnimationStateAttack = 1 << 2
 };
 
 typedef struct

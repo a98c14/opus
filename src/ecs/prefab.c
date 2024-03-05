@@ -13,7 +13,7 @@ internal PrefabIndex
 prefab_create(ComponentTypeField types)
 {
     component_type_field_set(&types, CTT_PrefabComponent);
-    Entity entity = entity_create(types);
+    Entity entity = entity_create_from_type(types);
 
     PrefabIndex index = g_prefab_manager->prefab_count;
     g_prefab_manager->prefab_count++;
@@ -51,7 +51,7 @@ prefab_instantiate_internal(Arena* arena, PrefabNode* p, ComponentTypeField type
             component_type_field_unset(&types, CTT_PrefabComponent);
             component_type_field_set(&types, CTT_ParentComponent);
 
-            Entity child_entity = entity_create(types);
+            Entity child_entity = entity_create_from_type(types);
             entity_copy_data(child->entity, child_entity);
             entity_add_child(result.entities[i], child_entity);
 

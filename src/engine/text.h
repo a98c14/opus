@@ -1,6 +1,10 @@
 #pragma once
+// NOTE(selim): `FT_FREETYPE_H` uses `internal` as variable name so this is a workaround
+// for that. Needs a better solution
+#undef internal
 #include "ft2build.h"
 #include FT_FREETYPE_H
+#define internal static
 
 #include <base.h>
 #include <gfx.h>

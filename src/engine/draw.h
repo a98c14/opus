@@ -2,7 +2,6 @@
 
 #include <base.h>
 #include <engine/color.h>
-#include <fonts/fonts.h>
 #include <gfx.h>
 
 #include "color.h"

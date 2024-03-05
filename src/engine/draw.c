@@ -432,6 +432,7 @@ internal void
 draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass)
 {
     DrawContextNode* node = d_state->free_nodes;
+    stack_pop(d_state->free_nodes);
     if (!node)
         node = arena_push_struct_zero(d_state->persistent_arena, DrawContextNode);
 

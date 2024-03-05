@@ -182,7 +182,7 @@ internal uint32       entity_reserve_free();
 internal void         entity_free(Entity e);
 internal EntityNode*  entity_node_alloc();
 internal void         entity_node_free(EntityNode* node);
-internal Entity       entity_create(ComponentTypeField types);
+internal Entity       entity_create_from_type(ComponentTypeField types);
 internal EntityBuffer entity_create_many(Arena* arena, ComponentTypeField components, uint32 count);
 internal void         entity_destroy(Entity entity);
 internal void         entity_activate(Entity entity);
