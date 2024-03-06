@@ -600,6 +600,7 @@ entity_move(Entity entity, ChunkIndex destination)
 {
     World* world = g_entity_manager->world;
 
+    EntityAddress src_address        = world->entity_addresses[entity.index];
     Chunk*        dst_chunk          = &world->chunks[destination];
     EntityAddress dst_address        = {0};
     dst_address.chunk_index          = destination;
@@ -610,7 +611,6 @@ entity_move(Entity entity, ChunkIndex destination)
     world->entity_addresses[entity.index] = dst_address;
 
     /** move entity data from its current chunk to new chunk if it exists */
-    EntityAddress src_address = world->entity_addresses[entity.index];
     if (!entity_address_is_null(src_address))
     {
         chunk_copy_data(src_address, dst_address);
