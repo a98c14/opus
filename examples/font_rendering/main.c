@@ -24,10 +24,11 @@ main(void)
     ThreadContext tctx;
     tctx_init_and_equip(&tctx);
     logger_init();
-    Arena*                 persistent_arena = make_arena_reserve(mb(128));
-    Arena*                 frame_arena      = make_arena_reserve(mb(128));
-    Window*                window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL);
-    RendererConfiguration* r_config         = r_config_new(frame_arena);
+    Arena*  persistent_arena = make_arena_reserve(mb(128));
+    Arena*  frame_arena      = make_arena_reserve(mb(128));
+    Window* window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL);
+
+    RendererConfiguration* r_config = r_config_new(frame_arena);
     r_config_set_screen_size(r_config, WINDOW_WIDTH, WINDOW_HEIGHT);
     r_config_set_world_size(r_config, 0, WINDOW_HEIGHT);
     r_config_set_clear_color(r_config, ColorSlate900);

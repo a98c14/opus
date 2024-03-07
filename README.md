@@ -1,6 +1,8 @@
 ## TODO
 - Add SDF fonts to font cache
   - SDF fonts don't care about getting rasterized per pixel size so we can cache them using 0 size or something
+- Better texture glyph packing
+- Unicode rendering
 
 
 

@@ -1,6 +1,5 @@
 #include "base.h"
 #include "primitives.h"
-#include <gfx/base.h>
 
 internal RendererConfiguration*
 r_config_new(Arena* temp_arena)
