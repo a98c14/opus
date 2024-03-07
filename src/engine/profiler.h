@@ -37,6 +37,7 @@ internal void profiler_init(Arena* arena);
 #define profiler_init(arena) (0)
 #endif
 
-#define profiler_scope(name, color) defer_loop(profiler_begin_color(name, color), profiler_end())
+#define profiler_scope_colored(name, color) defer_loop(profiler_begin_color(name, color), profiler_end())
+#define profiler_scope(name) defer_loop(profiler_begin_color(name, PROFILER_COLOR_DEFAULT), profiler_end())
 #define profiler_scope_with_ctx(name, ctx, color) defer_loop(profiler_begin_data_color(name, ctx, color), profiler_end())
 

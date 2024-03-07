@@ -192,10 +192,10 @@ draw_rect_rotated(Rect rect, float32 rotation, Color color)
 
     ShaderDataRectRounded shader_data = {0};
     shader_data.color                 = color_v4(color);
-    shader_data.edge_color            = d_color_none;
+    shader_data.edge_color            = color_v4(color);
     shader_data.round                 = vec4(1, 1, 1, 1);
     shader_data.scale                 = rect.size;
-    shader_data.softness              = 1;
+    shader_data.softness              = 4;
     shader_data.edge_thickness        = 0;
     r_draw_single(key, model, &shader_data);
     return rect;
@@ -432,6 +432,7 @@ internal void
 draw_context_push(SortLayerIndex sort_layer, ViewType view_type, PassIndex pass)
 {
     DrawContextNode* node = d_state->free_nodes;
+    stack_pop(d_state->free_nodes);
     if (!node)
         node = arena_push_struct_zero(d_state->persistent_arena, DrawContextNode);
 

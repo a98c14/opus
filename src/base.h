@@ -1,6 +1,7 @@
 #pragma once
 #include "base/bitfield.h"
 #include "base/datetime.h"
+#include "base/defines.h"
 #include "base/easing.h"
 #include "base/file.h"
 #include "base/hash.h"
