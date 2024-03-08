@@ -3,20 +3,6 @@
 #define GLYPH_METRICS_CAPACITY 128
 #define FREE_GLYPH_FONT_SIZE   16
 
-// typedef struct
-// {
-//     float ax; // advance.x
-//     float ay; // advance.y
-
-//     float bw; // bitmap.width;
-//     float bh; // bitmap.rows;
-
-//     float bl; // bitmap_left;
-//     float bt; // bitmap_top;
-
-//     float tx; // x offset of glyph in texture coordinates
-// } FreeGlyphMetric;
-
 int
 main(void)
 {
