@@ -16,11 +16,9 @@ typedef struct
 
 typedef void WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-internal void window_error_callback(int error, const char* description);
+internal void    window_error_callback(int error, const char* description);
+internal Window* window_create(Arena* arena, uint32 width, uint32 height, char* name, WindowKeyCallback key_callback);
 
-internal Window*
-window_create(Arena* arena, uint32 width, uint32 height, char* name, WindowKeyCallback key_callback);
-
-internal void window_update(Window* window);
-
-internal void window_destroy(Window* window);
+internal void   window_update(Window* window);
+internal void   window_destroy(Window* window);
+internal bool32 window_should_close(Window* window);
