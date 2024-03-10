@@ -524,3 +524,68 @@ sprite_rect_with_pivot(SpriteIndex sprite, Vec2 position, Vec2 flip, float32 sca
     Vec2   rect_position = add_vec2(position, pivot);
     return rect_at(rect_position, fabs_vec2(scale), AlignmentCenter);
 }
+
+/** TODO(selim): This needs to be a generic solution. */
+internal void
+render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRenderRequest* requests, uint64 count, int32* layer_entity_counts)
+{
+    if (count <= 0)
+        return;
+
+    SpriteRenderRequestBuffer* request_buffers = arena_push_array_zero(frame_arena, SpriteRenderRequestBuffer, SORTING_LAYER_CAPACITY);
+    for (int32 i = 0; i < SORTING_LAYER_CAPACITY; i++)
+    {
+        request_buffers[i].arr   = arena_push_array(frame_arena, SpriteRenderRequest, layer_entity_counts[i]);
+        request_buffers[i].count = 0;
+    }
+
+    for (uint32 i = 0; i < count; i++)
+    {
+        SpriteRenderRequest        request = requests[i];
+        SpriteRenderRequestBuffer* buffer  = &request_buffers[request.layer];
+        buffer->arr[buffer->count]         = request;
+        buffer->count += 1;
+    }
+
+    for (int32 i = 0; i < SORTING_LAYER_CAPACITY; i++)
+    {
+        SpriteRenderRequestBuffer* buffer = &request_buffers[i];
+        if (buffer->count == 0)
+            continue;
+
+        qsort(buffer->arr, buffer->count, sizeof(SpriteRenderRequest), qsort_compare_render_requests_descending);
+
+        RenderKey key   = render_key_new(ViewTypeWorld, i, pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
+        R_Batch*  batch = r_batch_from_key(key, buffer->count);
+
+        Mat4*             model_buffer   = batch->model_buffer;
+        ShaderDataSprite* uniform_buffer = (ShaderDataSprite*)batch->uniform_buffer;
+        for (int32 i = 0; i < buffer->count; i++)
+        {
+            SpriteRenderRequest request = buffer->arr[i];
+
+            Sprite sprite = d_state->sprite_atlas->sprites[request.sprite];
+            Vec2   pivot  = sprite_get_pivot(sprite, request.scale, vec2_one());
+            Vec2   scale  = vec2(request.scale.x * sprite.size.w, request.scale.y * sprite.size.h);
+            Vec3   pos    = request.position;
+            pos.y += request.position.z * 0.7;
+
+            model_buffer[i] = transform_quad_around_pivot(pos.xy, scale, request.rotation, pivot);
+
+            uniform_buffer[i].sprite_index        = request.sprite;
+            uniform_buffer[i].texture_layer_index = d_state->sprite_atlas->sprite_texture_indices[request.sprite];
+            uniform_buffer[i].alpha               = 1;
+            uniform_buffer[i].color               = color_v4(request.color);
+        }
+    }
+}
+
+internal int
+qsort_compare_render_requests_descending(const void* p, const void* q)
+{
+    float32 x = (*(const SpriteRenderRequest*)p).sort_order;
+    float32 y = (*(const SpriteRenderRequest*)q).sort_order;
+    return (x < y)   ? 1
+           : (x > y) ? -1
+                     : 0;
+}

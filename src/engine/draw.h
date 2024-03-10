@@ -208,3 +208,23 @@ internal Rect draw_sprite_rect_cut_colored(Rect* rect, CutSide side, SpriteIndex
 internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect sprite_rect(SpriteIndex sprite);
 internal Rect sprite_rect_with_pivot(SpriteIndex sprite, Vec2 position, Vec2 flip, float32 scale_multiplier);
+
+/** TEMP(selim): will be moved to renderer */
+typedef struct
+{
+    Vec3           position;
+    float32        sort_order;
+    float32        rotation;
+    Vec2           scale;
+    SpriteIndex    sprite;
+    SortLayerIndex layer;
+    Color          color;
+} SpriteRenderRequest;
+
+typedef struct
+{
+    int32                count;
+    SpriteRenderRequest* arr;
+} SpriteRenderRequestBuffer;
+internal void render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRenderRequest* requests, uint64 count, int32* layer_entity_counts);
+internal int  qsort_compare_render_requests_descending(const void* p, const void* q);
