@@ -235,6 +235,7 @@ internal Rect rect_from_wh(float32 w, float32 h);
 
 internal Circle circle(Vec2 center, float32 radius);
 internal Range  range(float32 min, float32 max);
+internal IRange irange(int32 min, int32 max);
 
 /* Basic Operations */
 internal Vec2 add_vec2(Vec2 a, Vec2 b);

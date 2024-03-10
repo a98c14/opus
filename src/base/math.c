@@ -199,6 +199,15 @@ range(float32 min, float32 max)
     return result;
 }
 
+internal IRange
+irange(int32 min, int32 max)
+{
+    IRange result;
+    result.min = min;
+    result.max = max;
+    return result;
+}
+
 /* Basic Operations */
 internal Vec2
 add_vec2(Vec2 a, Vec2 b)
