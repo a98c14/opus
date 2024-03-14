@@ -1,6 +1,13 @@
 #pragma once
 #include <base/asserts.h>
 #include <base/math.h>
+#include <base/memory.h>
+
+typedef struct
+{
+    Vec2*  v;
+    uint32 count;
+} VertexBuffer;
 
 internal Mat4 mat4_mvp(Mat4 model, Mat4 view, Mat4 projection);
 
@@ -13,3 +20,6 @@ instead of `transform_quad` for better performance */
 internal Mat4 transform_quad_aligned(Vec2 position, Vec2 scale);
 internal Mat4 transform_line(Vec2 start, Vec2 end, float32 thickness);
 internal Mat4 transform_line_rotated(Vec2 position, float32 length, float32 angle, float32 thickness);
+
+/** Trail */
+internal VertexBuffer gfx_generate_trail_vertices(Arena* arena, Vec2* points, uint32 point_count, float32 trail_width);

@@ -447,7 +447,7 @@ draw_trail(Vec2* points, uint32 point_count, Color color)
     batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(Vec4) * point_count);
     memcpy((uint8*)batch_node->v.uniform_buffer, t, batch_node->v.uniform_data_size);
 
-    Mat4 model                 = transform_quad(vec2(-100, 50), vec2_one(), 0);
+    Mat4 model                 = transform_quad(vec2(0, 0), vec2_one(), 0);
     batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
     memcpy(batch_node->v.model_buffer, &model, sizeof(Mat4) * 1);
 
