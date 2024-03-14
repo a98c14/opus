@@ -27,6 +27,8 @@ typedef struct
     Vec2 direction;
 } Ray2;
 
+internal Ray2 ray(Vec2 start, Vec2 direction);
+
 internal Intersection intersects_rect_point(Rect a, Vec2 b);
 internal Intersection intersects_circle_point(Circle a, Vec2 b);
 internal bool32       intersects_bounds_fast(Bounds a, Bounds b);

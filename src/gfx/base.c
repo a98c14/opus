@@ -539,14 +539,14 @@ r_render(Renderer* renderer, float32 dt)
                 }
                 else if (render_type == RenderTypeTrail)
                 {
-                    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                     glBindBuffer(GL_UNIFORM_BUFFER, material->uniform_buffer_id);
                     glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_UBO_CUSTOM, material->uniform_buffer_id, 0, material->uniform_data_size);
                     glUniformMatrix4fv(material->location_model, 1, GL_FALSE, batch.model_buffer[0].v);
                     glBindBuffer(GL_SHADER_STORAGE_BUFFER, renderer->trail_ssbo_id);
                     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Vec4) * batch.element_count, batch.uniform_buffer);
                     glDrawArrays(GL_TRIANGLE_STRIP, 0, batch.element_count);
-                    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 }
             }
 

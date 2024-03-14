@@ -3,6 +3,7 @@
 #include <base.h>
 #include <engine/color.h>
 #include <gfx.h>
+#include <physics/intersection.h>
 
 #include "color.h"
 #include "layout.h"
