@@ -21,10 +21,17 @@ typedef struct
     bool32 intersects;
 } Intersection;
 
+typedef struct
+{
+    Vec2 start;
+    Vec2 direction;
+} Ray2;
+
 internal Intersection intersects_rect_point(Rect a, Vec2 b);
 internal Intersection intersects_circle_point(Circle a, Vec2 b);
 internal bool32       intersects_bounds_fast(Bounds a, Bounds b);
 internal bool32       intersects_rect_fast(Rect a, Rect b);
+internal Intersection intersects_ray(Ray2 a, Ray2 b);
 internal Intersection intersects_circle(Circle a, Circle b);
 internal Intersection intersects_circle_rect(Circle a, Rect b);
 internal Intersection intersects_rect(Rect a, Rect b);

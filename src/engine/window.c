@@ -49,3 +49,9 @@ window_destroy(Window* window)
     glfwDestroyWindow(window->glfw_window);
     glfwTerminate();
 }
+
+internal bool32
+window_should_close(Window* window)
+{
+    return glfwWindowShouldClose(window->glfw_window);
+}

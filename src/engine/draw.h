@@ -61,6 +61,7 @@ typedef struct
     Arena*    frame_arena;
 
     /* materials */
+    MaterialIndex material_basic_trail;
     MaterialIndex material_text;
     MaterialIndex material_text_free_type;
     MaterialIndex material_text_free_type_sdf;
@@ -99,6 +100,11 @@ typedef struct
     float32 outline_thickness;
     float32 _;
 } ShaderDataText;
+
+typedef struct
+{
+    Vec4 color;
+} ShaderDataTrail;
 
 typedef struct
 {
@@ -198,6 +204,9 @@ internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation
 internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
 
+/** trail */
+internal void draw_trail(Vec2* points, uint32 point_count, Color color);
+
 /** extra draw functions */
 internal Rect draw_debug_rect(Rect rect);
 internal Rect draw_debug_rect_b(Rect rect);
@@ -208,3 +217,23 @@ internal Rect draw_sprite_rect_cut_colored(Rect* rect, CutSide side, SpriteIndex
 internal Rect draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor);
 internal Rect sprite_rect(SpriteIndex sprite);
 internal Rect sprite_rect_with_pivot(SpriteIndex sprite, Vec2 position, Vec2 flip, float32 scale_multiplier);
+
+/** TEMP(selim): will be moved to renderer */
+typedef struct
+{
+    Vec3           position;
+    float32        sort_order;
+    float32        rotation;
+    Vec2           scale;
+    SpriteIndex    sprite;
+    SortLayerIndex layer;
+    Color          color;
+} SpriteRenderRequest;
+
+typedef struct
+{
+    int32                count;
+    SpriteRenderRequest* arr;
+} SpriteRenderRequestBuffer;
+internal void render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRenderRequest* requests, uint64 count, int32* layer_entity_counts);
+internal int  qsort_compare_render_requests_descending(const void* p, const void* q);

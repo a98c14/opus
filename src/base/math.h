@@ -235,6 +235,7 @@ internal Rect rect_from_wh(float32 w, float32 h);
 
 internal Circle circle(Vec2 center, float32 radius);
 internal Range  range(float32 min, float32 max);
+internal IRange irange(int32 min, int32 max);
 
 /* Basic Operations */
 internal Vec2 add_vec2(Vec2 a, Vec2 b);
@@ -261,6 +262,7 @@ internal Rect    lerp_rect(Rect a, Rect b, float32 t);
 
 /* Vector Operations */
 internal float32 dot_vec2(Vec2 a, Vec2 b);
+internal float32 det_vec2(Vec2 a, Vec2 b);
 internal float32 dot_vec3(Vec3 a, Vec3 b);
 internal Vec2    fabs_vec2(Vec2 a);
 internal Vec2    norm_vec2(Vec2 a);
@@ -307,6 +309,8 @@ internal Mat4 mat4_ortho(float32 width, float32 height, float32 near_plane, floa
 internal Vec4 linear_combine_v4_m4(Vec4 v, Mat4 m);
 
 /* Utils */
+internal Vec2    closest_point_on_line(Vec2 start, Vec2 end, Vec2 point);
+internal Vec2    vec2_intersection_fast(Vec2 a, Vec2 heading_a, Vec2 b, Vec2 heading_b);
 internal float32 rect_left(Rect rect);
 internal float32 rect_right(Rect rect);
 internal float32 rect_bottom(Rect rect);

@@ -199,6 +199,15 @@ range(float32 min, float32 max)
     return result;
 }
 
+internal IRange
+irange(int32 min, int32 max)
+{
+    IRange result;
+    result.min = min;
+    result.max = max;
+    return result;
+}
+
 /* Basic Operations */
 internal Vec2
 add_vec2(Vec2 a, Vec2 b)
@@ -413,6 +422,12 @@ internal float32
 dot_vec2(Vec2 a, Vec2 b)
 {
     return a.x * b.x + a.y * b.y;
+}
+
+internal float32
+det_vec2(Vec2 a, Vec2 b)
+{
+    return a.x * b.y - a.y * b.x;
 }
 
 internal float32
@@ -753,6 +768,25 @@ linear_combine_v4_m4(Vec4 v, Mat4 m)
     result.w += v.elements[3] * m.columns[3].w;
 #endif
     return result;
+}
+
+internal Vec2
+closest_point_on_line(Vec2 start, Vec2 end, Vec2 point)
+{
+    Vec2 d = sub_vec2(end, start);
+    Vec2 result;
+    result = add_vec2(start, mul_vec2_f32(d, clamp(0, dot_vec2(sub_vec2(point, start), d) / dot_vec2(d, d), 1)));
+    return result;
+}
+
+/** simple ray intersection, doesn't account for edge cases */
+internal Vec2
+vec2_intersection_fast(Vec2 a, Vec2 heading_a, Vec2 b, Vec2 heading_b)
+{
+    Vec2    d   = sub_vec2(b, a);
+    float32 det = det_vec2(heading_b, heading_a);
+    float32 u   = (d.y * heading_b.x - d.x * heading_b.y) / det;
+    return add_vec2(a, mul_vec2_f32(heading_a, u));
 }
 
 internal float32

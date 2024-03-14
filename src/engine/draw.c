@@ -111,10 +111,18 @@ draw_context_init(Arena* arena, Arena* temp_arena, Renderer* renderer, PassIndex
         sizeof(ShaderDataText),
         true);
 
+    d_state->material_basic_trail = material_new(
+        g_renderer,
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\basic_trail.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\basic_trail.frag")),
+        sizeof(ShaderDataTrail),
+        false);
+
     String        font_path = string(ASSET_PATH "\\open_sans.ttf");
     String        font_name = string("open_sans");
     FontFaceIndex face      = font_load(font_name, font_path, GlyphAtlasTypeFreeType);
     draw_activate_font(face);
+    scratch_end(temp);
     log_debug("initialized draw context");
 }
 
@@ -133,7 +141,7 @@ draw_context_activate_atlas(SpriteAtlas* atlas)
 internal void
 draw_line(Vec2 start, Vec2 end, Color color, float32 thickness)
 {
-    RenderKey      key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
+    RenderKey      key         = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
     ShaderDataLine shader_data = {.color = color_v4(color)};
     r_draw_single(key, transform_line(start, end, thickness), &shader_data);
 }
@@ -141,7 +149,7 @@ draw_line(Vec2 start, Vec2 end, Color color, float32 thickness)
 internal void
 draw_heading(Vec2 origin, Vec2 heading, Color color, float32 thickness)
 {
-    RenderKey      key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
+    RenderKey      key         = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
     ShaderDataLine shader_data = {.color = color_v4(color)};
     r_draw_single(key, transform_line(origin, add_vec2(origin, mul_vec2_f32(heading, 20)), thickness), &shader_data);
 }
@@ -150,7 +158,7 @@ internal void
 draw_line_fixed(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness)
 {
     xassert(length > 0, "line length needs to be larger than 0 for `transform_line_rotated`");
-    RenderKey      key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
+    RenderKey      key         = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
     ShaderDataLine shader_data = {.color = color_v4(color)};
     r_draw_single(key, transform_line_rotated(position, length, rotation, thickness), &shader_data);
 }
@@ -159,8 +167,8 @@ internal void
 draw_arrow(Vec2 position, float32 length, float32 rotation, Color color, float32 thickness)
 {
     xassert(length > 0, "line length needs to be larger than 0 for `transform_line_rotated`");
-    RenderKey line_key  = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
-    RenderKey arrow_key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->triangle, d_state->material_basic);
+    RenderKey line_key  = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_line);
+    RenderKey arrow_key = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->triangle, d_state->material_basic);
 
     ShaderDataLine shader_data = {.color = color_v4(color)};
     r_draw_single(line_key, transform_quad(position, vec2(length, thickness), rotation), &shader_data);
@@ -177,7 +185,7 @@ draw_arrow(Vec2 position, float32 length, float32 rotation, Color color, float32
 internal void
 draw_triangle(Vec2 position, float32 rotation, Color color, float32 size)
 {
-    RenderKey       key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->triangle, d_state->material_basic);
+    RenderKey       key         = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->triangle, d_state->material_basic);
     ShaderDataBasic shader_data = {.color = color_v4(color)};
     r_draw_single(key, transform_quad(position, vec2(size, size), rotation), &shader_data);
 }
@@ -185,7 +193,7 @@ draw_triangle(Vec2 position, float32 rotation, Color color, float32 size)
 internal Rect
 draw_rect_rotated(Rect rect, float32 rotation, Color color)
 {
-    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
+    RenderKey key = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
 
     Mat4 model = rotation == 0 ? transform_quad_aligned(rect.center, rect.size)
                                : transform_quad(rect.center, rect.size, rotation);
@@ -210,7 +218,7 @@ draw_rect(Rect rect, Color color)
 internal Rect
 draw_rect_outline(Rect rect, Color color, float32 thickness)
 {
-    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
+    RenderKey key = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
 
     Mat4 model = transform_quad_aligned(rect.center, rect.size);
 
@@ -228,7 +236,7 @@ draw_rect_outline(Rect rect, Color color, float32 thickness)
 internal void
 draw_texture_aligned(Vec2 pos, Vec2 scale, TextureIndex texture)
 {
-    RenderKey              key          = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, texture, g_renderer->quad, d_state->material_basic_texture);
+    RenderKey              key          = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, texture, g_renderer->quad, d_state->material_basic_texture);
     ShaderDataBasicTexture uniform_data = (ShaderDataBasicTexture){0};
     r_draw_single(key, transform_quad_aligned(pos, scale), &uniform_data);
 }
@@ -236,7 +244,7 @@ draw_texture_aligned(Vec2 pos, Vec2 scale, TextureIndex texture)
 internal void
 draw_bounds(float32 left, float32 right, float32 bottom, float32 top, Color color, float32 thickness)
 {
-    RenderKey key   = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
+    RenderKey key   = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
     Rect      r     = rect_from_xy_wh((right + left) / 2, (top + bottom) / 2, right - left, top - bottom);
     Mat4      model = transform_quad_aligned(r.center, r.size);
 
@@ -266,7 +274,7 @@ draw_text_at_internal(String str, Vec2 pos, Alignment alignment, float32 size, C
 
     GlyphAtlas*     atlas              = font_get_atlas(d_state->ctx->font_face, size);
     MaterialIndex   material           = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text_free_type_sdf;
-    RenderKey       key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
+    RenderKey       key                = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
     R_Batch*        batch              = r_batch_from_key(key, str.length);
     Rect            bounds             = text_calculate_transforms(atlas, str, size, pos, alignment, batch->model_buffer, 0);
     ShaderDataText* shader_data_buffer = (ShaderDataText*)batch->uniform_buffer;
@@ -295,7 +303,7 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
     position.y += d_default_text_baseline;
     GlyphAtlas*   atlas    = font_get_atlas(d_state->ctx->font_face, size);
     MaterialIndex material = atlas->type == GlyphAtlasTypeFreeType ? d_state->material_text_free_type : d_state->material_text_free_type_sdf;
-    RenderKey     key      = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
+    RenderKey     key      = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, atlas->texture, g_renderer->quad, material);
     R_Batch*      batch    = r_batch_from_key(key, str.length);
     Rect          result   = text_calculate_glyph_matrices(d_state->frame_arena, atlas, str, size, position, anchor.child, rect.w, batch->model_buffer, 0);
 
@@ -320,7 +328,7 @@ draw_text(String str, Rect rect, Anchor anchor, float32 size, Color color)
 internal void
 draw_circle(Vec2 pos, float32 radius, Color color)
 {
-    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
+    RenderKey key = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
 
     ShaderDataCircle shader_data = {0};
     shader_data.color            = color_v4(color);
@@ -332,7 +340,7 @@ draw_circle(Vec2 pos, float32 radius, Color color)
 internal void
 draw_circle_filled(Vec2 pos, float32 radius, Color color)
 {
-    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
+    RenderKey key = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
 
     ShaderDataCircle shader_data = {0};
     shader_data.color            = color_v4(color);
@@ -344,7 +352,7 @@ draw_circle_filled(Vec2 pos, float32 radius, Color color)
 internal void
 draw_circle_partially_filled(Vec2 position, float32 rotation, float32 radius, Color color, float32 min_angle, float32 max_angle)
 {
-    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
+    RenderKey key = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_circle_instanced);
 
     float32 percentage = (max_angle - min_angle) / 360.0f;
     rotation += (max_angle + min_angle) / 2;
@@ -361,7 +369,7 @@ draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex 
 {
     xassert(d_state->sprite_atlas, "`d_state->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
 
-    RenderKey key         = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
+    RenderKey key         = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
     Sprite    sprite_data = d_state->sprite_atlas->sprites[sprite];
 
     Vec2 pivot = sprite_get_pivot(sprite_data, vec2(scale, scale), flip);
@@ -382,7 +390,7 @@ draw_sprite_edges(Rect rect, SpriteIndex sprite, uint32 protection)
 {
     xassert(d_state->sprite_atlas, "`d_state->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
 
-    RenderKey key   = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite_border);
+    RenderKey key   = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite_border);
     Mat4      model = transform_quad_aligned(rect.center, rect.size);
 
     ShaderDataSpriteBorder shader_data = {0};
@@ -400,7 +408,7 @@ draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprit
 {
     xassert(d_state->sprite_atlas, "`d_state->sprite_atlas` is null. Please activate atlas by calling `draw_context_activate_sprite_atlas` before calling sprite draw functions.");
 
-    RenderKey key = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
+    RenderKey key = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
 
     Sprite sprite_data = d_state->sprite_atlas->sprites[sprite];
     Mat4   model       = transform_quad_aligned(position, mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale));
@@ -418,6 +426,33 @@ internal void
 draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip)
 {
     draw_sprite_colored(position, scale, rotation, sprite, flip, ColorInvisible, 1);
+}
+
+/** trail */
+internal void
+draw_trail(Vec2* points, uint32 point_count, Color color)
+{
+    RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
+    R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
+    batch_node->v.key               = key;
+    batch_node->v.element_count     = point_count;
+    batch_node->v.uniform_data_size = sizeof(Vec4) * point_count;
+
+    ArenaTemp temp = scratch_begin(0, 0);
+    Vec4*     t    = arena_push_array(temp.arena, Vec4, point_count);
+    for (uint32 i = 0; i < point_count; i++)
+    {
+        t[i] = vec4(points[i].x, points[i].y, 0, 1.0);
+    }
+    batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(Vec4) * point_count);
+    memcpy((uint8*)batch_node->v.uniform_buffer, t, batch_node->v.uniform_data_size);
+
+    Mat4 model                 = transform_quad(vec2(-100, 50), vec2_one(), 0);
+    batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
+    memcpy(batch_node->v.model_buffer, &model, sizeof(Mat4) * 1);
+
+    r_batch_commit(batch_node);
+    scratch_end(temp);
 }
 
 /** context push */
@@ -523,4 +558,69 @@ sprite_rect_with_pivot(SpriteIndex sprite, Vec2 position, Vec2 flip, float32 sca
     Vec2   scale         = mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale_multiplier);
     Vec2   rect_position = add_vec2(position, pivot);
     return rect_at(rect_position, fabs_vec2(scale), AlignmentCenter);
+}
+
+/** TODO(selim): This needs to be a generic solution. */
+internal void
+render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRenderRequest* requests, uint64 count, int32* layer_entity_counts)
+{
+    if (count <= 0)
+        return;
+
+    SpriteRenderRequestBuffer* request_buffers = arena_push_array_zero(frame_arena, SpriteRenderRequestBuffer, SORTING_LAYER_CAPACITY);
+    for (int32 i = 0; i < SORTING_LAYER_CAPACITY; i++)
+    {
+        request_buffers[i].arr   = arena_push_array(frame_arena, SpriteRenderRequest, layer_entity_counts[i]);
+        request_buffers[i].count = 0;
+    }
+
+    for (uint32 i = 0; i < count; i++)
+    {
+        SpriteRenderRequest        request = requests[i];
+        SpriteRenderRequestBuffer* buffer  = &request_buffers[request.layer];
+        buffer->arr[buffer->count]         = request;
+        buffer->count += 1;
+    }
+
+    for (int32 i = 0; i < SORTING_LAYER_CAPACITY; i++)
+    {
+        SpriteRenderRequestBuffer* buffer = &request_buffers[i];
+        if (buffer->count == 0)
+            continue;
+
+        qsort(buffer->arr, buffer->count, sizeof(SpriteRenderRequest), qsort_compare_render_requests_descending);
+
+        RenderKey key   = render_key_new_default(ViewTypeWorld, i, pass, d_state->sprite_atlas->texture, g_renderer->quad, d_state->material_sprite);
+        R_Batch*  batch = r_batch_from_key(key, buffer->count);
+
+        Mat4*             model_buffer   = batch->model_buffer;
+        ShaderDataSprite* uniform_buffer = (ShaderDataSprite*)batch->uniform_buffer;
+        for (int32 i = 0; i < buffer->count; i++)
+        {
+            SpriteRenderRequest request = buffer->arr[i];
+
+            Sprite sprite = d_state->sprite_atlas->sprites[request.sprite];
+            Vec2   pivot  = sprite_get_pivot(sprite, request.scale, vec2_one());
+            Vec2   scale  = vec2(request.scale.x * sprite.size.w, request.scale.y * sprite.size.h);
+            Vec3   pos    = request.position;
+            pos.y += request.position.z * 0.7;
+
+            model_buffer[i] = transform_quad_around_pivot(pos.xy, scale, request.rotation, pivot);
+
+            uniform_buffer[i].sprite_index        = request.sprite;
+            uniform_buffer[i].texture_layer_index = d_state->sprite_atlas->sprite_texture_indices[request.sprite];
+            uniform_buffer[i].alpha               = 1;
+            uniform_buffer[i].color               = color_v4(request.color);
+        }
+    }
+}
+
+internal int
+qsort_compare_render_requests_descending(const void* p, const void* q)
+{
+    float32 x = (*(const SpriteRenderRequest*)p).sort_order;
+    float32 y = (*(const SpriteRenderRequest*)q).sort_order;
+    return (x < y)   ? 1
+           : (x > y) ? -1
+                     : 0;
 }
