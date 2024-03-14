@@ -53,6 +53,25 @@ intersects_circle(Circle a, Circle b)
 }
 
 internal Intersection
+intersects_ray(Ray2 a, Ray2 b)
+{
+    Intersection result = {0};
+    Vec2         d      = sub_vec2(b.start, a.start);
+    float32      det    = det_vec2(b.direction, a.direction);
+    if (det == 0)
+        return result;
+
+    float32 u = (d.y * b.direction.x - d.x * b.direction.y) / det;
+    float32 v = (d.y * a.direction.x - d.x * b.direction.y) / det;
+
+    if (u < 0 || v < 0)
+        return result;
+
+    result.position = add_vec2(a.start, mul_vec2_f32(a.direction, u));
+    return result;
+}
+
+internal Intersection
 intersects_rect(Rect a, Rect b)
 {
     Intersection result   = {0};
