@@ -60,7 +60,6 @@ main(void)
         shader_data.outline_thickness = d_default_text_outline_thickness;
 
         Rect r = rect_at(vec2(-500, 0), vec2(600, 500), AlignmentLeft);
-
         draw_debug_rect_b(r);
         r = rect_shrink_f32(r, 10);
 
