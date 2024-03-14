@@ -68,3 +68,14 @@ geometry_triangle_create(Renderer* renderer)
     GeometryIndex result = geometry_new(renderer, 3, vao);
     return result;
 }
+
+internal GeometryIndex
+geometry_empty_create(Renderer* renderer)
+{
+    uint32 vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    GeometryIndex result = geometry_new(renderer, 3, vao);
+    return result;
+}

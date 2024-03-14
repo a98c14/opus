@@ -112,6 +112,14 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_MODEL, g_renderer->mvp_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+    // TODO(selim): Should this be optional?
+    /* Create Trail SSBO */
+    glGenBuffers(1, &g_renderer->trail_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, g_renderer->trail_ssbo_id);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Vec4) * GFX_TRAIL_MAX_VERTEX_CAPACITY, 0, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_TRAIL, g_renderer->trail_ssbo_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
     // Reserve the first slot for NULL texture
     g_renderer->texture_count += 1;
 
@@ -129,8 +137,9 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     frame_buffer->blend_dst_alpha = GL_ONE;
 
     /** frequently used primitives */
-    g_renderer->quad     = geometry_quad_create(g_renderer);
-    g_renderer->triangle = geometry_triangle_create(g_renderer);
+    g_renderer->quad           = geometry_quad_create(g_renderer);
+    g_renderer->triangle       = geometry_triangle_create(g_renderer);
+    g_renderer->geometry_empty = geometry_empty_create(g_renderer);
 
     log_debug("renderer created");
 }
@@ -149,7 +158,7 @@ r_pipeline_init(R_PipelineConfiguration* configuration)
         pass_index++;
     }
 
-    g_renderer->active_render_key = render_key_new(0, 0, 0, TEXTURE_INDEX_NULL, GEOMETRY_CAPACITY - 1, MATERIAL_CAPACITY - 1); // TODO(selim): find a way to show invalid values properly;
+    g_renderer->active_render_key = render_key_new_default(0, 0, 0, TEXTURE_INDEX_NULL, GEOMETRY_CAPACITY - 1, MATERIAL_CAPACITY - 1); // TODO(selim): find a way to show invalid values properly;
 }
 
 internal Camera
@@ -322,7 +331,7 @@ texture_update(Renderer* renderer, TextureIndex texture, void* data)
 }
 
 internal RenderKey
-render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index)
+render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, RenderType type)
 {
     xassert(view_type < 4, "invalid view_type value provided");
     log_trace("render key new, sort: %2d, pass: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", sort_layer, pass, view_type, texture, geometry, material_index);
@@ -331,8 +340,15 @@ render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, Te
                        ((uint64)view_type << RenderKeyViewTypeBitStart) +
                        ((uint64)texture << RenderKeyTextureIndexBitStart) +
                        ((uint64)geometry << RenderKeyGeometryIndexBitStart) +
-                       ((uint64)material_index << RenderKeyMaterialIndexBitStart);
+                       ((uint64)material_index << RenderKeyMaterialIndexBitStart) +
+                       ((uint64)type << RenderKeyRenderTypeBitStart);
     return result;
+}
+
+internal RenderKey
+render_key_new_default(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index)
+{
+    return render_key_new(view_type, sort_layer, pass, texture, geometry, material_index, 0);
 }
 
 internal uint64
@@ -514,9 +530,24 @@ r_render(Renderer* renderer, float32 dt)
                     glBindVertexArray(geometry->vertex_array_object);
                 }
 
-                log_trace("rendering, sort: %2d, layer: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", i, pass->frame_buffer, view_type, texture_index, geometry_index, material_index);
+                RenderType render_type = render_key_mask(batch.key, RenderKeyRenderTypeBitStart, RenderKeyRenderTypeBitCount);
+                if (render_type == RenderTypeDefault)
+                {
 
-                r_draw_batch_internal(geometry, material, batch.element_count, batch.model_buffer, batch.uniform_buffer);
+                    log_trace("rendering, sort: %2d, layer: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", i, pass->frame_buffer, view_type, texture_index, geometry_index, material_index);
+                    r_draw_batch_internal(geometry, material, batch.element_count, batch.model_buffer, batch.uniform_buffer);
+                }
+                else if (render_type == RenderTypeTrail)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    glBindBuffer(GL_UNIFORM_BUFFER, material->uniform_buffer_id);
+                    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_UBO_CUSTOM, material->uniform_buffer_id, 0, material->uniform_data_size);
+                    glUniformMatrix4fv(material->location_model, 1, GL_FALSE, batch.model_buffer[0].v);
+                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, renderer->trail_ssbo_id);
+                    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Vec4) * batch.element_count, batch.uniform_buffer);
+                    glDrawArrays(GL_TRIANGLE_STRIP, 0, batch.element_count);
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
             }
 
             // NOTE(selim): if we don't zero the list it keeps the old references in the next frame
@@ -617,7 +648,7 @@ r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_
     FrameBuffer* source_frame_buffer = &g_renderer->frame_buffers[source_pass->frame_buffer];
 
     Mat4      model = transform_quad_aligned(vec2_zero(), vec2(g_renderer->world_width, g_renderer->world_height));
-    RenderKey key   = render_key_new(ViewTypeScreen, sort_layer, target_index, source_frame_buffer->texture_index, g_renderer->quad, material_index);
+    RenderKey key   = render_key_new_default(ViewTypeScreen, sort_layer, target_index, source_frame_buffer->texture_index, g_renderer->quad, material_index);
     r_draw_single(key, model, uniform_data);
 }
 

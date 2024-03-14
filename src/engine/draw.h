@@ -61,6 +61,7 @@ typedef struct
     Arena*    frame_arena;
 
     /* materials */
+    MaterialIndex material_basic_trail;
     MaterialIndex material_text;
     MaterialIndex material_text_free_type;
     MaterialIndex material_text_free_type_sdf;
@@ -99,6 +100,11 @@ typedef struct
     float32 outline_thickness;
     float32 _;
 } ShaderDataText;
+
+typedef struct
+{
+    Vec4 color;
+} ShaderDataTrail;
 
 typedef struct
 {
@@ -197,6 +203,9 @@ internal void draw_circle_partially_filled(Vec2 position, float32 rotation, floa
 internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
 internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
+
+/** trail */
+internal void draw_trail(Vec2* points, uint32 point_count, Color color);
 
 /** extra draw functions */
 internal Rect draw_debug_rect(Rect rect);

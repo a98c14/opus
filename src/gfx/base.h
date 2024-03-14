@@ -16,6 +16,8 @@
 #define MATERIAL_DRAW_BUFFER_CAPACITY             (1024)
 #define MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY     (8192 * 2)
 
+#define GFX_TRAIL_MAX_VERTEX_CAPACITY (128 * 3)
+
 // TEMP: testing global variable solution out. Potentially dangerous?
 global float32 _pixel_per_unit = 1;
 #define DEFAULT_FONT_SIZE 18
@@ -29,21 +31,31 @@ enum
     ViewTypeCOUNT,
 };
 
+enum
+{
+    RenderTypeDefault = 0,
+    RenderTypeTrail   = 1,
+};
+
 typedef int64 RenderKey;
-const uint64  RenderKeyMaterialIndexBitStart  = 0;
-const uint64  RenderKeyMaterialIndexBitCount  = 8;
-const uint64  RenderKeyGeometryIndexBitStart  = 8;
-const uint64  RenderKeyGeometryIndexBitCount  = 8;
-const uint64  RenderKeyTextureIndexBitStart   = 16;
-const uint64  RenderKeyTextureIndexBitCount   = 8;
-const uint64  RenderKeyViewTypeBitStart       = 24;
-const uint64  RenderKeyViewTypeBitCount       = 2;
-const uint64  RenderKeyPassIndexBitStart      = 26;
-const uint64  RenderKeyPassIndexBitCount      = 8;
-const uint64  RenderKeySortLayerIndexBitStart = 34;
-const uint64  RenderKeySortLayerIndexBitCount = 8;
+#define RenderKeyMaterialIndexBitCount  8
+#define RenderKeyGeometryIndexBitCount  4
+#define RenderKeyTextureIndexBitCount   4
+#define RenderKeyViewTypeBitCount       2
+#define RenderKeyPassIndexBitCount      4
+#define RenderKeySortLayerIndexBitCount 4
+#define RenderKeyRenderTypeBitCount     4
+
+#define RenderKeyMaterialIndexBitStart  0
+#define RenderKeyGeometryIndexBitStart  (RenderKeyMaterialIndexBitStart + RenderKeyMaterialIndexBitCount)
+#define RenderKeyTextureIndexBitStart   (RenderKeyGeometryIndexBitStart + RenderKeyGeometryIndexBitCount)
+#define RenderKeyViewTypeBitStart       (RenderKeyTextureIndexBitStart + RenderKeyTextureIndexBitCount)
+#define RenderKeyPassIndexBitStart      (RenderKeyViewTypeBitStart + RenderKeyViewTypeBitCount)
+#define RenderKeySortLayerIndexBitStart (RenderKeyPassIndexBitStart + RenderKeyPassIndexBitCount)
+#define RenderKeyRenderTypeBitStart     (RenderKeySortLayerIndexBitStart + RenderKeySortLayerIndexBitCount)
 
 typedef uint8 ViewType;
+typedef uint8 RenderType;
 typedef int8  FrameBufferIndex;
 typedef int8  PassIndex;
 typedef int8  TextureIndex;
@@ -65,6 +77,7 @@ typedef int16 MaterialDrawBufferIndex;
 #define BINDING_SLOT_UBO_CUSTOM    4
 #define BINDING_SLOT_SSBO_CUSTOM   4
 #define BINDING_SLOT_SPRITE_BOUNDS 5
+#define BINDING_SLOT_SSBO_TRAIL    6
 
 typedef struct
 {
@@ -203,6 +216,7 @@ typedef struct
     uint32 camera_uniform_buffer_id;
     uint32 sprites_ssbo_id;
     uint32 mvp_ssbo_id;
+    uint32 trail_ssbo_id;
 
     /* state */
     RenderKey active_render_key;
@@ -228,6 +242,7 @@ typedef struct
 
     GeometryIndex quad;
     GeometryIndex triangle;
+    GeometryIndex geometry_empty;
 
     /* stats */
     int32   stat_draw_count;
@@ -283,7 +298,8 @@ internal TextureIndex  texture_new(Renderer* renderer, uint32 width, uint32 heig
 internal TextureIndex  texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
 internal uint32        shader_load(String vertex_shader_text, String fragment_shader_text);
 
-internal RenderKey render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index);
+internal RenderKey render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index, RenderType type);
+internal RenderKey render_key_new_default(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GeometryIndex geometry, MaterialIndex material_index);
 internal uint64    render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count);
 
 internal void             frame_buffer_begin(FrameBuffer* frame_buffer);
