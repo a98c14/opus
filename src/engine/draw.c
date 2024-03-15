@@ -647,66 +647,38 @@ gfx_generate_trail_vertices(Arena* arena, Vec2* points, uint32 point_count, uint
 
     for (uint32 i = 2; i < point_count; i++)
     {
-        float32 width  = trail_width;
-        int32   index  = i + start_index;
-        Vec2    start  = points[(index - 2) % point_count];
-        Vec2    middle = points[(index - 1) % point_count];
-        Vec2    next   = points[(index) % point_count];
+        float32 width = trail_width;
+        int32   index = i + start_index;
+
+        Vec2 start  = points[(index - 2) % point_count];
+        Vec2 middle = points[(index - 1) % point_count];
+        Vec2 next   = points[(index) % point_count];
 
         Vec2 heading      = heading_to_vec2(start, middle);
         Vec2 heading_next = heading_to_vec2(next, middle);
+        Vec2 normal_end   = vec2(-heading_next.y, heading_next.x);
 
-        Vec2 normal     = vec2(-heading.y, heading.x);
-        Vec2 normal_end = vec2(-heading_next.y, heading_next.x);
-        Vec2 end_right  = add_vec2(next, mul_vec2_f32(normal_end, width));
-        Vec2 end_left   = add_vec2(next, mul_vec2_f32(normal_end, -width));
-
-        Vec2 what_right   = add_vec2(middle, mul_vec2_f32(normal_end, width));
-        Vec2 what_left    = add_vec2(middle, mul_vec2_f32(normal_end, -width));
-        Vec2 what_right_2 = add_vec2(middle, mul_vec2_f32(normal, width));
-        Vec2 what_left_2  = add_vec2(middle, mul_vec2_f32(normal, -width));
-
-        Vec2 right = result.v[vertex_count - 2];
-        Vec2 left  = result.v[vertex_count - 1];
-
-        Vec2 intersection_right = vec2_intersection_fast(right, heading, end_left, heading_next);
-        Vec2 intersection_left  = vec2_intersection_fast(left, heading, end_right, heading_next);
-
-        // TEMP:
+        const float32 joint_break_threshold = 0;
+        float32       dot                   = dot_vec2(heading, heading_next);
+        if (dot > joint_break_threshold)
         {
-            draw_line(middle, what_right, ColorRed500, 4);
-            draw_line(middle, what_left, ColorRed500, 4);
-            draw_line(what_right_2, what_left_2, ColorRed500, 4);
-            draw_line(intersection_right, intersection_left, ColorAmber400AA, 4);
-        }
-        float32 angle    = angle_between_vec2(heading, heading_next);
-        Vec2    info_pos = add_vec2(middle, vec2(0, 20));
-
-        draw_text_at(string_pushf(d_state->frame_arena, "%.2f", angle), info_pos, AlignmentLeft, 8, ColorWhite);
-        draw_line(middle, info_pos, ColorWhite100, 2);
-        if (angle > 0 && angle < 80)
-        {
-            result.v[vertex_count++] = intersection_right;
-            result.v[vertex_count++] = what_left_2;
-            result.v[vertex_count++] = intersection_right;
-            result.v[vertex_count++] = what_right;
-            // result.v[vertex_count++] = what_right;
-            // result.v[vertex_count++] = what_left;
-        }
-        else if (fabs(angle) < 80)
-        {
-            result.v[vertex_count++] = what_right_2;
-            result.v[vertex_count++] = intersection_left;
-            result.v[vertex_count++] = what_left;
-            result.v[vertex_count++] = intersection_left;
+            Vec2 normal_start        = vec2(-heading.y, heading.x);
+            result.v[vertex_count++] = add_vec2(middle, mul_vec2_f32(normal_start, width));
+            result.v[vertex_count++] = add_vec2(middle, mul_vec2_f32(normal_start, -width));
+            result.v[vertex_count++] = add_vec2(middle, mul_vec2_f32(normal_end, -width));
+            result.v[vertex_count++] = add_vec2(middle, mul_vec2_f32(normal_end, width));
         }
         else
         {
+            Vec2 right               = result.v[vertex_count - 2];
+            Vec2 left                = result.v[vertex_count - 1];
+            Vec2 end_right           = add_vec2(next, mul_vec2_f32(normal_end, width));
+            Vec2 end_left            = add_vec2(next, mul_vec2_f32(normal_end, -width));
+            Vec2 intersection_right  = vec2_intersection_fast(right, heading, end_left, heading_next);
+            Vec2 intersection_left   = vec2_intersection_fast(left, heading, end_right, heading_next);
             result.v[vertex_count++] = intersection_right;
             result.v[vertex_count++] = intersection_left;
         }
-        // right = t_right;
-        // left  = t_left;
     }
 
     Vec2 end         = points[((int32)start_index - 1) % point_count];

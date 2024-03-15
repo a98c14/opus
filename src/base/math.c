@@ -788,7 +788,6 @@ vec2_intersection_fast(Vec2 a, Vec2 heading_a, Vec2 b, Vec2 heading_b)
     if (fabs(det) < EPSILON_FLOAT32)
         return a;
     float32 u = (d.y * heading_b.x - d.x * heading_b.y) / det;
-    // return add_vec2(a, mul_vec2_f32(heading_a, clamp(-100, u, 100)));
     return add_vec2(a, mul_vec2_f32(heading_a, u));
 }
 
