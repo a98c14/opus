@@ -22,4 +22,6 @@ internal Mat4 transform_line(Vec2 start, Vec2 end, float32 thickness);
 internal Mat4 transform_line_rotated(Vec2 position, float32 length, float32 angle, float32 thickness);
 
 /** Trail */
-internal VertexBuffer gfx_generate_trail_vertices(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 trail_width);
+internal VertexBuffer* vertex_buffer_new(Arena* arena);
+internal void          vertex_buffer_push_strip(VertexBuffer* buffer, Vec2 p);
+internal void          vertex_buffer_push(VertexBuffer* buffer, Vec2 p);

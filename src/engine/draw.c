@@ -626,71 +626,136 @@ qsort_compare_render_requests_descending(const void* p, const void* q)
 }
 
 // TODO(selim): Can we move this to vertex shader?
-internal VertexBuffer
-gfx_generate_trail_vertices(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 trail_width)
+internal VertexBuffer*
+draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 trail_width)
 {
+    // TODO(selim): generated vertices needs to be drawn with `GL_TRIANGLE_STRIP`
+    // we need to be able to define it in the vertex buffer
+    VertexBuffer* result = vertex_buffer_new(arena);
     if (point_count < 2)
-        return (VertexBuffer){0};
+        return result;
 
-    Vec2 start         = points[(start_index) % point_count];
-    Vec2 next          = points[(start_index + 1) % point_count];
-    Vec2 start_heading = heading_to_vec2(start, next);
-    Vec2 start_normal  = vec2(-start_heading.y, start_heading.x);
+    Vec2 start   = points[(start_index) % point_count];
+    Vec2 next    = points[(start_index + 1) % point_count];
+    Vec2 heading = heading_to_vec2(start, next);
+    Vec2 normal  = vec2(-heading.y, heading.x);
 
-    const uint32 initial_buffer_size = 1024;
-    VertexBuffer result;
-    uint32       vertex_count = 0;
-
-    result.v                 = arena_push_array_zero(arena, Vec2, initial_buffer_size);
-    result.v[vertex_count++] = move_vec2(start, start_normal, trail_width);
-    result.v[vertex_count++] = move_vec2(start, start_normal, -trail_width);
-
-    for (uint32 i = 2; i < point_count; i++)
+    vertex_buffer_push(result, move_vec2(start, normal, trail_width));
+    vertex_buffer_push(result, move_vec2(start, normal, -trail_width));
+    for (uint32 i = 1; i < point_count; i++)
     {
-        float32 width = trail_width;
-        int32   index = i + start_index;
+        int32 index = (start_index + i);
 
-        Vec2 start  = points[(index - 2) % point_count];
-        Vec2 middle = points[(index - 1) % point_count];
-        Vec2 next   = points[(index) % point_count];
+        Vec2 prev        = points[(index - 1) % point_count];
+        Vec2 end         = points[(index) % point_count];
+        Vec2 end_heading = heading_to_vec2(prev, end);
+        Vec2 end_normal  = vec2(-end_heading.y, end_heading.x);
+        vertex_buffer_push(result, move_vec2(end, end_normal, trail_width));
+        vertex_buffer_push(result, move_vec2(end, end_normal, -trail_width));
+    }
+    return result;
+}
 
-        Vec2 heading      = heading_to_vec2(start, middle);
-        Vec2 heading_next = heading_to_vec2(next, middle);
-        Vec2 normal_end   = vec2(-heading_next.y, heading_next.x);
+internal VertexBuffer*
+draw_util_generate_trail_vertices_slow(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 trail_width)
+{
+    VertexBuffer* result = vertex_buffer_new(arena);
+    if (point_count < 2)
+        return result;
 
-        const float32 joint_break_threshold = 0;
-        float32       dot                   = dot_vec2(heading, heading_next);
-        if (dot > joint_break_threshold)
-        {
-            Vec2 normal_start        = vec2(-heading.y, heading.x);
-            result.v[vertex_count++] = add_vec2(middle, mul_vec2_f32(normal_start, width));
-            result.v[vertex_count++] = add_vec2(middle, mul_vec2_f32(normal_start, -width));
-            result.v[vertex_count++] = add_vec2(middle, mul_vec2_f32(normal_end, -width));
-            result.v[vertex_count++] = add_vec2(middle, mul_vec2_f32(normal_end, width));
-        }
-        else
-        {
-            Vec2 right               = result.v[vertex_count - 2];
-            Vec2 left                = result.v[vertex_count - 1];
-            Vec2 end_right           = add_vec2(next, mul_vec2_f32(normal_end, width));
-            Vec2 end_left            = add_vec2(next, mul_vec2_f32(normal_end, -width));
-            Vec2 intersection_right  = vec2_intersection_fast(right, heading, end_left, heading_next);
-            Vec2 intersection_left   = vec2_intersection_fast(left, heading, end_right, heading_next);
-            result.v[vertex_count++] = intersection_right;
-            result.v[vertex_count++] = intersection_left;
-        }
+    Vec2 start   = points[(start_index) % point_count];
+    Vec2 next    = points[(start_index + 1) % point_count];
+    Vec2 heading = heading_to_vec2(start, next);
+    Vec2 normal  = vec2(-heading.y, heading.x);
+
+    vertex_buffer_push_strip(result, move_vec2(start, normal, trail_width));
+    vertex_buffer_push_strip(result, move_vec2(start, normal, -trail_width));
+    for (uint32 i = 1; i < point_count; i++)
+    {
+        int32 index = (start_index + i);
+
+        Vec2 prev        = points[(index - 1) % point_count];
+        Vec2 end         = points[(index) % point_count];
+        Vec2 end_heading = heading_to_vec2(prev, end);
+        Vec2 end_normal  = vec2(-end_heading.y, end_heading.x);
+        vertex_buffer_push_strip(result, move_vec2(end, end_normal, trail_width));
+        vertex_buffer_push_strip(result, move_vec2(end, end_normal, -trail_width));
     }
 
-    Vec2 end         = points[((int32)start_index - 1) % point_count];
-    Vec2 prev        = points[((int32)start_index - 2) % point_count];
-    Vec2 end_heading = heading_to_vec2(end, prev);
-    Vec2 end_normal  = vec2(-end_heading.y, end_heading.x);
-    Vec2 end_right   = add_vec2(end, mul_vec2_f32(end_normal, trail_width));
-    Vec2 end_left    = add_vec2(end, mul_vec2_f32(end_normal, -trail_width));
+    // for (uint32 i = 0; i < point_count; i++)
+    // {
+    //     draw_circle_filled(points[i], 4, ColorWhite);
+    // }
 
-    result.v[vertex_count++] = end_left;
-    result.v[vertex_count++] = end_right;
+    // for (uint32 i = 2; i < point_count; i++)
+    // {
+    //     float32 width = trail_width;
+    //     int32   index = i + start_index;
 
-    result.count = vertex_count;
+    //     Vec2 start  = points[(index - 2) % point_count];
+    //     Vec2 middle = points[(index - 1) % point_count];
+    //     Vec2 next   = points[(index) % point_count];
+
+    //     Vec2 heading      = heading_to_vec2(start, middle);
+    //     Vec2 heading_next = heading_to_vec2(next, middle);
+    //     if (lensqr_vec2(heading) <= 0 || lensqr_vec2(heading_next) <= 0)
+    //         continue;
+
+    //     Vec2 normal_end = vec2(-heading_next.y, heading_next.x);
+
+    //     Vec2 right     = result->v[result->count - 2];
+    //     Vec2 left      = result->v[result->count - 1];
+    //     Vec2 end_right = add_vec2(next, mul_vec2_f32(normal_end, width));
+    //     Vec2 end_left  = add_vec2(next, mul_vec2_f32(normal_end, -width));
+
+    //     const float32 joint_break_threshold = 0;
+    //     float32       dot                   = dot_vec2(heading, heading_next);
+
+    //     Rect info_rect = rect_at(add_vec2(middle, vec2(0, 10)), vec2(80, 40), AlignmentBottom);
+    //     draw_text(string_pushf(d_state->frame_arena, "%.2f", dot), rect_cut_top(&info_rect, 10), ANCHOR_C_C, 7, ColorWhite);
+    //     if (dot > joint_break_threshold)
+    //     {
+    //         Vec2 normal_start        = vec2(-heading.y, heading.x);
+    //         result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_start, width));
+    //         result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_start, -width));
+    //         result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_end, -width));
+    //         result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_end, width));
+    //         // result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_start, -width));
+    //         // result.v[result.count++] = end_left;
+    //         // result.v[result.count++] = end_right;
+    //     }
+    //     else
+    //     {
+    //         draw_heading(right, heading, ColorYellow600, 2);
+    //         draw_heading(left, heading, ColorYellow600, 2);
+    //         draw_heading(end_right, heading_next, ColorGreen400, 2);
+    //         draw_heading(end_left, heading_next, ColorGreen400, 2);
+    //         Vec2 intersection_right  = vec2_intersection_fast(right, heading, end_left, heading_next);
+    //         Vec2 intersection_left   = vec2_intersection_fast(left, heading, end_right, heading_next);
+    //         result.v[result.count++] = intersection_right;
+    //         result.v[result.count++] = intersection_left;
+    //     }
+    // }
+
+    // Vec2 right       = result.v[result.count - 2];
+    // Vec2 left        = result.v[result.count - 1];
+
+    // Vec2 prev        = points[((int32)start_index - 2) % point_count];
+    // Vec2 end_heading = heading_to_vec2(end, prev);
+    // Vec2 end_normal  = vec2(-end_heading.y, end_heading.x);
+    // Vec2 end_right   = add_vec2(end, mul_vec2_f32(end_normal, trail_width));
+    // Vec2 end_left    = add_vec2(end, mul_vec2_f32(end_normal, -trail_width));
+
+    // result.v[result.count++] = end_left;
+    // result.v[result.count++] = end_left;
+    // result.v[result.count++] = left;
+    // result.v[result.count++] = end_right;
+
+    // for (uint32 i = 0; i < result.count; i++)
+    // {
+    //     Color c = i % 2 == 0 ? ColorWhite : ColorRed600;
+    //     draw_circle_filled(result.v[i], 4, c);
+    // }
+
     return result;
 }

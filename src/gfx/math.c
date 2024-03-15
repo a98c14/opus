@@ -70,3 +70,29 @@ transform_line_rotated(Vec2 position, float32 length, float32 angle, float32 thi
     position.y += sinx;
     return transform_quad(position, vec2(length, thickness), angle);
 }
+
+/** VertextBuffer */
+internal VertexBuffer*
+vertex_buffer_new(Arena* arena)
+{
+    const uint32  initial_buffer_size = 1024;
+    VertexBuffer* result              = arena_push_struct_zero(arena, VertexBuffer);
+    result->v                         = arena_push_array_zero(arena, Vec2, initial_buffer_size);
+    return result;
+}
+internal void
+vertex_buffer_push_strip(VertexBuffer* buffer, Vec2 p)
+{
+    if (buffer->count > 2)
+    {
+        buffer->v[buffer->count++] = buffer->v[buffer->count - 2];
+        buffer->v[buffer->count++] = buffer->v[buffer->count - 2];
+    }
+    buffer->v[buffer->count++] = p;
+}
+
+internal void
+vertex_buffer_push(VertexBuffer* buffer, Vec2 p)
+{
+    buffer->v[buffer->count++] = p;
+}

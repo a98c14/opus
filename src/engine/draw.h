@@ -238,3 +238,5 @@ typedef struct
 } SpriteRenderRequestBuffer;
 internal void render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRenderRequest* requests, uint64 count, int32* layer_entity_counts);
 internal int  qsort_compare_render_requests_descending(const void* p, const void* q);
+
+internal VertexBuffer* draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 trail_width);
