@@ -430,22 +430,23 @@ draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, 
 
 /** trail */
 internal void
-draw_trail(Vec2* points, uint32 point_count, Color color)
+draw_trail(Vec2* points, uint32 point_count, Color start_color, Color end_color)
 {
     RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
     R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
     batch_node->v.key               = key;
     batch_node->v.element_count     = point_count;
-    batch_node->v.uniform_data_size = sizeof(Vec4) * point_count;
+    batch_node->v.uniform_data_size = sizeof(TrailVertexData) * point_count;
 
-    ArenaTemp temp = scratch_begin(0, 0);
-    Vec4*     t    = arena_push_array(temp.arena, Vec4, point_count);
+    ArenaTemp        temp     = scratch_begin(0, 0);
+    TrailVertexData* vertices = arena_push_array(temp.arena, TrailVertexData, point_count);
     for (uint32 i = 0; i < point_count; i++)
     {
-        t[i] = vec4(points[i].x, points[i].y, 0, 1.0);
+        vertices[i].pos   = vec4(points[i].x, points[i].y, 0, 1.0);
+        vertices[i].color = color_v4(lerp_color(end_color, start_color, (float32)i / point_count));
     }
-    batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(Vec4) * point_count);
-    memcpy((uint8*)batch_node->v.uniform_buffer, t, batch_node->v.uniform_data_size);
+    batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(TrailVertexData) * point_count);
+    memcpy((uint8*)batch_node->v.uniform_buffer, vertices, batch_node->v.uniform_data_size);
 
     Mat4 model                 = transform_quad(vec2(0, 0), vec2_one(), 0);
     batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
@@ -627,10 +628,10 @@ qsort_compare_render_requests_descending(const void* p, const void* q)
 
 // TODO(selim): Can we move this to vertex shader?
 internal VertexBuffer*
-draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 trail_width)
+draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 start_width, float32 end_width)
 {
     // TODO(selim): generated vertices needs to be drawn with `GL_TRIANGLE_STRIP`
-    // we need to be able to define it in the vertex buffer
+    // we need to be able to define it in the vertex buffer or tell that to the renderer somehow
     VertexBuffer* result = vertex_buffer_new(arena);
     if (point_count < 2)
         return result;
@@ -640,18 +641,19 @@ draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_
     Vec2 heading = heading_to_vec2(start, next);
     Vec2 normal  = vec2(-heading.y, heading.x);
 
-    vertex_buffer_push(result, move_vec2(start, normal, trail_width));
-    vertex_buffer_push(result, move_vec2(start, normal, -trail_width));
+    vertex_buffer_push(result, move_vec2(start, normal, start_width));
+    vertex_buffer_push(result, move_vec2(start, normal, -start_width));
     for (uint32 i = 1; i < point_count; i++)
     {
-        int32 index = (start_index + i);
+        float32 width = lerp_f32(start_width, end_width, (float32)i / point_count);
+        int32   index = (start_index + i);
 
         Vec2 prev        = points[(index - 1) % point_count];
-        Vec2 end         = points[(index) % point_count];
+        Vec2 end         = points[index % point_count];
         Vec2 end_heading = heading_to_vec2(prev, end);
         Vec2 end_normal  = vec2(-end_heading.y, end_heading.x);
-        vertex_buffer_push(result, move_vec2(end, end_normal, trail_width));
-        vertex_buffer_push(result, move_vec2(end, end_normal, -trail_width));
+        vertex_buffer_push(result, move_vec2(end, end_normal, width));
+        vertex_buffer_push(result, move_vec2(end, end_normal, -width));
     }
     return result;
 }

@@ -205,9 +205,6 @@ internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation
 internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
 
-/** trail */
-internal void draw_trail(Vec2* points, uint32 point_count, Color color);
-
 /** extra draw functions */
 internal Rect draw_debug_rect(Rect rect);
 internal Rect draw_debug_rect_b(Rect rect);
@@ -239,4 +236,13 @@ typedef struct
 internal void render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRenderRequest* requests, uint64 count, int32* layer_entity_counts);
 internal int  qsort_compare_render_requests_descending(const void* p, const void* q);
 
-internal VertexBuffer* draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 trail_width);
+/** trail */
+internal void draw_trail(Vec2* points, uint32 point_count, Color start_color, Color end_color);
+/** TODO(selim): Move to a separate file called trail/line renderer */
+typedef struct
+{
+    Vec4 pos;
+    Vec4 color;
+} TrailVertexData;
+
+internal VertexBuffer* draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 start_width, float32 end_width);
