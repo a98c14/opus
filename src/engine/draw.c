@@ -676,8 +676,8 @@ draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_
     Vec2 heading = heading_to_vec2(start, next);
     Vec2 normal  = vec2(-heading.y, heading.x);
 
-    vertex_buffer_push(result, move_vec2(start, normal, start_width));
-    vertex_buffer_push(result, move_vec2(start, normal, -start_width));
+    vertex_buffer_push(result, move_vec2(start, normal, end_width));
+    vertex_buffer_push(result, move_vec2(start, normal, -end_width));
     for (uint32 i = 1; i < point_count; i++)
     {
         float32 width = lerp_f32(end_width, start_width, (float32)i / point_count);
