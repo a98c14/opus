@@ -428,34 +428,6 @@ draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, 
     draw_sprite_colored(position, scale, rotation, sprite, flip, ColorInvisible, 1);
 }
 
-/** trail */
-internal void
-draw_trail(Vec2* points, uint32 point_count, Color start_color, Color end_color)
-{
-    RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
-    R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
-    batch_node->v.key               = key;
-    batch_node->v.element_count     = point_count;
-    batch_node->v.uniform_data_size = sizeof(TrailVertexData) * point_count;
-
-    ArenaTemp        temp     = scratch_begin(0, 0);
-    TrailVertexData* vertices = arena_push_array(temp.arena, TrailVertexData, point_count);
-    for (uint32 i = 0; i < point_count; i++)
-    {
-        vertices[i].pos   = vec4(points[i].x, points[i].y, 0, 1.0);
-        vertices[i].color = color_v4(lerp_color(end_color, start_color, (float32)i / point_count));
-    }
-    batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(TrailVertexData) * point_count);
-    memcpy((uint8*)batch_node->v.uniform_buffer, vertices, batch_node->v.uniform_data_size);
-
-    Mat4 model                 = transform_quad(vec2(0, 0), vec2_one(), 0);
-    batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
-    memcpy(batch_node->v.model_buffer, &model, sizeof(Mat4) * 1);
-
-    r_batch_commit(batch_node);
-    scratch_end(temp);
-}
-
 /** context push */
 internal void
 draw_activate_font(FontFaceIndex font_face)
@@ -624,6 +596,69 @@ qsort_compare_render_requests_descending(const void* p, const void* q)
     return (x < y)   ? 1
            : (x > y) ? -1
                      : 0;
+}
+
+internal Trail*
+trail_new(Arena* arena, uint32 point_count)
+{
+    const uint32 max_trail_capacity = 1024;
+    Trail*       result             = arena_push_struct_zero(arena, Trail);
+    result->total_capacity          = max_trail_capacity;
+    result->buffer                  = arena_push_array_zero(arena, Vec2, max_trail_capacity);
+    result->current_capacity        = point_count;
+    return result;
+}
+
+internal void
+trail_push_position(Trail* trail, Vec2 position)
+{
+    trail->count                      = min(trail->count + 1, trail->current_capacity);
+    trail->buffer[trail->start_index] = position; // TODO(selim): do we need to mod here?
+    trail->start_index                = (trail->start_index + 1) % trail->current_capacity;
+}
+
+internal void
+trail_draw(Trail* trail)
+{
+    ArenaTemp     temp        = scratch_begin(0, 0);
+    VertexBuffer* vertex_data = draw_util_generate_trail_vertices_fast(temp.arena, trail->buffer, trail->count, trail->start_index, trail->width_start, trail->width_end);
+
+    RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
+    R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
+    batch_node->v.key               = key;
+    batch_node->v.element_count     = vertex_data->count;
+    batch_node->v.uniform_data_size = sizeof(TrailVertexData) * vertex_data->count;
+
+    TrailVertexData* vertices = arena_push_array(temp.arena, TrailVertexData, vertex_data->count);
+    for (uint32 i = 0; i < vertex_data->count; i++)
+    {
+        vertices[i].pos   = vec4(vertex_data->v[i].x, vertex_data->v[i].y, 0, 1);
+        vertices[i].color = color_v4(lerp_color(trail->color_end, trail->color_start, (float32)i / vertex_data->count));
+    }
+    batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(TrailVertexData) * vertex_data->count);
+    memcpy((uint8*)batch_node->v.uniform_buffer, vertices, batch_node->v.uniform_data_size);
+
+    Mat4 model                 = transform_quad(vec2(0, 0), vec2_one(), 0);
+    batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
+    memcpy(batch_node->v.model_buffer, &model, sizeof(Mat4) * 1);
+
+    r_batch_commit(batch_node);
+
+    scratch_end(temp);
+}
+
+internal void
+trail_set_color(Trail* trail, Color start, Color end)
+{
+    trail->color_start = start;
+    trail->color_end   = end;
+}
+
+internal void
+trail_set_width(Trail* trail, float32 start, float32 end)
+{
+    trail->width_start = start;
+    trail->width_end   = end;
 }
 
 // TODO(selim): Can we move this to vertex shader?

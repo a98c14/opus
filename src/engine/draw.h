@@ -237,12 +237,32 @@ internal void render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRe
 internal int  qsort_compare_render_requests_descending(const void* p, const void* q);
 
 /** trail */
-internal void draw_trail(Vec2* points, uint32 point_count, Color start_color, Color end_color);
 /** TODO(selim): Move to a separate file called trail/line renderer */
+typedef struct
+{
+    /** vertex data */
+    Vec2*  buffer;
+    uint32 start_index;
+    uint32 count;
+    uint32 current_capacity;
+    uint32 total_capacity;
+
+    /** styling */
+    float32 width_start;
+    float32 width_end;
+    Color   color_start;
+    Color   color_end;
+} Trail;
+
 typedef struct
 {
     Vec4 pos;
     Vec4 color;
 } TrailVertexData;
 
+internal Trail*        trail_new(Arena* arena, uint32 point_count);
+internal void          trail_push_position(Trail* trail, Vec2 position);
+internal void          trail_draw(Trail* trail);
+internal void          trail_set_color(Trail* trail, Color start, Color end);
+internal void          trail_set_width(Trail* trail, float32 start, float32 end);
 internal VertexBuffer* draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 start_width, float32 end_width);
