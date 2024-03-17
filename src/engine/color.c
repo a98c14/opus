@@ -25,6 +25,13 @@ color_alpha(Color c)
 }
 
 internal Color
+color_set_alpha(Color c, float32 a)
+{
+    Color result = c & ((uint8)(a * 255));
+    return result;
+}
+
+internal Color
 lerp_color(Color a, Color b, float32 t)
 {
     return vec4_to_color(lerp_vec4(color_v4(a), color_v4(b), t));

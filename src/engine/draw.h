@@ -261,6 +261,7 @@ typedef struct
 } TrailVertexData;
 
 internal Trail*        trail_new(Arena* arena, uint32 point_count);
+internal void          trail_reset(Trail* trail);
 internal void          trail_push_position(Trail* trail, Vec2 position);
 internal void          trail_draw(Trail* trail);
 internal void          trail_set_color(Trail* trail, Color start, Color end);

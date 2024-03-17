@@ -2,6 +2,7 @@
 #include <gfx/base.h>
 
 internal Color lerp_color(Color a, Color b, float32 t);
+internal Color color_set_alpha(Color c, float32 a);
 
 global const Color ColorClear                = 0x0f172a00;
 global const Color ColorBlack                = 0x000000ff;

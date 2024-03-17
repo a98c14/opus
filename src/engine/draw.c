@@ -610,6 +610,13 @@ trail_new(Arena* arena, uint32 point_count)
 }
 
 internal void
+trail_reset(Trail* trail)
+{
+    trail->count       = 0;
+    trail->start_index = 0;
+}
+
+internal void
 trail_push_position(Trail* trail, Vec2 position)
 {
     trail->count                      = min(trail->count + 1, trail->current_capacity);
