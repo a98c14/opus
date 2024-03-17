@@ -567,6 +567,18 @@ rotate_vec2(Vec2 v, float angle)
     return mul_mat2_vec2(rotation, v);
 }
 
+internal Vec2
+rotate90_vec2(Vec2 v)
+{
+    return vec2(-v.y, v.x);
+}
+
+internal Vec2
+rotate90i_vec2(Vec2 v)
+{
+    return vec2(v.y, -v.x);
+}
+
 /* Matrix Operations */
 internal Mat2
 mat2_identity(void)
