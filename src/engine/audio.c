@@ -1,42 +1,60 @@
 #include "audio.h"
-#include "soloud_c.h"
 
 internal void
-oe_audio_logger(const char* tag,              // always "saudio"
-                uint32_t    log_level,        // 0=panic, 1=error, 2=warning, 3=info
-                uint32_t    log_item_id,      // SAUDIO_LOGITEM_*
-                const char* message_or_null,  // a message string, may be nullptr in release mode
-                uint32_t    line_nr,          // line number in sokol_audio.h
-                const char* filename_or_null, // source filename, may be nullptr in release mode
-                void*       user_data)
-{
-    // NOTE: sokol log levels match 1 to 1 with opus log levels so we don't need any conversion;
-    log_output((LogLevel)log_level, "Audio Id: %d, message: %s, in file %s, at line %d", log_item_id, message_or_null, filename_or_null, line_nr);
-}
-
-internal void
-oe_audio_init()
+oe_audio_init(Arena* arena)
 {
     Soloud* soloud = Soloud_create();
     Soloud_initEx(soloud, SOLOUD_CLIP_ROUNDOFF | SOLOUD_ENABLE_VISUALIZATION, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO);
 
-    Wav* wav = Wav_create();
-    Wav_load(wav, "C:\\Users\\selim\\source\\github\\space_fighter\\assets\\audio\\gun.mp3");
-    Soloud_play(soloud, wav);
+    g_oe_audio_system               = arena_push_struct_zero(arena, OE_AudioSystem);
+    g_oe_audio_system->_backend     = soloud;
+    g_oe_audio_system->audio_buffer = arena_push_array_zero(arena, OE_Audio, OE_AUDIO_CACHE_SIZE);
 }
 
 internal void
 oe_audio_shutdown()
 {
-    // saudio_shutdown();
+    Soloud_destroy(g_oe_audio_system->_backend);
+}
+
+internal OE_AudioHandle
+oe_audio_handle_from_path(String path)
+{
+    profiler_begin("oe_audio_handle_from_path");
+    OE_AudioHandle result;
+
+    uint64 hash  = hash_string(path);
+    bool32 found = false;
+    for (uint32 i = 0; i < g_oe_audio_system->audio_count; i++)
+    {
+        if (g_oe_audio_system->audio_buffer[i].hash != hash)
+            continue;
+
+        result.v[0] = i;
+        found       = true;
+        break;
+    }
+
+    if (!found)
+    {
+        uint64    index = g_oe_audio_system->audio_count;
+        OE_Audio* audio = &g_oe_audio_system->audio_buffer[index];
+        g_oe_audio_system->audio_count++;
+
+        found        = true;
+        audio->_data = Wav_create();
+        audio->hash  = hash;
+        Wav_load(audio->_data, path.value);
+        result.v[0] = index;
+    }
+
+    profiler_end();
+    return result;
 }
 
 internal void
-oe_audio_stream_callback(float32* buffer, int32 num_frames, int32 num_channels)
+oe_audio_play(OE_AudioHandle handle)
 {
-    const int32 num_samples = num_frames * num_channels;
-    for (int32 i = 0; i < num_samples; i++)
-    {
-        buffer[i] = 0.0f;
-    }
+    OE_Audio audio = g_oe_audio_system->audio_buffer[handle.v[0]];
+    Soloud_play(g_oe_audio_system->_backend, audio._data);
 }
