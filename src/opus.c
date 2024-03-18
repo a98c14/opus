@@ -1,4 +1,4 @@
-
+// clang-format off
 #include <base/bitfield.c>
 #include <base/datetime.c>
 #include <base/easing.c>
@@ -31,6 +31,7 @@
 #include <engine/text.c>
 #include <engine/time.c>
 #include <engine/window.c>
+#include <engine/audio.c>
 
 #include <ui.c>
 

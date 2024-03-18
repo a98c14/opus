@@ -12,7 +12,7 @@ window_create(Arena* arena, uint32 width, uint32 height, char* name, WindowKeyCa
     Window* window = arena_push_struct_zero(arena, Window);
 
     glfwSetErrorCallback(window_error_callback);
-    bool init_successfull = glfwInit();
+    bool32 init_successfull = glfwInit();
     xassert(init_successfull, "could not initialize GLFW");
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);

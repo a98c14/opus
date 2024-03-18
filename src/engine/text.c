@@ -277,6 +277,7 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
     FT_Int32 load_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_RENDER : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
 
     int32 x = 0;
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     for (uint32 i = 32; i < 128; ++i)
     {
         if (FT_Load_Char(font_face->freetype_face, i, load_flags))
@@ -304,7 +305,6 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
         atlas->glyphs[i - 32].atlas_bounds.right  = x + glyph->bitmap.width;
         atlas->glyphs[i - 32].atlas_bounds.top    = glyph->bitmap.rows;
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, glyph->bitmap.width, glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
         x += glyph->bitmap.width + 2;
     }
