@@ -4,7 +4,7 @@ internal void
 oe_audio_init(Arena* arena)
 {
     Soloud* soloud = Soloud_create();
-    Soloud_initEx(soloud, SOLOUD_CLIP_ROUNDOFF | SOLOUD_ENABLE_VISUALIZATION, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO);
+    Soloud_initEx(soloud, SOLOUD_CLIP_ROUNDOFF, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO, SOLOUD_AUTO);
 
     g_oe_audio_system               = arena_push_struct_zero(arena, OE_AudioSystem);
     g_oe_audio_system->_backend     = soloud;
@@ -55,6 +55,8 @@ oe_audio_handle_from_path(String path)
 internal void
 oe_audio_play(OE_AudioHandle handle)
 {
-    OE_Audio audio = g_oe_audio_system->audio_buffer[handle.v[0]];
-    Soloud_play(g_oe_audio_system->_backend, audio._data);
+    OE_Audio audio         = g_oe_audio_system->audio_buffer[handle.v[0]];
+    uint32   soloud_handle = Soloud_play(g_oe_audio_system->_backend, audio._data);
+    Soloud_setRelativePlaySpeed(g_oe_audio_system->_backend, soloud_handle, random_between_f32(0.9, 1.1));
+    Soloud_setVolume(g_oe_audio_system->_backend, soloud_handle, 0.2);
 }
