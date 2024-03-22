@@ -1,3 +1,5 @@
+#include "ui_core.h"
+
 internal UI_Key
 ui_key_str(String str)
 {
@@ -20,6 +22,12 @@ ui_key(uint64 v)
     UI_Key result;
     result.value = v;
     return result;
+}
+
+internal bool32
+ui_key_same(UI_Key a, UI_Key b)
+{
+    return a.value == b.value;
 }
 
 internal void

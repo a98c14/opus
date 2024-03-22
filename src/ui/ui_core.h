@@ -1,4 +1,10 @@
 #pragma once
+#include <base.h>
+#include <engine/draw.h>
+#include <engine/layout.h>
+#include <engine/time.h>
+#include <gfx.h>
+
 #define UI_MAX_ANIMATION_COUNT   16
 #define UI_ANIMATION_UPDATE_RATE 24.0f
 
@@ -67,6 +73,7 @@ global UI_State* ui_state;
 internal UI_Key ui_key_str(String str);
 internal UI_Key ui_key_cstr(char* str);
 internal UI_Key ui_key(uint64 v);
+internal bool32 ui_key_same(UI_Key a, UI_Key b);
 
 internal void  ui_state_init(Arena* arena);
 internal void  ui_state_load_atlas(SpriteAtlas* atlas);
