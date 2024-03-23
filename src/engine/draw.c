@@ -599,36 +599,54 @@ qsort_compare_render_requests_descending(const void* p, const void* q)
 }
 
 internal Trail*
-trail_new(Arena* arena, uint32 point_count)
+trail_new(Arena* arena)
 {
     const uint32 max_trail_capacity = 1024;
     Trail*       result             = arena_push_struct_zero(arena, Trail);
-    result->total_capacity          = max_trail_capacity;
-    result->buffer                  = arena_push_array_zero(arena, Vec2, max_trail_capacity);
-    result->current_capacity        = point_count;
+    result->capacity                = max_trail_capacity;
+    result->buffer                  = arena_push_array_zero(arena, TrailPoint, max_trail_capacity);
+    result->t_lifetime              = 1;
     return result;
 }
 
 internal void
 trail_reset(Trail* trail)
 {
-    trail->count       = 0;
-    trail->start_index = 0;
+    trail->start = trail->end;
 }
 
 internal void
 trail_push_position(Trail* trail, Vec2 position)
 {
-    trail->count                      = min(trail->count + 1, trail->current_capacity);
-    trail->buffer[trail->start_index] = position; // TODO(selim): do we need to mod here?
-    trail->start_index                = (trail->start_index + 1) % trail->current_capacity;
+    trail->buffer[trail->end % trail->capacity].position    = position;
+    trail->buffer[trail->end % trail->capacity].t_remaining = trail->t_lifetime;
+    trail->end++;
+}
+
+internal void
+trail_update(Trail* trail, float32 dt)
+{
+    ArenaTemp temp = scratch_begin(0, 0);
+
+    for (uint64 i = trail->start; i < trail->end; i++)
+    {
+        TrailPoint* tp = &trail->buffer[i % trail->capacity];
+        tp->t_remaining -= dt;
+        if (tp->t_remaining <= 0)
+        {
+            tp->t_remaining = 0;
+            trail->start += i == trail->start;
+        }
+    }
+
+    scratch_end(temp);
 }
 
 internal void
 trail_draw(Trail* trail)
 {
     ArenaTemp     temp        = scratch_begin(0, 0);
-    VertexBuffer* vertex_data = draw_util_generate_trail_vertices_fast(temp.arena, trail->buffer, trail->count, trail->start_index, trail->width_start, trail->width_end);
+    VertexBuffer* vertex_data = draw_util_generate_trail_vertices_fast(temp.arena, trail);
 
     RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
     R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
@@ -670,32 +688,36 @@ trail_set_width(Trail* trail, float32 start, float32 end)
 
 // TODO(selim): Can we move this to vertex shader?
 internal VertexBuffer*
-draw_util_generate_trail_vertices_fast(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 start_width, float32 end_width)
+draw_util_generate_trail_vertices_fast(Arena* arena, Trail* trail)
 {
     // TODO(selim): generated vertices needs to be drawn with `GL_TRIANGLE_STRIP`
     // we need to be able to define it in the vertex buffer or tell that to the renderer somehow
     VertexBuffer* result = vertex_buffer_new(arena);
-    if (point_count < 2)
+    if (trail->end - trail->start < 1)
         return result;
 
-    Vec2 start   = points[(start_index) % point_count];
-    Vec2 next    = points[(start_index + 1) % point_count];
-    Vec2 heading = heading_to_vec2(start, next);
-    Vec2 normal  = vec2(-heading.y, heading.x);
-
-    vertex_buffer_push(result, move_vec2(start, normal, end_width));
-    vertex_buffer_push(result, move_vec2(start, normal, -end_width));
-    for (uint32 i = 1; i < point_count; i++)
+    for (uint32 i = trail->start; i < trail->end; i++)
     {
-        float32 width = lerp_f32(end_width, start_width, (float32)i / point_count);
-        int32   index = (start_index + i);
+        TrailPoint* point = &trail->buffer[i % trail->capacity];
+        bool32      is_segment_endpoint =
+            i == trail->start ||
+            i == trail->end - 1 ||
+            trail->buffer[i - 1].t_remaining <= 0 ||
+            trail->buffer[i + 1].t_remaining <= 0;
 
-        Vec2 prev        = points[(index - 1) % point_count];
-        Vec2 end         = points[index % point_count];
-        Vec2 end_heading = heading_to_vec2(prev, end);
+        if (is_segment_endpoint)
+        {
+            vertex_buffer_push(result, point->position);
+            continue;
+        }
+        TrailPoint* prev_point = &trail->buffer[(i - 1) % trail->capacity];
+
+        float32 width = lerp_f32(trail->width_end, trail->width_start, clamp(0, point->t_remaining / trail->t_lifetime, 1));
+
+        Vec2 end_heading = heading_to_vec2(prev_point->position, point->position);
         Vec2 end_normal  = vec2(-end_heading.y, end_heading.x);
-        vertex_buffer_push(result, move_vec2(end, end_normal, width));
-        vertex_buffer_push(result, move_vec2(end, end_normal, -width));
+        vertex_buffer_push(result, move_vec2(point->position, end_normal, width));
+        vertex_buffer_push(result, move_vec2(point->position, end_normal, -width));
     }
     return result;
 }

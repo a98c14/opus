@@ -104,7 +104,7 @@ input_mouse_pressed(InputMouse mouse, MouseButtonState state)
 internal bool32
 input_mouse_released(InputMouse mouse, MouseButtonState state)
 {
-    return !input_mouse_pressed(mouse, state);
+    return (mouse.prev_button_state & state) > 0 && (mouse.button_state & state) == 0;
 }
 
 internal bool32
