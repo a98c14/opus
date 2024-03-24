@@ -42,7 +42,7 @@ transform_quad_aligned(Vec2 position, Vec2 scale)
     Mat4 result    = mat4_identity();
     result.m[0][0] = scale.x;
     result.m[1][1] = scale.y;
-    result.m[2][2] = 0;
+    result.m[2][2] = 1;
     result.m[3][0] = position.x;
     result.m[3][1] = position.y;
     result.m[3][2] = 0;
