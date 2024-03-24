@@ -28,23 +28,29 @@ main(void)
     FontFaceIndex ibx_mono = font_load(string("ibx_mono"), string(ASSET_PATH "\\IBMPlexMono-Bold.ttf"), GlyphAtlasTypeFreeType);
     draw_activate_font(ibx_mono);
 
-    /** data: create power ups */
-    {
-    }
-
     EngineTime time = engine_time_new();
 
     const uint32 font_size = 24;
     InputMouse   mouse     = {0};
 
-    Trail* mouse_trail = trail_new();
+    Trail* mouse_trail = trail_new(persistent_arena);
 
     /* main loop */
     while (!glfwWindowShouldClose(window->glfw_window))
     {
         arena_reset(frame_arena);
-        if (input_key_pressed(window, GLFW_KEY_RIGHT_BRACKET))
+        if (input_key_pressed_raw(window, GLFW_KEY_RIGHT_BRACKET))
             break;
+        mouse = input_mouse_get(window, g_renderer->camera, mouse);
+        time  = engine_get_time(time);
+
+        trail_push_position(mouse_trail, mouse.world);
+        trail_update(mouse_trail, time.dt);
+        draw_scope(10, ViewTypeWorld, pass_default)
+        {
+            draw_rect(rect_at(vec2(-200, -200), vec2(100, 100), AlignmentBottom), ColorRed200);
+            trail_draw(mouse_trail);
+        }
 
         r_render(g_renderer, time.dt);
         window_update(window);

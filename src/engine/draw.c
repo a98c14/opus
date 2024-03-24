@@ -604,7 +604,11 @@ trail_new(Arena* arena)
     Trail*       result             = arena_push_struct_zero(arena, Trail);
     result->capacity                = max_trail_capacity;
     result->buffer                  = arena_push_array_zero(arena, TrailPoint, max_trail_capacity);
-    result->t_lifetime              = 1;
+    result->t_lifetime              = 0.4;
+    result->width_start             = 2;
+    result->width_end               = 2;
+    result->color_start             = ColorWhite;
+    result->color_end               = ColorWhite;
     return result;
 }
 
@@ -632,8 +636,6 @@ trail_push_empty(Trail* trail)
 internal void
 trail_update(Trail* trail, float32 dt)
 {
-    ArenaTemp temp = scratch_begin(0, 0);
-
     for (uint64 i = trail->start; i < trail->end; i++)
     {
         TrailPoint* tp = &trail->buffer[i % trail->capacity];
@@ -644,8 +646,6 @@ trail_update(Trail* trail, float32 dt)
             trail->start += i == trail->start;
         }
     }
-
-    scratch_end(temp);
 }
 
 internal void
@@ -654,7 +654,7 @@ trail_draw(Trail* trail)
     ArenaTemp     temp        = scratch_begin(0, 0);
     VertexBuffer* vertex_data = draw_util_generate_trail_vertices_fast(temp.arena, trail);
 
-    RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
+    RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
     R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
     batch_node->v.key               = key;
     batch_node->v.element_count     = vertex_data->count;
@@ -672,9 +672,7 @@ trail_draw(Trail* trail)
     Mat4 model                 = transform_quad(vec2(0, 0), vec2_one(), 0);
     batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
     memcpy(batch_node->v.model_buffer, &model, sizeof(Mat4) * 1);
-
     r_batch_commit(batch_node);
-
     scratch_end(temp);
 }
 
