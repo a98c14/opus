@@ -544,7 +544,7 @@ r_render(Renderer* renderer, float32 dt)
                     glUniformMatrix4fv(material->location_model, 1, GL_FALSE, batch.model_buffer[0].v);
                     glBindBuffer(GL_SHADER_STORAGE_BUFFER, renderer->trail_ssbo_id);
                     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, batch.uniform_data_size, batch.uniform_buffer);
-                    glDrawArrays(GL_TRIANGLE_STRIP, 0, batch.element_count);
+                    glDrawArrays(GL_TRIANGLES, 0, batch.element_count);
                 }
             }
 

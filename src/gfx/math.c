@@ -80,6 +80,7 @@ vertex_buffer_new(Arena* arena)
     result->v                         = arena_push_array_zero(arena, Vec2, initial_buffer_size);
     return result;
 }
+
 internal void
 vertex_buffer_push_strip(VertexBuffer* buffer, Vec2 p)
 {
