@@ -112,11 +112,11 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_MODEL, g_renderer->mvp_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    // TODO(selim): Should this be optional?
+    // TODO(selim): Should this be optional? Why are we not using vbo's?
     /* Create Trail SSBO */
     glGenBuffers(1, &g_renderer->trail_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, g_renderer->trail_ssbo_id);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Vec4) * GFX_TRAIL_MAX_VERTEX_CAPACITY, 0, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, mb(8), 0, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_TRAIL, g_renderer->trail_ssbo_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
@@ -310,7 +310,7 @@ texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channe
     // TODO: figure out if this is needed or not
     // glTexStorage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, texture->width, texture->height, layer_count);
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, texture->width, texture->height, layer_count, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    for (int i = 0; i < layer_count; i++)
+    for (uint32 i = 0; i < layer_count; i++)
     {
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, texture->width, texture->height, 1, GL_RGBA, GL_UNSIGNED_BYTE, data[i].value);
     }
@@ -539,14 +539,12 @@ r_render(Renderer* renderer, float32 dt)
                 }
                 else if (render_type == RenderTypeTrail)
                 {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                     glBindBuffer(GL_UNIFORM_BUFFER, material->uniform_buffer_id);
                     glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_UBO_CUSTOM, material->uniform_buffer_id, 0, material->uniform_data_size);
                     glUniformMatrix4fv(material->location_model, 1, GL_FALSE, batch.model_buffer[0].v);
                     glBindBuffer(GL_SHADER_STORAGE_BUFFER, renderer->trail_ssbo_id);
-                    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Vec4) * batch.element_count, batch.uniform_buffer);
-                    glDrawArrays(GL_TRIANGLE_STRIP, 0, batch.element_count);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, batch.uniform_data_size, batch.uniform_buffer);
+                    glDrawArrays(GL_TRIANGLES, 0, batch.element_count);
                 }
             }
 

@@ -84,7 +84,6 @@ typedef float     float32;
 typedef double    float64;
 typedef uintptr_t uptr;
 typedef size_t    usize;
-typedef int32_t bool;
 
 /* List Helpers */
 #define check_null(p) ((p) == 0)

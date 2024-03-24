@@ -8,7 +8,7 @@
 #include <string.h>
 #include <vadefs.h>
 
-#if DEBUG == 0
+#if BUILD_DEBUG == 0
 #define LOG_TO_FILE 1
 #else
 #define LOG_TO_FILE 0

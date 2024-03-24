@@ -16,7 +16,7 @@
 #define MATERIAL_DRAW_BUFFER_CAPACITY             (1024)
 #define MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY     (8192 * 2)
 
-#define GFX_TRAIL_MAX_VERTEX_CAPACITY (128 * 3)
+#define GFX_TRAIL_MAX_VERTEX_CAPACITY (256 * 3)
 
 // TEMP: testing global variable solution out. Potentially dangerous?
 global float32 _pixel_per_unit = 1;

@@ -567,6 +567,18 @@ rotate_vec2(Vec2 v, float angle)
     return mul_mat2_vec2(rotation, v);
 }
 
+internal Vec2
+rotate90_vec2(Vec2 v)
+{
+    return vec2(-v.y, v.x);
+}
+
+internal Vec2
+rotate90i_vec2(Vec2 v)
+{
+    return vec2(v.y, -v.x);
+}
+
 /* Matrix Operations */
 internal Mat2
 mat2_identity(void)
@@ -785,7 +797,9 @@ vec2_intersection_fast(Vec2 a, Vec2 heading_a, Vec2 b, Vec2 heading_b)
 {
     Vec2    d   = sub_vec2(b, a);
     float32 det = det_vec2(heading_b, heading_a);
-    float32 u   = (d.y * heading_b.x - d.x * heading_b.y) / det;
+    if (fabs(det) < EPSILON_FLOAT32)
+        return a;
+    float32 u = (d.y * heading_b.x - d.x * heading_b.y) / det;
     return add_vec2(a, mul_vec2_f32(heading_a, u));
 }
 

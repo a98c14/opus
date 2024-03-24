@@ -1,5 +1,58 @@
 #include "input.h"
-#include <base/math.h>
+
+internal void
+input_manager_init(Arena* arena, Window* window)
+{
+    g_input_manager         = arena_push_struct_zero(arena, InputManager);
+    g_input_manager->window = window;
+}
+
+internal void
+input_manager_register_action(String action_name, uint64 action_id, uint16 key)
+{
+    g_input_manager->key_count                 = max(g_input_manager->key_count, action_id + 1);
+    g_input_manager->key_states[action_id].key = key;
+    g_input_manager->key_names[action_id]      = action_name;
+}
+
+internal void
+input_manager_update(EngineTime time)
+{
+    /** TODO(selim): use polling instead of looping every available action every frame */
+    for (uint32 i = 0; i < g_input_manager->key_count; i++)
+    {
+        InputState* state = &g_input_manager->key_states[i];
+        if (state->key == 0)
+            continue;
+
+        InputKeyState new_state = input_key_pressed_raw(g_input_manager->window, state->key) ? InputKeyStatePressed : InputKeyStateReleased;
+        bool32        is_new    = (state->key_state & new_state) == 0;
+
+        state->key_state = new_state;
+        state->key_state = is_new ? (state->key_state | InputKeyStateNew) : (state->key_state & ~InputKeyStateNew);
+
+        if (new_state == InputKeyStatePressed && is_new)
+        {
+            state->t_press = time.current_frame_time;
+        }
+        else if (new_state == InputKeyStateReleased && is_new)
+        {
+            state->t_release = time.current_frame_time;
+        }
+    }
+}
+
+internal bool32
+input_key_pressed_raw(Window* window, uint16 key)
+{
+    return glfwGetKey(window->glfw_window, key) == GLFW_PRESS;
+}
+
+internal bool32
+input_action_pressed(uint64 action_id)
+{
+    return (g_input_manager->key_states[action_id].key_state & InputKeyStatePressedNew) == InputKeyStatePressedNew;
+}
 
 internal Vec2
 mouse_world_position(Vec2 raw_mouse_pos, Camera camera)
@@ -51,17 +104,11 @@ input_mouse_pressed(InputMouse mouse, MouseButtonState state)
 internal bool32
 input_mouse_released(InputMouse mouse, MouseButtonState state)
 {
-    return !input_mouse_pressed(mouse, state);
+    return (mouse.prev_button_state & state) > 0 && (mouse.button_state & state) == 0;
 }
 
 internal bool32
 input_mouse_held(InputMouse mouse, MouseButtonState state)
 {
     return (mouse.button_state & state) > 0;
-}
-
-internal bool32
-input_key_pressed(Window* window, uint16 key)
-{
-    return glfwGetKey(window->glfw_window, key) == GLFW_PRESS;
 }

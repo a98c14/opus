@@ -1,8 +1,8 @@
-## TODO
-- Add SDF fonts to font cache
-  - SDF fonts don't care about getting rasterized per pixel size so we can cache them using 0 size or something
-- Better texture glyph packing
-- Unicode rendering
+## Naming Conventions
+- `snake_case` for variables and functions
+- `PascalCase` for types (except for primitive types like uint64, float32 etc.)
+- All functions and types are prefixed with abbreviated name of their layer except for the base layer.
+- Global variables should generally used my the layer that defined it and not from outside. They are also prefixed with the same abbreviation.
 
 
 

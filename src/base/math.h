@@ -277,6 +277,8 @@ internal float32 dist_vec2(Vec2 a, Vec2 b);
 internal float32 angle_vec2(Vec2 v);
 internal float32 angle_between_vec2(Vec2 a, Vec2 b);
 internal Vec2    rotate_vec2(Vec2 v, float angle);
+internal Vec2    rotate90_vec2(Vec2 v);
+internal Vec2    rotate90i_vec2(Vec2 v);
 internal Vec2    heading_vec2(float32 angle);
 internal Vec2    heading_inverse_vec2(float32 angle);
 internal Vec2    direction_vec2(float32 angle, float32 scale);

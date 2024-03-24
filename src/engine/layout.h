@@ -1,5 +1,5 @@
 #pragma once
-
+// TODO(selim): move to base layer
 #include <base/defines.h>
 #include <base/math.h>
 
@@ -56,6 +56,15 @@ const Anchor ANCHOR_T_T   = {AlignmentTop, AlignmentTop};
 const Anchor ANCHOR_T_L   = {AlignmentTop, AlignmentLeft};
 const Anchor ANCHOR_T_B   = {AlignmentTop, AlignmentBottom};
 const Anchor ANCHOR_T_R   = {AlignmentTop, AlignmentRight};
+const Anchor ANCHOR_B_TL  = {AlignmentBottom, AlignmentTopLeft};
+const Anchor ANCHOR_B_TR  = {AlignmentBottom, AlignmentTopRight};
+const Anchor ANCHOR_B_BL  = {AlignmentBottom, AlignmentBottomLeft};
+const Anchor ANCHOR_B_BR  = {AlignmentBottom, AlignmentBottomRight};
+const Anchor ANCHOR_B_T   = {AlignmentBottom, AlignmentTop};
+const Anchor ANCHOR_B_L   = {AlignmentBottom, AlignmentLeft};
+const Anchor ANCHOR_B_B   = {AlignmentBottom, AlignmentBottom};
+const Anchor ANCHOR_B_R   = {AlignmentBottom, AlignmentRight};
+const Anchor ANCHOR_B_C   = {AlignmentBottom, AlignmentCenter};
 const Anchor ANCHOR_L_TL  = {AlignmentLeft, AlignmentTopLeft};
 const Anchor ANCHOR_L_TR  = {AlignmentLeft, AlignmentTopRight};
 const Anchor ANCHOR_L_BL  = {AlignmentLeft, AlignmentBottomLeft};
@@ -73,6 +82,14 @@ const Anchor ANCHOR_R_L   = {AlignmentRight, AlignmentLeft};
 const Anchor ANCHOR_R_B   = {AlignmentRight, AlignmentBottom};
 const Anchor ANCHOR_R_R   = {AlignmentRight, AlignmentRight};
 const Anchor ANCHOR_C_C   = {AlignmentCenter, AlignmentCenter};
+const Anchor ANCHOR_C_TL  = {AlignmentCenter, AlignmentTopLeft};
+const Anchor ANCHOR_C_TR  = {AlignmentCenter, AlignmentTopRight};
+const Anchor ANCHOR_C_BL  = {AlignmentCenter, AlignmentBottomLeft};
+const Anchor ANCHOR_C_BR  = {AlignmentCenter, AlignmentBottomRight};
+const Anchor ANCHOR_C_T   = {AlignmentCenter, AlignmentTop};
+const Anchor ANCHOR_C_L   = {AlignmentCenter, AlignmentLeft};
+const Anchor ANCHOR_C_B   = {AlignmentCenter, AlignmentBottom};
+const Anchor ANCHOR_C_R   = {AlignmentCenter, AlignmentRight};
 
 typedef enum
 {

@@ -28,6 +28,10 @@ main(void)
     FontFaceIndex ibx_mono = font_load(string("ibx_mono"), string(ASSET_PATH "\\IBMPlexMono-Bold.ttf"), GlyphAtlasTypeFreeType);
     draw_activate_font(ibx_mono);
 
+    /** data: create power ups */
+    {
+    }
+
     EngineTime time = engine_time_new();
 
     const uint32 font_size = 24;

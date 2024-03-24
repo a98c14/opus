@@ -218,9 +218,8 @@ draw_rect(Rect rect, Color color)
 internal Rect
 draw_rect_outline(Rect rect, Color color, float32 thickness)
 {
-    RenderKey key = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
-
-    Mat4 model = transform_quad_aligned(rect.center, rect.size);
+    RenderKey key   = render_key_new_default(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, TEXTURE_INDEX_NULL, g_renderer->quad, d_state->material_rounded_rect);
+    Mat4      model = transform_quad_aligned(rect.center, rect.size);
 
     ShaderDataRectRounded shader_data = {0};
     shader_data.color                 = d_color_none;
@@ -428,33 +427,6 @@ draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, 
     draw_sprite_colored(position, scale, rotation, sprite, flip, ColorInvisible, 1);
 }
 
-/** trail */
-internal void
-draw_trail(Vec2* points, uint32 point_count, Color color)
-{
-    RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
-    R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
-    batch_node->v.key               = key;
-    batch_node->v.element_count     = point_count;
-    batch_node->v.uniform_data_size = sizeof(Vec4) * point_count;
-
-    ArenaTemp temp = scratch_begin(0, 0);
-    Vec4*     t    = arena_push_array(temp.arena, Vec4, point_count);
-    for (uint32 i = 0; i < point_count; i++)
-    {
-        t[i] = vec4(points[i].x, points[i].y, 0, 1.0);
-    }
-    batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(Vec4) * point_count);
-    memcpy((uint8*)batch_node->v.uniform_buffer, t, batch_node->v.uniform_data_size);
-
-    Mat4 model                 = transform_quad(vec2(-100, 50), vec2_one(), 0);
-    batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
-    memcpy(batch_node->v.model_buffer, &model, sizeof(Mat4) * 1);
-
-    r_batch_commit(batch_node);
-    scratch_end(temp);
-}
-
 /** context push */
 internal void
 draw_activate_font(FontFaceIndex font_face)
@@ -623,4 +595,260 @@ qsort_compare_render_requests_descending(const void* p, const void* q)
     return (x < y)   ? 1
            : (x > y) ? -1
                      : 0;
+}
+
+internal Trail*
+trail_new(Arena* arena)
+{
+    const uint32 max_trail_capacity = 1024;
+    Trail*       result             = arena_push_struct_zero(arena, Trail);
+    result->capacity                = max_trail_capacity;
+    result->buffer                  = arena_push_array_zero(arena, TrailPoint, max_trail_capacity);
+    result->t_lifetime              = 1;
+    return result;
+}
+
+internal void
+trail_reset(Trail* trail)
+{
+    trail->start = trail->end;
+}
+
+internal void
+trail_push_position(Trail* trail, Vec2 position)
+{
+    trail->buffer[(trail->end) % trail->capacity].position    = position;
+    trail->buffer[(trail->end) % trail->capacity].t_remaining = trail->t_lifetime;
+    trail->end++;
+}
+
+internal void
+trail_push_empty(Trail* trail)
+{
+    trail->buffer[(trail->end) % trail->capacity].t_remaining = 0;
+    trail->end++;
+}
+
+internal void
+trail_update(Trail* trail, float32 dt)
+{
+    ArenaTemp temp = scratch_begin(0, 0);
+
+    for (uint64 i = trail->start; i < trail->end; i++)
+    {
+        TrailPoint* tp = &trail->buffer[i % trail->capacity];
+        tp->t_remaining -= dt;
+        if (tp->t_remaining <= 0)
+        {
+            tp->t_remaining = 0;
+            trail->start += i == trail->start;
+        }
+    }
+
+    scratch_end(temp);
+}
+
+internal void
+trail_draw(Trail* trail)
+{
+    ArenaTemp     temp        = scratch_begin(0, 0);
+    VertexBuffer* vertex_data = draw_util_generate_trail_vertices_fast(temp.arena, trail);
+
+    RenderKey    key                = render_key_new(d_state->ctx->view, d_state->ctx->sort_layer, d_state->ctx->pass, d_state->sprite_atlas->texture, g_renderer->geometry_empty, d_state->material_basic_trail, RenderTypeTrail);
+    R_BatchNode* batch_node         = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
+    batch_node->v.key               = key;
+    batch_node->v.element_count     = vertex_data->count;
+    batch_node->v.uniform_data_size = sizeof(TrailVertexData) * vertex_data->count;
+
+    TrailVertexData* vertices = arena_push_array(temp.arena, TrailVertexData, vertex_data->count);
+    for (uint32 i = 0; i < vertex_data->count; i++)
+    {
+        vertices[i].pos   = vec4(vertex_data->v[i].x, vertex_data->v[i].y, 0, 1);
+        vertices[i].color = color_v4(lerp_color(trail->color_end, trail->color_start, (float32)i / vertex_data->count));
+    }
+    batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(TrailVertexData) * vertex_data->count);
+    memcpy((uint8*)batch_node->v.uniform_buffer, vertices, batch_node->v.uniform_data_size);
+
+    Mat4 model                 = transform_quad(vec2(0, 0), vec2_one(), 0);
+    batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
+    memcpy(batch_node->v.model_buffer, &model, sizeof(Mat4) * 1);
+
+    r_batch_commit(batch_node);
+
+    scratch_end(temp);
+}
+
+internal void
+trail_set_color(Trail* trail, Color start, Color end)
+{
+    trail->color_start = start;
+    trail->color_end   = end;
+}
+
+internal void
+trail_set_width(Trail* trail, float32 start, float32 end)
+{
+    trail->width_start = start;
+    trail->width_end   = end;
+}
+
+// TODO(selim): Can we move this to vertex shader?
+internal VertexBuffer*
+draw_util_generate_trail_vertices_fast(Arena* arena, Trail* trail)
+{
+    VertexBuffer* result = vertex_buffer_new(arena);
+
+    if (trail->end - trail->start < 1)
+        return result;
+
+    for (uint32 i = trail->start; i < trail->end; i++)
+    {
+        TrailPoint* point      = &trail->buffer[i % trail->capacity];
+        TrailPoint* prev_point = &trail->buffer[(i - 1) % trail->capacity];
+        if (point->t_remaining <= 0 || prev_point->t_remaining <= 0)
+            continue;
+
+        float32 width       = lerp_f32(trail->width_end, trail->width_start, clamp(0, point->t_remaining / trail->t_lifetime, 1));
+        Vec2    end_heading = heading_to_vec2(prev_point->position, point->position);
+        Vec2    end_normal  = vec2(-end_heading.y, end_heading.x);
+
+        Vec2 p_right = move_vec2(point->position, end_normal, width);
+        Vec2 p_left  = move_vec2(point->position, end_normal, -width);
+
+        if (trail_is_segment_endpoint(trail, i - 1))
+        {
+            vertex_buffer_push(result, prev_point->position);
+            vertex_buffer_push(result, p_right);
+            vertex_buffer_push(result, p_left);
+        }
+        else if (trail_is_segment_endpoint(trail, i))
+        {
+            result->v[result->count++] = result->v[result->count - 2];
+            result->v[result->count++] = result->v[result->count - 2];
+            vertex_buffer_push(result, point->position);
+        }
+        else
+        {
+            vertex_buffer_push_strip(result, p_right);
+            vertex_buffer_push_strip(result, p_left);
+        }
+        // buffer->v[buffer->count++] = buffer->v[buffer->count - 2];
+        // buffer->v[buffer->count++] = buffer->v[buffer->count - 2];
+        // vertex_buffer_push_strip(result, move_vec2(point->position, end_normal, width));
+        // vertex_buffer_push_strip(result, move_vec2(point->position, end_normal, -width));
+    }
+    return result;
+}
+
+internal VertexBuffer*
+draw_util_generate_trail_vertices_slow(Arena* arena, Vec2* points, uint32 point_count, uint32 start_index, float32 trail_width)
+{
+    VertexBuffer* result = vertex_buffer_new(arena);
+    if (point_count < 2)
+        return result;
+
+    Vec2 start   = points[(start_index) % point_count];
+    Vec2 next    = points[(start_index + 1) % point_count];
+    Vec2 heading = heading_to_vec2(start, next);
+    Vec2 normal  = vec2(-heading.y, heading.x);
+
+    vertex_buffer_push_strip(result, move_vec2(start, normal, trail_width));
+    vertex_buffer_push_strip(result, move_vec2(start, normal, -trail_width));
+    for (uint32 i = 1; i < point_count; i++)
+    {
+        int32 index = (start_index + i);
+
+        Vec2 prev        = points[(index - 1) % point_count];
+        Vec2 end         = points[(index) % point_count];
+        Vec2 end_heading = heading_to_vec2(prev, end);
+        Vec2 end_normal  = vec2(-end_heading.y, end_heading.x);
+        vertex_buffer_push_strip(result, move_vec2(end, end_normal, trail_width));
+        vertex_buffer_push_strip(result, move_vec2(end, end_normal, -trail_width));
+    }
+
+    // for (uint32 i = 0; i < point_count; i++)
+    // {
+    //     draw_circle_filled(points[i], 4, ColorWhite);
+    // }
+
+    // for (uint32 i = 2; i < point_count; i++)
+    // {
+    //     float32 width = trail_width;
+    //     int32   index = i + start_index;
+
+    //     Vec2 start  = points[(index - 2) % point_count];
+    //     Vec2 middle = points[(index - 1) % point_count];
+    //     Vec2 next   = points[(index) % point_count];
+
+    //     Vec2 heading      = heading_to_vec2(start, middle);
+    //     Vec2 heading_next = heading_to_vec2(next, middle);
+    //     if (lensqr_vec2(heading) <= 0 || lensqr_vec2(heading_next) <= 0)
+    //         continue;
+
+    //     Vec2 normal_end = vec2(-heading_next.y, heading_next.x);
+
+    //     Vec2 right     = result->v[result->count - 2];
+    //     Vec2 left      = result->v[result->count - 1];
+    //     Vec2 end_right = add_vec2(next, mul_vec2_f32(normal_end, width));
+    //     Vec2 end_left  = add_vec2(next, mul_vec2_f32(normal_end, -width));
+
+    //     const float32 joint_break_threshold = 0;
+    //     float32       dot                   = dot_vec2(heading, heading_next);
+
+    //     Rect info_rect = rect_at(add_vec2(middle, vec2(0, 10)), vec2(80, 40), AlignmentBottom);
+    //     draw_text(string_pushf(d_state->frame_arena, "%.2f", dot), rect_cut_top(&info_rect, 10), ANCHOR_C_C, 7, ColorWhite);
+    //     if (dot > joint_break_threshold)
+    //     {
+    //         Vec2 normal_start        = vec2(-heading.y, heading.x);
+    //         result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_start, width));
+    //         result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_start, -width));
+    //         result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_end, -width));
+    //         result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_end, width));
+    //         // result.v[result.count++] = add_vec2(middle, mul_vec2_f32(normal_start, -width));
+    //         // result.v[result.count++] = end_left;
+    //         // result.v[result.count++] = end_right;
+    //     }
+    //     else
+    //     {
+    //         draw_heading(right, heading, ColorYellow600, 2);
+    //         draw_heading(left, heading, ColorYellow600, 2);
+    //         draw_heading(end_right, heading_next, ColorGreen400, 2);
+    //         draw_heading(end_left, heading_next, ColorGreen400, 2);
+    //         Vec2 intersection_right  = vec2_intersection_fast(right, heading, end_left, heading_next);
+    //         Vec2 intersection_left   = vec2_intersection_fast(left, heading, end_right, heading_next);
+    //         result.v[result.count++] = intersection_right;
+    //         result.v[result.count++] = intersection_left;
+    //     }
+    // }
+
+    // Vec2 right       = result.v[result.count - 2];
+    // Vec2 left        = result.v[result.count - 1];
+
+    // Vec2 prev        = points[((int32)start_index - 2) % point_count];
+    // Vec2 end_heading = heading_to_vec2(end, prev);
+    // Vec2 end_normal  = vec2(-end_heading.y, end_heading.x);
+    // Vec2 end_right   = add_vec2(end, mul_vec2_f32(end_normal, trail_width));
+    // Vec2 end_left    = add_vec2(end, mul_vec2_f32(end_normal, -trail_width));
+
+    // result.v[result.count++] = end_left;
+    // result.v[result.count++] = end_left;
+    // result.v[result.count++] = left;
+    // result.v[result.count++] = end_right;
+
+    // for (uint32 i = 0; i < result.count; i++)
+    // {
+    //     Color c = i % 2 == 0 ? ColorWhite : ColorRed600;
+    //     draw_circle_filled(result.v[i], 4, c);
+    // }
+
+    return result;
+}
+
+internal bool32
+trail_is_segment_endpoint(Trail* trail, uint32 index)
+{
+    return index == trail->start ||
+           index == trail->end - 1 ||
+           trail->buffer[(index - 1) % trail->capacity].t_remaining <= 0 ||
+           trail->buffer[(index + 1) % trail->capacity].t_remaining <= 0;
 }

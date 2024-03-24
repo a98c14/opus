@@ -3,6 +3,7 @@
 #include <base.h>
 #include <engine/color.h>
 #include <gfx.h>
+#include <physics/intersection.h>
 
 #include "color.h"
 #include "layout.h"
@@ -204,9 +205,6 @@ internal void draw_sprite_colored(Vec2 position, float32 scale, float32 rotation
 internal void draw_sprite_colored_ignore_pivot(Vec2 position, float32 scale, SpriteIndex sprite, Vec2 flip, Color color, float32 alpha);
 internal void draw_sprite(Vec2 position, float32 scale, float32 rotation, SpriteIndex sprite, Vec2 flip);
 
-/** trail */
-internal void draw_trail(Vec2* points, uint32 point_count, Color color);
-
 /** extra draw functions */
 internal Rect draw_debug_rect(Rect rect);
 internal Rect draw_debug_rect_b(Rect rect);
@@ -237,3 +235,43 @@ typedef struct
 } SpriteRenderRequestBuffer;
 internal void render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRenderRequest* requests, uint64 count, int32* layer_entity_counts);
 internal int  qsort_compare_render_requests_descending(const void* p, const void* q);
+
+/** trail */
+typedef struct
+{
+    Vec2    position;
+    float32 t_remaining;
+} TrailPoint;
+/** TODO(selim): Move to a separate file called trail/line renderer */
+typedef struct
+{
+    /** trail data */
+    TrailPoint* buffer;
+    uint64      start;
+    uint64      end;
+    uint32      capacity;
+
+    /** styling */
+    float32 t_lifetime;
+    float32 width_start;
+    float32 width_end;
+    Color   color_start;
+    Color   color_end;
+} Trail;
+
+typedef struct
+{
+    Vec4 pos;
+    Vec4 color;
+} TrailVertexData;
+
+internal Trail*        trail_new(Arena* arena);
+internal void          trail_reset(Trail* trail);
+internal void          trail_push_position(Trail* trail, Vec2 position);
+internal void          trail_push_empty(Trail* trail);
+internal void          trail_update(Trail* trail, float32 dt);
+internal void          trail_draw(Trail* trail);
+internal void          trail_set_color(Trail* trail, Color start, Color end);
+internal void          trail_set_width(Trail* trail, float32 start, float32 end);
+internal VertexBuffer* draw_util_generate_trail_vertices_fast(Arena* arena, Trail* trail);
+internal bool32        trail_is_segment_endpoint(Trail* trail, uint32 index);
