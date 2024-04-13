@@ -1,5 +1,8 @@
 #version 430 core
 
+layout(location = 0) in vec2 a_pos;
+layout(location = 1) in vec2 a_tex_coord;
+
 layout (std140, binding = 0) uniform Global
 {
     vec4 g_time;
@@ -22,16 +25,15 @@ layout (std140, binding = 4) uniform Custom
     vec4 u_color;
 };
 
-layout (std430, binding = 6) buffer Trail
-{
-    vec2 vertices[];
-};
-
 uniform mat4 u_model;
 uniform sampler2D u_main_texture;
+
+/* Vertex Data */
+out vec2 v_tex_coord;
 
 void main() 
 {
     mat4 model = projection * view * u_model;
-    gl_Position = model * vec4(vertices[gl_VertexID], 0, 1);
+    v_tex_coord = a_tex_coord;
+    gl_Position = model * vec4(a_pos, 0, 1);
 }

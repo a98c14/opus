@@ -803,6 +803,12 @@ vec2_intersection_fast(Vec2 a, Vec2 heading_a, Vec2 b, Vec2 heading_b)
     return add_vec2(a, mul_vec2_f32(heading_a, u));
 }
 
+internal Vec2
+vec2_scale(Vec2 a, float32 s)
+{
+    return mul_vec2_f32(a, s);
+}
+
 internal float32
 rect_left(Rect rect)
 {
@@ -881,6 +887,54 @@ internal Vec2
 rect_ct(Rect rect)
 {
     return vec2(rect.x, rect.y + rect.h / 2.0f);
+}
+
+internal Vec2
+bounds_bl(Bounds bounds)
+{
+    return vec2(bounds.left, bounds.bottom);
+}
+
+internal Vec2
+bounds_br(Bounds bounds)
+{
+    return vec2(bounds.right, bounds.bottom);
+}
+
+internal Vec2
+bounds_tr(Bounds bounds)
+{
+    return vec2(bounds.right, bounds.top);
+}
+
+internal Vec2
+bounds_tl(Bounds bounds)
+{
+    return vec2(bounds.left, bounds.top);
+}
+
+internal Vec2
+bounds_cl(Bounds bounds)
+{
+    return vec2(bounds.left, (bounds.bottom + bounds.top) / 2.0);
+}
+
+internal Vec2
+bounds_cr(Bounds bounds)
+{
+    return vec2(bounds.right, (bounds.bottom + bounds.top) / 2.0);
+}
+
+internal Vec2
+bounds_cb(Bounds bounds)
+{
+    return vec2((bounds.left + bounds.right) / 2.0, bounds.bottom);
+}
+
+internal Vec2
+bounds_ct(Bounds bounds)
+{
+    return vec2((bounds.left + bounds.right) / 2.0, bounds.bottom);
 }
 
 internal void

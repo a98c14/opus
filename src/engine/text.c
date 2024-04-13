@@ -228,7 +228,7 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
 {
     FontFace* font_face = &g_font_cache->font_faces[font_face_index];
     xassert(font_face, "Could not find given font face");
-    // TODO(selim): I didn't understand why I need to divide this 100%
+    // TODO(selim): I don't understand why I need to divide this
     pixel_size /= g_renderer->ppu;
     uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? pixel_size : 32;
     uint64         params[]    = {font_face_index, size};
@@ -257,6 +257,7 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
     }
 
     FT_Int32 calc_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_DEFAULT : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
+
     // TODO(selim): Load non-ASCII characters as well
     for (int i = 32; i < 128; ++i)
     {

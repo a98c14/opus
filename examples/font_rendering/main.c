@@ -36,7 +36,7 @@ main(void)
     while (!glfwWindowShouldClose(window->glfw_window))
     {
         arena_reset(frame_arena);
-        if (input_key_pressed(window, GLFW_KEY_RIGHT_BRACKET))
+        if (input_key_pressed_raw(window, GLFW_KEY_RIGHT_BRACKET))
             break;
 
         ShaderDataText shader_data    = {0};

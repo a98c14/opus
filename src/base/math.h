@@ -311,20 +311,32 @@ internal Mat4 mat4_ortho(float32 width, float32 height, float32 near_plane, floa
 internal Vec4 linear_combine_v4_m4(Vec4 v, Mat4 m);
 
 /* Utils */
-internal Vec2    closest_point_on_line(Vec2 start, Vec2 end, Vec2 point);
-internal Vec2    vec2_intersection_fast(Vec2 a, Vec2 heading_a, Vec2 b, Vec2 heading_b);
+internal Vec2 closest_point_on_line(Vec2 start, Vec2 end, Vec2 point);
+internal Vec2 vec2_intersection_fast(Vec2 a, Vec2 heading_a, Vec2 b, Vec2 heading_b);
+internal Vec2 vec2_scale(Vec2 a, float32 s);
+
 internal float32 rect_left(Rect rect);
 internal float32 rect_right(Rect rect);
 internal float32 rect_bottom(Rect rect);
 internal float32 rect_top(Rect rect);
-internal Vec2    rect_bl(Rect rect);
-internal Vec2    rect_br(Rect rect);
-internal Vec2    rect_tr(Rect rect);
-internal Vec2    rect_tl(Rect rect);
-internal Vec2    rect_cl(Rect rect);
-internal Vec2    rect_cr(Rect rect);
-internal Vec2    rect_cb(Rect rect);
-internal Vec2    rect_ct(Rect rect);
+
+internal Vec2 rect_bl(Rect rect);
+internal Vec2 rect_br(Rect rect);
+internal Vec2 rect_tr(Rect rect);
+internal Vec2 rect_tl(Rect rect);
+internal Vec2 rect_cl(Rect rect);
+internal Vec2 rect_cr(Rect rect);
+internal Vec2 rect_cb(Rect rect);
+internal Vec2 rect_ct(Rect rect);
+
+internal Vec2 bounds_bl(Bounds rect);
+internal Vec2 bounds_br(Bounds rect);
+internal Vec2 bounds_tr(Bounds rect);
+internal Vec2 bounds_tl(Bounds rect);
+internal Vec2 bounds_cl(Bounds rect);
+internal Vec2 bounds_cr(Bounds rect);
+internal Vec2 bounds_cb(Bounds rect);
+internal Vec2 bounds_ct(Bounds rect);
 
 internal Vec2   bounds_center(Bounds bounds);
 internal Bounds bounds_shrink(Bounds bounds, Vec2 amount);

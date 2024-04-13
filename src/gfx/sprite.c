@@ -1,6 +1,4 @@
 #include "sprite.h"
-#include <base/memory.h>
-#include <gfx/base.h>
 
 internal SpriteAtlas*
 sprite_atlas_new(Arena* arena, TextureIndex texture_index, const Animation* animations, const Sprite* sprites, const TextureIndex* texture_indices, uint32 animation_count, uint32 sprite_count)
@@ -12,6 +10,9 @@ sprite_atlas_new(Arena* arena, TextureIndex texture_index, const Animation* anim
     atlas->sprite_count           = sprite_count;
     atlas->animation_count        = animation_count;
     atlas->sprite_texture_indices = texture_indices;
+
+    atlas->width  = g_renderer->textures[texture_index].width;
+    atlas->height = g_renderer->textures[texture_index].height;
     return atlas;
 }
 
@@ -37,8 +38,38 @@ renderer_load_sprite_atlas(Renderer* renderer, SpriteAtlas* atlas)
     arena_end_temp(temp);
 }
 
+internal Bounds
+r_sprite_tex_coords(SpriteAtlas* atlas, SpriteIndex sprite_index)
+{
+    Sprite sprite = atlas->sprites[sprite_index];
+    Bounds bounds;
+    bounds.left   = sprite.rect.x / atlas->width;
+    bounds.right  = (sprite.rect.x + sprite.rect.w) / atlas->width;
+    bounds.top    = sprite.rect.y / atlas->height;
+    bounds.bottom = (sprite.rect.y + sprite.rect.h) / atlas->height;
+
+    // float x     = ((a_tex_coord.x * v_bounds.z) + v_bounds.x) / texture_size.x;
+    // float y     = 1 - (((1 - a_tex_coord.y) * v_bounds.w) + v_bounds.y) / texture_size.y;
+    // v_tex_coord = vec2(x, y);
+    return bounds;
+}
+
+internal Rect
+r_sprite_rect_scaled(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, float32 scale)
+{
+    Sprite sprite = atlas->sprites[sprite_index];
+    Rect   rect   = rect_at(pos, vec2_scale(sprite.size.size, scale), AlignmentCenter);
+    return rect;
+}
+
+internal Rect
+r_sprite_rect(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos)
+{
+    return r_sprite_rect_scaled(atlas, sprite_index, pos, 1);
+}
+
 internal inline Vec2
-sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip)
+r_sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip)
 {
     Vec2 result;
     result.x = (sprite.size.w / 2.0 + sprite.size.x - sprite.pivot.x) * flip.x * scale.x;

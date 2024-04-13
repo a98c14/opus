@@ -161,6 +161,37 @@ r_pipeline_init(R_PipelineConfiguration* configuration)
     g_renderer->active_render_key = render_key_new_default(0, 0, 0, TEXTURE_INDEX_NULL, GEOMETRY_CAPACITY - 1, MATERIAL_CAPACITY - 1); // TODO(selim): find a way to show invalid values properly;
 }
 
+internal VertexAttributeInfo*
+r_attribute_info_new(Arena* arena)
+{
+    VertexAttributeInfo* result = arena_push_struct_zero(arena, VertexAttributeInfo);
+    result->arena               = arena;
+    return result;
+}
+
+internal void
+r_attribute_info_add(VertexAttributeInfo* info, usize component_size, uint32 component_count)
+{
+    VertexAttributeElementNode* n = arena_push_struct_zero(info->arena, VertexAttributeElementNode);
+    n->v.component_count          = component_count;
+    n->v.size                     = component_count * component_size;
+    n->v.index                    = info->attribute_count;
+    dll_push_back(info->first, info->last, n);
+    info->attribute_count++;
+}
+
+internal void
+r_attribute_info_add_vec2(VertexAttributeInfo* info)
+{
+    r_attribute_info_add(info, sizeof(float32), 2);
+}
+
+internal void
+r_attribute_info_add_int(VertexAttributeInfo* info)
+{
+    r_attribute_info_add(info, sizeof(int32), 1);
+}
+
 internal Camera
 camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height)
 {
@@ -209,7 +240,7 @@ geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object)
 }
 
 internal MaterialIndex
-material_new(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced)
+material_new_deprecated(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced)
 {
     MaterialIndex material_index = renderer->material_count;
     renderer->material_count++;
@@ -243,6 +274,65 @@ material_new(Renderer* renderer, String vertex_shader_text, String fragment_shad
 
     unsigned int texture_ubo_index = glGetUniformBlockIndex(result->gl_program_id, "Texture");
     glUniformBlockBinding(result->gl_program_id, texture_ubo_index, BINDING_SLOT_TEXTURE);
+
+    return material_index;
+}
+
+internal MaterialIndex
+r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced, VertexAttributeInfo* attribute_info)
+{
+    MaterialIndex material_index = renderer->material_count;
+    renderer->material_count++;
+
+    Material* result          = &renderer->materials[material_index];
+    result->gl_program_id     = shader_load(vertex_shader_text, fragment_shader_text);
+    result->location_texture  = glGetUniformLocation(result->gl_program_id, "u_main_texture");
+    result->uniform_data_size = uniform_data_size;
+    result->is_initialized    = 1;
+    result->is_instanced      = is_instanced;
+
+    // generate custom shader data UBO
+    if (is_instanced)
+    {
+        result->location_model = -1;
+        glGenBuffers(1, &result->uniform_buffer_id);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, result->uniform_buffer_id);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, uniform_data_size * MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY, 0, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+    else
+    {
+        glGenBuffers(1, &result->uniform_buffer_id);
+        glBindBuffer(GL_UNIFORM_BUFFER, result->uniform_buffer_id);
+        glBufferData(GL_UNIFORM_BUFFER, uniform_data_size, NULL, GL_STREAM_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        result->location_model = glGetUniformLocation(result->gl_program_id, "u_model");
+    }
+
+    unsigned int global_ubo_index = glGetUniformBlockIndex(result->gl_program_id, "Global");
+    glUniformBlockBinding(result->gl_program_id, global_ubo_index, BINDING_SLOT_GLOBAL);
+
+    unsigned int texture_ubo_index = glGetUniformBlockIndex(result->gl_program_id, "Texture");
+    glUniformBlockBinding(result->gl_program_id, texture_ubo_index, BINDING_SLOT_TEXTURE);
+
+    // set up vertex array attributes
+    glGenVertexArrays(1, &result->vertex_array_object);
+    glBindVertexArray(result->vertex_array_object);
+    uint64                      size_per_vertex = 0;
+    VertexAttributeElementNode* n;
+    for_each(n, attribute_info->first)
+    {
+        size_per_vertex += n->v.size;
+    }
+
+    uint64 offset = 0;
+    for_each(n, attribute_info->first)
+    {
+        glVertexAttribPointer(n->v.index, n->v.component_count, GL_FLOAT, GL_FALSE, size_per_vertex, (void*)offset);
+        glEnableVertexAttribArray(n->v.index);
+        offset += n->v.size;
+    }
+    result->vertex_size = size_per_vertex;
 
     return material_index;
 }
@@ -358,7 +448,7 @@ render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count)
 }
 
 internal void
-frame_buffer_begin(FrameBuffer* frame_buffer)
+r_frame_buffer_begin(FrameBuffer* frame_buffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer->buffer_id);
     glViewport(0, 0, frame_buffer->width, frame_buffer->height);
@@ -471,6 +561,9 @@ r_render(Renderer* renderer, float32 dt)
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_CAMERA, renderer->camera_uniform_buffer_id);
 
+    // TODO(selim): do we have to loop through these or can we just sort the batches and apply keys
+    // Thats is basically what we are doing at the inner loop anyways
+
     for (uint32 i = 0; i < renderer->pass_count; i++)
     {
         R_Pass* pass = &renderer->passes[i];
@@ -478,7 +571,7 @@ r_render(Renderer* renderer, float32 dt)
             continue;
 
         FrameBuffer* frame_buffer = &renderer->frame_buffers[pass->frame_buffer];
-        frame_buffer_begin(frame_buffer);
+        r_frame_buffer_begin(frame_buffer);
 
         for (uint32 j = 0; j < SORTING_LAYER_CAPACITY; j++)
         {
@@ -555,6 +648,61 @@ r_render(Renderer* renderer, float32 dt)
 
     arena_reset(renderer->frame_arena);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+internal void
+r_set_render_state(Renderer* renderer, RenderKey key)
+{
+    uint64 diff                 = renderer->active_render_key ^ key;
+    renderer->active_render_key = key;
+
+    uint32 pass_index = render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
+    if (render_key_mask(diff, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount) > 0 && pass_index > 0)
+    {
+        R_Pass*      pass         = &renderer->passes[pass_index];
+        FrameBuffer* frame_buffer = &renderer->frame_buffers[pass->frame_buffer];
+        r_frame_buffer_begin(frame_buffer);
+    }
+
+    /** set texture */
+    TextureIndex texture_index = render_key_mask(key, RenderKeyTextureIndexBitStart, RenderKeyTextureIndexBitCount);
+    if (render_key_mask(diff, RenderKeyTextureIndexBitStart, RenderKeyTextureIndexBitCount) > 0 && texture_index > 0)
+    {
+        Texture* texture = &renderer->textures[texture_index];
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(texture->gl_texture_type, texture->gl_texture_id);
+        texture_shader_data_set(renderer, texture);
+    }
+
+    /** set view matrix */
+    ViewType view_type = render_key_mask(key, RenderKeyViewTypeBitStart, RenderKeyViewTypeBitCount);
+    if (render_key_mask(diff, RenderKeyViewTypeBitStart, RenderKeyViewTypeBitCount) > 0)
+    {
+        CameraUniformData camera_data;
+        camera_data.view       = view_type == ViewTypeWorld ? renderer->camera.view : mat4_identity();
+        camera_data.projection = renderer->camera.projection;
+
+        glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_uniform_buffer_id);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_CAMERA, renderer->camera_uniform_buffer_id);
+    }
+
+    /** set material */
+    MaterialIndex material_index = render_key_mask(key, RenderKeyMaterialIndexBitStart, RenderKeyMaterialIndexBitCount);
+    Material*     material       = &renderer->materials[material_index];
+    if (render_key_mask(diff, RenderKeyMaterialIndexBitStart, RenderKeyMaterialIndexBitCount) > 0)
+    {
+        glUseProgram(material->gl_program_id);
+        glUniform1i(material->location_texture, 0);
+    }
+
+    /** set geometry */
+    GeometryIndex geometry_index = render_key_mask(key, RenderKeyGeometryIndexBitStart, RenderKeyGeometryIndexBitCount);
+    Geometry*     geometry       = &renderer->geometries[geometry_index];
+    if (render_key_mask(diff, RenderKeyGeometryIndexBitStart, RenderKeyGeometryIndexBitCount) > 0)
+    {
+        glBindVertexArray(geometry->vertex_array_object);
+    }
 }
 
 internal void

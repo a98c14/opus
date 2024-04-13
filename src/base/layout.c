@@ -1,8 +1,6 @@
 #pragma once
 
 #include "layout.h"
-#include <base/asserts.h>
-#include <engine/layout.h>
 
 internal Cut
 cut(Rect* rect, CutSide side)

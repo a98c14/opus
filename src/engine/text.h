@@ -10,8 +10,6 @@
 #include <gfx.h>
 #include <string.h>
 
-#include "layout.h"
-
 #define DEBUG_TEXT 0
 
 // Center,  Bottom,   Top,  Right,  Left,  BottomLeft,  BottomRight,  TopLeft,  TopRight

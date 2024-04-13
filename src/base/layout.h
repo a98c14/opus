@@ -1,5 +1,5 @@
 #pragma once
-// TODO(selim): move to base layer
+#include <base/asserts.h>
 #include <base/defines.h>
 #include <base/math.h>
 

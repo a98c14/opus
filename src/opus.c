@@ -12,8 +12,10 @@
 #include <base/sort.c>
 #include <base/strings.c>
 #include <base/thread_context.c>
+#include <base/layout.c>
 
 #include <gfx/base.c>
+#include <gfx/batch.c>
 #include <gfx/debug.c>
 #include <gfx/math.c>
 #include <gfx/primitives.c>
@@ -25,7 +27,6 @@
 #include <engine/color.c>
 #include <engine/draw.c>
 #include <engine/input.c>
-#include <engine/layout.c>
 #include <engine/perf_timer.c>
 #include <engine/profiler.c>
 #include <engine/text.c>

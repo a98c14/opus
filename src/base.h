@@ -5,6 +5,7 @@
 #include "base/easing.h"
 #include "base/file.h"
 #include "base/hash.h"
+#include "base/layout.h"
 #include "base/log.h"
 #include "base/math.h"
 #include "base/memory.h"

@@ -6,7 +6,6 @@
 #include <physics/intersection.h>
 
 #include "color.h"
-#include "layout.h"
 #include "text.h"
 
 typedef struct
@@ -242,6 +241,7 @@ typedef struct
     Vec2    position;
     float32 t_remaining;
 } TrailPoint;
+
 /** TODO(selim): Move to a separate file called trail/line renderer */
 typedef struct
 {
@@ -265,13 +265,13 @@ typedef struct
     Vec4 color;
 } TrailVertexData;
 
-internal Trail*        trail_new(Arena* arena);
-internal void          trail_reset(Trail* trail);
-internal void          trail_push_position(Trail* trail, Vec2 position);
-internal void          trail_push_empty(Trail* trail);
-internal void          trail_update(Trail* trail, float32 dt);
-internal void          trail_draw(Trail* trail);
-internal void          trail_set_color(Trail* trail, Color start, Color end);
-internal void          trail_set_width(Trail* trail, float32 start, float32 end);
-internal VertexBuffer* draw_util_generate_trail_vertices_fast(Arena* arena, Trail* trail);
-internal bool32        trail_is_segment_endpoint(Trail* trail, uint32 index);
+internal Trail*           trail_new(Arena* arena);
+internal void             trail_reset(Trail* trail);
+internal void             trail_push_position(Trail* trail, Vec2 position);
+internal void             trail_push_empty(Trail* trail);
+internal void             trail_update(Trail* trail, float32 dt);
+internal void             trail_draw(Trail* trail);
+internal void             trail_set_color(Trail* trail, Color start, Color end);
+internal void             trail_set_width(Trail* trail, float32 start, float32 end);
+internal bool32           trail_is_segment_endpoint(Trail* trail, uint32 index);
+internal R_BatchTriangle* draw_util_generate_trail_vertices_fast(Arena* arena, Trail* trail, RenderKey key);
