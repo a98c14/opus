@@ -186,9 +186,9 @@ typedef struct
 
 typedef struct
 {
-    Vec2   pos;
-    Vec2   tex_coord;
-    uint32 instance_id;
+    Vec2 pos;
+    Vec2 tex_coord;
+    // uint32 instance_id;
 } VertexAtrribute_TexturedI;
 
 typedef struct

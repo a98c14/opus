@@ -8,10 +8,8 @@ r_batch_textured_quad_begin(RenderKey key, uint64 element_count)
     MaterialIndex material_index = render_key_mask(key, RenderKeyMaterialIndexBitStart, RenderKeyMaterialIndexBitCount);
 
     R_BatchTexturedQuad* batch = arena_push_struct_zero(arena, R_BatchTexturedQuad);
-    batch->element_count       = element_count;
-    batch->vertex_count        = 6 * element_count; // 6 vertices per quad
-    batch->vertex_data         = arena_push_array(arena, VertexAtrribute_TexturedI, batch->vertex_count);
-    batch->uniform_buffer      = arena_push(arena, g_renderer->materials[material_index].uniform_data_size * batch->element_count);
+    batch->vertex_data         = arena_push_array(arena, VertexAtrribute_TexturedI, R_DEFAULT_BATCH_VERTEX_CAPACITY);
+    batch->uniform_buffer      = arena_push(arena, g_renderer->materials[material_index].uniform_data_size * element_count);
 
     return batch;
 }
@@ -19,9 +17,9 @@ r_batch_textured_quad_begin(RenderKey key, uint64 element_count)
 internal void
 r_batch_textured_quad_push_vertex(R_BatchTexturedQuad* batch, Vec2 pos, Vec2 tex_coord, uint64 instance_id)
 {
-    batch->vertex_data[batch->vertex_count].pos         = pos;
-    batch->vertex_data[batch->vertex_count].tex_coord   = tex_coord;
-    batch->vertex_data[batch->vertex_count].instance_id = instance_id;
+    batch->vertex_data[batch->vertex_count].pos       = pos;
+    batch->vertex_data[batch->vertex_count].tex_coord = tex_coord;
+    // batch->vertex_data[batch->vertex_count].instance_id = instance_id;
     batch->vertex_count++;
 }
 

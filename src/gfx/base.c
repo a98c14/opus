@@ -318,12 +318,14 @@ r_material_create(Renderer* renderer, String vertex_shader_text, String fragment
     // set up vertex array attributes
     glGenVertexArrays(1, &result->vertex_array_object);
     glBindVertexArray(result->vertex_array_object);
+
     uint64                      size_per_vertex = 0;
     VertexAttributeElementNode* n;
     for_each(n, attribute_info->first)
     {
         size_per_vertex += n->v.size;
     }
+    result->vertex_size = size_per_vertex;
 
     uint64 offset = 0;
     for_each(n, attribute_info->first)
@@ -332,7 +334,6 @@ r_material_create(Renderer* renderer, String vertex_shader_text, String fragment
         glEnableVertexAttribArray(n->v.index);
         offset += n->v.size;
     }
-    result->vertex_size = size_per_vertex;
 
     return material_index;
 }
