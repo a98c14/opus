@@ -109,74 +109,78 @@ text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, Str
 }
 
 internal Rect
-text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, Mat4* dst_matrices, uint32 dst_index)
+text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, R_Batch* batch)
 {
-    Rect string_bounds = text_calculate_bounds(atlas, position, alignment, str, size_in_pixels);
-    Vec2 base_offset   = {
-          .x = string_bounds.w * FontAlignmentMultiplierX[alignment],
-          .y = string_bounds.h * FontAlignmentMultiplierY[alignment]};
-#if DEBUG_TEXT
-    draw_debug_rect(string_bounds);
-#endif
-    uint32 index = dst_index;
-    for (uint32 i = 0; i < str.length; i++)
-    {
-        Glyph   glyph        = glyph_get(atlas, str.value[i]);
-        float32 w            = glyph_width(glyph, size_in_pixels);
-        float32 h            = glyph_height(glyph, size_in_pixels);
-        Vec2    plane_offset = {.x = size_in_pixels * glyph.plane_bounds.left, .y = size_in_pixels * glyph.plane_bounds.bottom};
-        float32 x            = position.x + base_offset.x + plane_offset.x + w / 2.0f;
-        float32 y            = position.y + base_offset.y + plane_offset.y + h / 2.0f;
+    // TODO(selim): !!!!!!!!!!!!!!!!!!!!!!
+    //     Rect string_bounds = text_calculate_bounds(atlas, position, alignment, str, size_in_pixels);
+    //     Vec2 base_offset   = {
+    //           .x = string_bounds.w * FontAlignmentMultiplierX[alignment],
+    //           .y = string_bounds.h * FontAlignmentMultiplierY[alignment]};
+    // #if DEBUG_TEXT
+    //     draw_debug_rect(string_bounds);
+    // #endif
+    //     uint32 index = dst_index;
+    //     for (uint32 i = 0; i < str.length; i++)
+    //     {
+    //         Glyph   glyph        = glyph_get(atlas, str.value[i]);
+    //         float32 w            = glyph_width(glyph, size_in_pixels);
+    //         float32 h            = glyph_height(glyph, size_in_pixels);
+    //         Vec2    plane_offset = {.x = size_in_pixels * glyph.plane_bounds.left, .y = size_in_pixels * glyph.plane_bounds.bottom};
+    //         float32 x            = position.x + base_offset.x + plane_offset.x + w / 2.0f;
+    //         float32 y            = position.y + base_offset.y + plane_offset.y + h / 2.0f;
 
-        Mat4 transform = transform_quad_aligned(vec2(x, y), vec2(w, h));
-        memcpy(&dst_matrices[index], &transform, sizeof(transform));
-        base_offset.x += glyph.advance * size_in_pixels;
-        index++;
-    }
+    //         Mat4 transform = transform_quad_aligned(vec2(x, y), vec2(w, h));
+    //         memcpy(&dst_matrices[index], &transform, sizeof(transform));
+    //         base_offset.x += glyph.advance * size_in_pixels;
+    //         index++;
+    //     }
 
-    return string_bounds;
+    // return string_bounds;
+    return (Rect){0};
 }
 
 internal Rect
-text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, Mat4* dst_matrices, uint32 dst_index)
+text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, R_Batch* batch)
 {
-    TextLineList* lines         = text_lines_from_string(frame_arena, atlas, str, size, max_width);
-    Rect          string_bounds = rect_at(position, lines->size, alignment);
-#if DEBUG_TEXT
-    draw_debug_rect(string_bounds);
-#endif
+    // TODO(selim): !!!!!!!!!!!!!!!!!!!!!!
+    //     TextLineList* lines         = text_lines_from_string(frame_arena, atlas, str, size, max_width);
+    //     Rect          string_bounds = rect_at(position, lines->size, alignment);
+    // #if DEBUG_TEXT
+    //     draw_debug_rect(string_bounds);
+    // #endif
 
-    TextLineNode* line_node;
-    Rect          lines_rect = string_bounds;
-    for_each(line_node, lines->first)
-    {
-        Rect   line_rect       = rect_cut_top(&lines_rect, line_node->v.size.h);
-        Rect   inner_line_rect = rect_from_wh(line_node->v.size.w, line_node->v.size.h);
-        Anchor a               = {.child = alignment, .parent = alignment};
-        inner_line_rect        = rect_anchor(inner_line_rect, line_rect, a);
-#if DEBUG_TEXT
-        draw_debug_rect_b(inner_line_rect);
-#endif
-        Vec2 base_offset = {
-            .x = inner_line_rect.x - inner_line_rect.w * 0.5,
-            .y = inner_line_rect.y - inner_line_rect.h * 0.5};
+    //     TextLineNode* line_node;
+    //     Rect          lines_rect = string_bounds;
+    //     for_each(line_node, lines->first)
+    //     {
+    //         Rect   line_rect       = rect_cut_top(&lines_rect, line_node->v.size.h);
+    //         Rect   inner_line_rect = rect_from_wh(line_node->v.size.w, line_node->v.size.h);
+    //         Anchor a               = {.child = alignment, .parent = alignment};
+    //         inner_line_rect        = rect_anchor(inner_line_rect, line_rect, a);
+    // #if DEBUG_TEXT
+    //         draw_debug_rect_b(inner_line_rect);
+    // #endif
+    //         Vec2 base_offset = {
+    //             .x = inner_line_rect.x - inner_line_rect.w * 0.5,
+    //             .y = inner_line_rect.y - inner_line_rect.h * 0.5};
 
-        String line_str = line_node->v.str;
-        for (uint32 i = 0; i < line_str.length; i++)
-        {
-            Glyph   glyph = glyph_get(atlas, line_str.value[i]);
-            float32 w     = glyph_width(glyph, size);
-            float32 h     = glyph_height(glyph, size);
-            Vec2    pos   = glyph_position(glyph, size, base_offset);
+    //         String line_str = line_node->v.str;
+    //         for (uint32 i = 0; i < line_str.length; i++)
+    //         {
+    //             Glyph   glyph = glyph_get(atlas, line_str.value[i]);
+    //             float32 w     = glyph_width(glyph, size);
+    //             float32 h     = glyph_height(glyph, size);
+    //             Vec2    pos   = glyph_position(glyph, size, base_offset);
 
-            Mat4 transform = transform_quad_aligned(pos, vec2(w, h));
-            memcpy(&dst_matrices[dst_index], &transform, sizeof(transform));
-            dst_index++;
-            base_offset.x += glyph.advance * size;
-        }
-    }
+    //             Mat4 transform = transform_quad_aligned(pos, vec2(w, h));
+    //             memcpy(&dst_matrices[dst_index], &transform, sizeof(transform));
+    //             dst_index++;
+    //             base_offset.x += glyph.advance * size;
+    //         }
+    //     }
 
-    return string_bounds;
+    //     return string_bounds;
+    return (Rect){0};
 }
 
 /** freetype */
