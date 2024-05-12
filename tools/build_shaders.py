@@ -25,7 +25,6 @@ if __name__ == "__main__":
         name_files = shader_map.get(name, [])
         name_files.append(file)
         shader_map[name] = name_files
-    pprint(shader_map)
     
     with open(args.out, 'w+') as out:
         # Write Header
@@ -34,9 +33,7 @@ if __name__ == "__main__":
         out.write("#pragma once\n")
         out.write("#include \"base.h\"\n")
         out.write("\n")
-        
                 
-        
         for shader_name in shader_map:
             print(f"building shader: {shader_name}")
             out.write(f"/** {shader_name} shader */\n")
@@ -47,7 +44,6 @@ if __name__ == "__main__":
                 
                 c_variable_name = f"d_shader_opengl_{shader_name}_{ext}"
                 out.write(f"read_only global String {c_variable_name} = string_comp(\n")
-                print(f"variable name: {c_variable_name}")
                 with open(path) as f:
                     shader_contents = f.readlines()
                     for line in shader_contents:

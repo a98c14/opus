@@ -99,12 +99,13 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_TEXTURE, g_renderer->texture_uniform_buffer_id, 0, sizeof(TextureUniformData));
 
-    /* Create Camera UBO */
-    glGenBuffers(1, &g_renderer->camera_uniform_buffer_id);
-    glBindBuffer(GL_UNIFORM_BUFFER, g_renderer->camera_uniform_buffer_id);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(CameraUniformData), NULL, GL_STATIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_CAMERA, g_renderer->camera_uniform_buffer_id, 0, sizeof(CameraUniformData));
+    // TODO(selim): !!!!!!!!!!!!!!!!!!!!
+    // /* Create Camera UBO */
+    // glGenBuffers(1, &g_renderer->camera_uniform_buffer_id);
+    // glBindBuffer(GL_UNIFORM_BUFFER, g_renderer->camera_uniform_buffer_id);
+    // glBufferData(GL_UNIFORM_BUFFER, sizeof(CameraUniformData), NULL, GL_STATIC_DRAW);
+    // glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    // glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_CAMERA, g_renderer->camera_uniform_buffer_id, 0, sizeof(CameraUniformData));
 
     // Reserve the first slot for NULL texture
     g_renderer->texture_count += 1;
@@ -127,7 +128,6 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float32) * 8192, 0, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_CAMERA, g_renderer->camera_uniform_buffer_id);
 
     log_debug("renderer created");
 }
@@ -283,22 +283,22 @@ r_material_create(Renderer* renderer, String vertex_shader_text, String fragment
     result->is_instanced      = is_instanced;
 
     // generate custom shader data UBO
-    if (is_instanced)
-    {
-        result->location_model = -1;
-        glGenBuffers(1, &result->uniform_buffer_id);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, result->uniform_buffer_id);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, uniform_data_size * MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY, 0, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    }
-    else
-    {
-        glGenBuffers(1, &result->uniform_buffer_id);
-        glBindBuffer(GL_UNIFORM_BUFFER, result->uniform_buffer_id);
-        glBufferData(GL_UNIFORM_BUFFER, uniform_data_size, NULL, GL_STREAM_DRAW);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        result->location_model = glGetUniformLocation(result->gl_program_id, "u_model");
-    }
+    // if (is_instanced)
+    // {
+    // result->location_model = -1;
+    glGenBuffers(1, &result->uniform_buffer_id);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, result->uniform_buffer_id);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, uniform_data_size * MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY, 0, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    // }
+    // else
+    // {
+    //     glGenBuffers(1, &result->uniform_buffer_id);
+    //     glBindBuffer(GL_UNIFORM_BUFFER, result->uniform_buffer_id);
+    //     glBufferData(GL_UNIFORM_BUFFER, uniform_data_size, NULL, GL_STREAM_DRAW);
+    //     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    result->location_model = glGetUniformLocation(result->gl_program_id, "u_model");
+    // }
 
     unsigned int global_ubo_index = glGetUniformBlockIndex(result->gl_program_id, "Global");
     glUniformBlockBinding(result->gl_program_id, global_ubo_index, BINDING_SLOT_GLOBAL);
@@ -543,16 +543,8 @@ r_render(Renderer* renderer, float32 dt)
     glBindBuffer(GL_UNIFORM_BUFFER, renderer->global_uniform_buffer_id);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalUniformData), &global_shader_data);
 
-    /* setup global camera data */
-    CameraUniformData camera_data = {0};
-    camera_data.view              = camera->view;
-    camera_data.projection        = camera->projection;
-    glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_uniform_buffer_id);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_CAMERA, renderer->camera_uniform_buffer_id);
-
-    // Mat4 view = mat4_mvp(mat4_identity(), camera_data.view, mat4_identity());
-    Mat4 view = mat4_mvp(mat4_identity(), camera_data.view, camera_data.projection);
+    Mat4 world_view  = mat4_mvp(mat4_identity(), camera->view, camera->projection);
+    Mat4 screen_view = mat4_mvp(mat4_identity(), mat4_identity(), camera->projection);
 
     for (uint32 i = 0; i < renderer->pass_count; i++)
     {
@@ -588,13 +580,7 @@ r_render(Renderer* renderer, float32 dt)
 
                 /** set view matrix */
                 ViewType view_type = render_key_mask(batch.key, RenderKeyViewTypeBitStart, RenderKeyViewTypeBitCount);
-                if (render_key_mask(diff, RenderKeyViewTypeBitStart, RenderKeyViewTypeBitCount) > 0)
-                {
-                    camera_data.view = view_type == ViewTypeWorld ? camera->view : mat4_identity();
-                    glBindBuffer(GL_UNIFORM_BUFFER, renderer->camera_uniform_buffer_id);
-                    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
-                    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_CAMERA, renderer->camera_uniform_buffer_id);
-                }
+                Mat4     view      = view_type == ViewTypeWorld ? world_view : screen_view;
 
                 /** set material */
                 MaterialIndex material_index = render_key_mask(batch.key, RenderKeyMaterialIndexBitStart, RenderKeyMaterialIndexBitCount);
@@ -604,9 +590,15 @@ r_render(Renderer* renderer, float32 dt)
                     glUseProgram(material->gl_program_id);
                     glUniform1i(material->location_texture, 0);
                     glBindVertexArray(material->vertex_array_object);
+                    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_CUSTOM, material->uniform_buffer_id);
                 }
 
                 log_trace("rendering, sort: %2d, layer: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", i, pass->frame_buffer, view_type, texture_index, geometry_index, material_index);
+                if (batch.uniform_buffer_size > 0)
+                {
+                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, material->uniform_buffer_id);
+                    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, batch.uniform_buffer_size, batch.uniform_buffer);
+                }
 
                 glUniformMatrix4fv(material->location_model, 1, GL_FALSE, view.v);
                 glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertex_buffer_size, batch.vertex_buffer);

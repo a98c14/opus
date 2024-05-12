@@ -36,5 +36,5 @@ Defining `STB_IMAGE_IMPLEMENTATION` causes clangd to crash for some reason so it
 
 ### Build Shaders
 ```
-python .\tools\build_shaders.py --src .\src\shaders\ --out '$HOME\source\github\opus\src\draw\draw_shaders.h'
+python .\tools\build_shaders.py --src "$HOME\source\github\opus\src\draw\shaders" --out "$HOME\source\github\opus\src\draw\draw_shaders.h"
 ```

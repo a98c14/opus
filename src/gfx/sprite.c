@@ -16,28 +16,6 @@ sprite_atlas_new(Arena* arena, TextureIndex texture_index, const Animation* anim
     return atlas;
 }
 
-internal void
-renderer_load_sprite_atlas(Renderer* renderer, SpriteAtlas* atlas)
-{
-    /* Create Sprite Bounds SSBO */
-    glGenBuffers(1, &renderer->sprites_ssbo_id);
-    ArenaTemp temp          = arena_begin_temp(renderer->arena);
-    Vec4*     sprite_bounds = arena_push_array_zero(temp.arena, Vec4, atlas->sprite_count);
-    for (uint32 i = 0; i < atlas->sprite_count; i++)
-    {
-        sprite_bounds[i].x = atlas->sprites[i].rect.x;
-        sprite_bounds[i].y = atlas->sprites[i].rect.y;
-        sprite_bounds[i].z = atlas->sprites[i].rect.w;
-        sprite_bounds[i].w = atlas->sprites[i].rect.h;
-    }
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, renderer->sprites_ssbo_id);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Vec4) * atlas->sprite_count, sprite_bounds, GL_STATIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SPRITE_BOUNDS, renderer->sprites_ssbo_id);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    arena_end_temp(temp);
-}
-
 internal Bounds
 r_sprite_tex_coords(SpriteAtlas* atlas, SpriteIndex sprite_index)
 {

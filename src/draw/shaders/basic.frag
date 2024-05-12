@@ -15,21 +15,14 @@ layout (std140, binding = 1) uniform Texture
     float texture_layer_count;
 };
 
-layout (std140, binding = 2) uniform Camera
-{
-    mat4 projection;
-    mat4 view;
-};
-
 uniform mat4 u_model;
 
 /* Vertex Data */
-out vec2 v_tex_coord;
-out vec4 v_color;
+in vec2 v_tex_coord;
+in vec4 v_color;
 
-void main() 
-{
-    v_tex_coord = a_tex_coord;
-    v_color = a_color;
-    gl_Position = u_model * vec4(a_pos, 0, 1);
+out vec4 color;
+
+void main() {
+    color = v_color;
 }

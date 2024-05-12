@@ -49,7 +49,6 @@ typedef struct
 } SpriteAtlas;
 
 internal SpriteAtlas*     sprite_atlas_new(Arena* arena, TextureIndex texture_index, const Animation* animations, const Sprite* sprites, const TextureIndex* texture_indices, uint32 animation_count, uint32 sprite_count);
-internal void             renderer_load_sprite_atlas(Renderer* renderer, SpriteAtlas* atlas);
 internal inline Vec2      r_sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip);
 internal Bounds           r_sprite_tex_coords(SpriteAtlas* atlas, SpriteIndex sprite_index);
 internal Rect             r_sprite_rect_scaled(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, float32 scale);

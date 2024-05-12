@@ -67,14 +67,10 @@ typedef int16 MaterialDrawBufferIndex;
 #define MATERIAL_DRAW_BUFFER_EMPTY_KEY -1
 #define MATERIAL_DRAW_BUFFER_MAX_PROBE 32
 
-#define BINDING_SLOT_GLOBAL        0
-#define BINDING_SLOT_TEXTURE       1
-#define BINDING_SLOT_CAMERA        2
-#define BINDING_SLOT_SSBO_MODEL    3
-#define BINDING_SLOT_UBO_CUSTOM    4
-#define BINDING_SLOT_SSBO_CUSTOM   4
-#define BINDING_SLOT_SPRITE_BOUNDS 5
-#define BINDING_SLOT_SSBO_TRAIL    6
+#define BINDING_SLOT_GLOBAL      0
+#define BINDING_SLOT_TEXTURE     1
+#define BINDING_SLOT_UBO_CUSTOM  2
+#define BINDING_SLOT_SSBO_CUSTOM 2
 
 typedef struct
 {
@@ -186,6 +182,14 @@ typedef struct
 {
     Vec2 pos;
     Vec2 tex_coord;
+    Vec4 color;
+    Vec4 instance;
+} VertexAtrribute_TexturedColoredInstanced;
+
+typedef struct
+{
+    Vec2 pos;
+    Vec2 tex_coord;
     // uint32 instance_id;
 } VertexAtrribute_TexturedI;
 
@@ -265,8 +269,6 @@ typedef struct
 
     uint32 global_uniform_buffer_id;
     uint32 texture_uniform_buffer_id;
-    uint32 camera_uniform_buffer_id;
-    uint32 sprites_ssbo_id;
 
     /* state */
     RenderKey active_render_key;

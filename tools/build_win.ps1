@@ -16,6 +16,10 @@ else {
 $output_directory = ([io.fileinfo]$($commands["output"])).DirectoryName
 $output_basename = ([io.fileinfo]$($commands["output"])).BaseName
 
+if ($commands["rebuild_shaders"]) {
+    Write-Host "[BUILD] rebuilding shaders" 
+    python .\tools\build_shaders.py --src "$root_directory\src\draw\shaders" --out "$root_directory\src\draw\draw_shaders.h"
+}
 
 
 # --- Set Compile Flags -----------------------------------

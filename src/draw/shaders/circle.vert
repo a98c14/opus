@@ -1,0 +1,41 @@
+#version 430 core
+layout(location = 0) in vec2 a_pos;
+layout(location = 1) in vec2 a_tex_coord;
+layout(location = 2) in vec4 a_color;
+layout(location = 3) in vec4 a_instance_id;
+
+struct ShaderData
+{
+    float thickness;
+};
+
+layout (std140, binding = 0) uniform Global
+{
+    vec4 g_time;
+};
+
+layout (std140, binding = 1) uniform Texture
+{
+    vec2 texture_size;
+    float texture_layer_count;
+};
+
+layout (std140, binding = 2) buffer Custom
+{
+    ShaderData data[];
+};
+
+uniform mat4 u_model;
+
+/* Vertex Data */
+out vec2 v_tex_coord;
+out vec4 v_color;
+out float v_thickness;
+
+void main() 
+{
+    v_tex_coord = a_tex_coord;
+    v_color = a_color;
+    v_thickness = data[int(a_instance_id.r)].thickness;
+    gl_Position = u_model * vec4(a_pos, 0, 1);
+}

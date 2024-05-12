@@ -80,8 +80,9 @@ main(void)
             //     r_batch_push_string(glyph_atlas, string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"), vec2(-900, 0), font_size);
             // }
 
-            d_line(vec2(0, 0), vec2(100, 100), 3, ColorRed400);
-            d_line(vec2(100, 100), vec2(200, 100), 3, ColorRed400);
+            // d_line(vec2(0, 0), vec2(100, 100), 3, ColorRed400);
+            // d_line(vec2(100, 100), vec2(200, 100), 3, ColorRed400);
+            d_circle(vec2(10, 10), 100, 0.1, ColorBlue400);
 
             r_render(g_renderer, time.dt);
         }
