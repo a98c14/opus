@@ -52,6 +52,16 @@ main(void)
         file_read_all_as_string(temp.arena, string(SHADER_PATH "\\test.frag")),
         sizeof(ShaderDataBasic),
         false, attr_info);
+
+    MaterialIndex font_material = r_material_create(
+        g_renderer,
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\test_glyph.vert")),
+        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\test_glyph.frag")),
+        sizeof(ShaderDataBasic),
+        false, attr_info);
+
+    GlyphAtlas* glyph_atlas = font_get_atlas(d_state->ctx->font_face, 30);
+
     scratch_end(temp);
 
     /* main loop */
@@ -74,49 +84,29 @@ main(void)
             g_renderer->stat_draw_count   = 0;
             g_renderer->stat_object_count = 0;
 
-            // /* setup global shader data */
-            // GlobalUniformData global_shader_data = {0};
-            // global_shader_data.time              = g_renderer->timer;
-            // glBindBuffer(GL_UNIFORM_BUFFER, g_renderer->global_uniform_buffer_id);
-            // glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalUniformData), &global_shader_data);
-            // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_MODEL, g_renderer->mvp_ssbo_id);
-
-            // /* setup global camera data */
-            // CameraUniformData camera_data = {0};
-            // camera_data.view              = camera->view;
-            // camera_data.projection        = camera->projection;
-            // glBindBuffer(GL_UNIFORM_BUFFER, g_renderer->camera_uniform_buffer_id);
-            // glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
-            // glActiveTexture(GL_TEXTURE0);
-            // glBindTexture(g_renderer->textures[texture].gl_texture_type, g_renderer->textures[texture].gl_texture_id);
-
             /** setup batch */
+
             RenderKey test_key = render_key_new_default(ViewTypeWorld, 5, pass_default, texture, test_material);
-            R_Batch*  batch    = r_batch_from_key(test_key);
-            r_batch_sprite_push_sprite(batch, atlas, SPRITE_GAME_SHIPS_RANGER, vec2(0, 0));
-            r_batch_sprite_push_sprite(batch, atlas, SPRITE_GAME_SHIPS_RANGER, vec2(300, 0));
-            r_batch_sprite_push_sprite(batch, atlas, SPRITE_GAME_SHIPS_RANGER, vec2(-300, 0));
+            r_batch_scope(test_key)
+            {
+                r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(0, 0));
+                r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(300, 0));
+            }
+
+            r_batch_scope(test_key)
+            {
+                r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(-300, 0));
+            }
+
+            RenderKey font_key = render_key_new_default(ViewTypeWorld, 5, pass_default, glyph_atlas->texture, font_material);
+            r_batch_scope(font_key)
+            {
+                r_batch_push_glyph(glyph_atlas, vec2(0, 0), 'A');
+                r_batch_push_glyph(glyph_atlas, vec2(30, 0), 'b');
+                r_batch_push_glyph(glyph_atlas, vec2(60, 0), 'c');
+            }
+
             r_render(g_renderer, time.dt);
-
-            // R_BatchSprite* batch = r_batch_sprite_begin(test_key, 2);
-
-            // Mat4* model_data = arena_push_array_zero(frame_arena, Mat4, batch->element_count);
-            // model_data[0]    = transform_quad_aligned(vec2_zero(), vec2_one());
-
-            // Material* material = &g_renderer->materials[test_material];
-            // glUseProgram(material->gl_program_id);
-
-            // /** vertex data */
-            // glBindVertexArray(material->vertex_array_object);
-            // glBufferSubData(GL_ARRAY_BUFFER, 0, batch->vertex_count * material->vertex_size, batch->vertex_data);
-
-            // /** uniform data */
-            // glUniform1i(material->location_texture, 0);
-            // glUniformMatrix4fv(material->location_model, 1, GL_FALSE, model_data->v);
-
-            // glBindBuffer(GL_UNIFORM_BUFFER, material->uniform_buffer_id);
-            // glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_UBO_CUSTOM, material->uniform_buffer_id, 0, material->uniform_data_size);
-            // glDrawArrays(GL_TRIANGLES, 0, batch->vertex_count);
         }
 
         window_update(window);

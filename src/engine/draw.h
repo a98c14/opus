@@ -274,3 +274,5 @@ internal void   trail_draw(Trail* trail);
 internal void   trail_set_color(Trail* trail, Color start, Color end);
 internal void   trail_set_width(Trail* trail, float32 start, float32 end);
 internal bool32 trail_is_segment_endpoint(Trail* trail, uint32 index);
+
+internal void r_batch_push_glyph(GlyphAtlas* atlas, Vec2 pos, uint8 c);

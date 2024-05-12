@@ -538,7 +538,8 @@ r_render(Renderer* renderer, float32 dt)
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CameraUniformData), &camera_data);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_CAMERA, renderer->camera_uniform_buffer_id);
 
-    Mat4 view = mat4_mvp(mat4_identity(), camera_data.view, mat4_identity());
+    // Mat4 view = mat4_mvp(mat4_identity(), camera_data.view, mat4_identity());
+    Mat4 view = mat4_mvp(mat4_identity(), camera_data.view, camera_data.projection);
 
     for (uint32 i = 0; i < renderer->pass_count; i++)
     {
@@ -595,11 +596,6 @@ r_render(Renderer* renderer, float32 dt)
                 log_trace("rendering, sort: %2d, layer: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", i, pass->frame_buffer, view_type, texture_index, geometry_index, material_index);
 
                 glUniformMatrix4fv(material->location_model, 1, GL_FALSE, view.v);
-                // r_draw_batch_internal(material, batch.element_count, batch.vertex_buffer, batch.uniform_buffer);
-                // glBindBuffer(GL_UNIFORM_BUFFER, material->uniform_buffer_id);
-                // glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_UBO_CUSTOM, material->uniform_buffer_id, 0, material->uniform_data_size);
-
-                // glBindVertexArray(material->vertex_array_object);
                 glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertex_buffer_size, batch.vertex_buffer);
                 glDrawArrays(GL_TRIANGLES, 0, batch.vertex_count);
             }
@@ -612,6 +608,8 @@ r_render(Renderer* renderer, float32 dt)
     arena_reset(renderer->frame_arena);
     arena_reset(renderer->uniform_buffer_arena);
     arena_reset(renderer->vertex_buffer_arena);
+    renderer->previous_batch = 0;
+    renderer->active_batch   = 0;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -640,7 +638,6 @@ r_batch_reserve(RenderKey key)
 internal void
 r_batch_commit(R_BatchNode* node)
 {
-
     RenderKey      key              = node->v.key;
     PassIndex      pass_index       = render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
     SortLayerIndex sort_layer_index = render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);
@@ -659,6 +656,47 @@ r_batch_from_key(RenderKey key)
     R_BatchNode* batch_node = r_batch_reserve(key);
     r_batch_commit(batch_node);
     return &batch_node->v;
+}
+
+internal void
+r_batch_begin(RenderKey key)
+{
+    xassert(!g_renderer->active_batch, "there is already an active batch");
+
+    // If the previous batch has the same key as the new batch,
+    // just extend the preivous batch
+    if (g_renderer->previous_batch && g_renderer->previous_batch->key == key)
+    {
+        g_renderer->active_batch = g_renderer->previous_batch;
+
+        // Since batch size is going to be added at to end of this batch again, we need to rollback
+        // the previous addition
+        g_renderer->vertex_buffer_arena->pos -= g_renderer->active_batch->vertex_buffer_size;
+        g_renderer->uniform_buffer_arena->pos -= g_renderer->active_batch->uniform_buffer_size;
+    }
+    else
+    {
+        g_renderer->active_batch = r_batch_from_key(key);
+    }
+}
+
+internal void
+r_batch_end()
+{
+    xassert(g_renderer->active_batch, "there is no active batch to end");
+    // TODO(selim): bound assertions
+    g_renderer->vertex_buffer_arena->pos += g_renderer->active_batch->vertex_buffer_size;
+    g_renderer->uniform_buffer_arena->pos += g_renderer->active_batch->uniform_buffer_size;
+
+    g_renderer->previous_batch = g_renderer->active_batch;
+    g_renderer->active_batch   = NULL;
+}
+
+internal R_Batch*
+r_active_batch()
+{
+    xassert(g_renderer->active_batch, "there is no active batch");
+    return g_renderer->active_batch;
 }
 
 internal void

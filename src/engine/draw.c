@@ -740,3 +740,21 @@ trail_is_segment_endpoint(Trail* trail, uint32 index)
            trail->buffer[(index - 1) % trail->capacity].t_remaining <= 0 ||
            trail->buffer[(index + 1) % trail->capacity].t_remaining <= 0;
 }
+
+/** TODO: !!!!!!!!!!! this shouldn't be here */
+internal void
+r_batch_push_glyph(GlyphAtlas* atlas, Vec2 pos, uint8 c)
+{
+    Glyph glyph = atlas->glyphs[c - 32];
+
+    float32 w = 30 * (glyph.plane_bounds.right - glyph.plane_bounds.left);
+    float32 h = 30 * (glyph.plane_bounds.top - glyph.plane_bounds.bottom);
+
+    r_batch_push_vertex(vec2(pos.x, pos.y), bounds_bl(glyph.atlas_bounds), 0);
+    r_batch_push_vertex(vec2(pos.x, pos.y + h), bounds_tl(glyph.atlas_bounds), 0);
+    r_batch_push_vertex(vec2(pos.x + w, pos.y), bounds_br(glyph.atlas_bounds), 0);
+
+    r_batch_push_vertex(vec2(pos.x + w, pos.y), bounds_br(glyph.atlas_bounds), 0);
+    r_batch_push_vertex(vec2(pos.x, pos.y + h), bounds_tl(glyph.atlas_bounds), 0);
+    r_batch_push_vertex(vec2(pos.x + w, pos.y + h), bounds_tr(glyph.atlas_bounds), 0);
+}

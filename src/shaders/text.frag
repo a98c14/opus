@@ -54,9 +54,9 @@ flat in int v_instance_id;
 out vec4 color;
 
 void main() {
+    ShaderData v_data = data[v_instance_id];
     vec2 uv = v_tex_coord;
     vec2 dxy = fwidth(uv);
-    ShaderData v_data = data[v_instance_id];
     float d = texture(u_main_texture, uv).r;
     float softness = v_data.softness * max(dxy.x, dxy.y);
     float alpha = smoothstep(1 - v_data.thickness - softness, 1 - v_data.thickness + softness, d);

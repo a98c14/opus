@@ -28,6 +28,8 @@ layout (std140, binding = 4) uniform Custom
 uniform mat4 u_model;
 uniform sampler2D u_main_texture;
 
+uniform float u_softness;
+
 /* Vertex Data */
 out vec2 v_tex_coord;
 

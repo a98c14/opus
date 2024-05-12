@@ -270,6 +270,8 @@ typedef struct
     RenderKey active_render_key;
     uint8     pass_count;
     R_Pass*   passes;
+    R_Batch*  previous_batch;
+    R_Batch*  active_batch;
 
     float32 timer;
     float32 ppu;
@@ -370,6 +372,10 @@ internal void             texture_shader_data_set(Renderer* renderer, const Text
 internal R_BatchNode* r_batch_reserve(RenderKey key);
 internal void         r_batch_commit(R_BatchNode* node);
 internal R_Batch*     r_batch_from_key(RenderKey key);
+internal void         r_batch_begin(RenderKey key);
+internal void         r_batch_end();
+internal R_Batch*     r_active_batch();
+#define r_batch_scope(key) defer_loop(r_batch_begin(key), r_batch_end())
 
 internal void r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
 internal void r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);

@@ -305,10 +305,10 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
         atlas->glyphs[i - 32].plane_bounds.right  = (glyph->bitmap_left + (int32)glyph->bitmap.width) / (float32)size;
         atlas->glyphs[i - 32].plane_bounds.top    = (glyph->bitmap_top) / (float32)size;
 
-        atlas->glyphs[i - 32].atlas_bounds.left   = x;
-        atlas->glyphs[i - 32].atlas_bounds.bottom = 0;
-        atlas->glyphs[i - 32].atlas_bounds.right  = x + glyph->bitmap.width;
-        atlas->glyphs[i - 32].atlas_bounds.top    = glyph->bitmap.rows;
+        atlas->glyphs[i - 32].atlas_bounds.left   = x / (float32)atlas->atlas_info.width;
+        atlas->glyphs[i - 32].atlas_bounds.bottom = (glyph->bitmap.rows) / (float32)atlas->atlas_info.height;
+        atlas->glyphs[i - 32].atlas_bounds.right  = (x + glyph->bitmap.width) / (float32)atlas->atlas_info.width;
+        atlas->glyphs[i - 32].atlas_bounds.top    = 0;
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, glyph->bitmap.width, glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
         x += glyph->bitmap.width + 2;

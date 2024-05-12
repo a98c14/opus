@@ -59,6 +59,7 @@ main(void)
         draw_text(string("Here we go again"), rect_cut_top(&box, font_size), ANCHOR_TL_TL, font_size, ColorWhite100);
         draw_text(string("Second line"), rect_cut_top(&box, font_size), ANCHOR_TL_TL, font_size, ColorWhite100);
         draw_text(string("Third line"), rect_cut_top(&box, font_size), ANCHOR_TL_TL, font_size, ColorWhite100);
+
         // draw_text(string("Line 2"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
         // draw_text(string("Line 3"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
         // draw_text(string("Line 4"), rect_cut_top(&box, font_size), ANCHOR_BL_BL, font_size, ColorWhite100);
