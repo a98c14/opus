@@ -743,12 +743,13 @@ trail_is_segment_endpoint(Trail* trail, uint32 index)
 
 /** TODO: !!!!!!!!!!! this shouldn't be here */
 internal void
-r_batch_push_glyph(GlyphAtlas* atlas, Vec2 pos, uint8 c)
+r_batch_push_glyph(Glyph glyph, Vec2 pos, float32 size)
 {
-    Glyph glyph = atlas->glyphs[c - 32];
+    float32 w = size * (glyph.plane_bounds.right - glyph.plane_bounds.left);
+    float32 h = size * (glyph.plane_bounds.top - glyph.plane_bounds.bottom);
 
-    float32 w = 30 * (glyph.plane_bounds.right - glyph.plane_bounds.left);
-    float32 h = 30 * (glyph.plane_bounds.top - glyph.plane_bounds.bottom);
+    pos.x = pos.x + glyph.plane_bounds.left * size;
+    pos.y = pos.y + glyph.plane_bounds.bottom * size;
 
     r_batch_push_vertex(vec2(pos.x, pos.y), bounds_bl(glyph.atlas_bounds), 0);
     r_batch_push_vertex(vec2(pos.x, pos.y + h), bounds_tl(glyph.atlas_bounds), 0);
@@ -757,4 +758,21 @@ r_batch_push_glyph(GlyphAtlas* atlas, Vec2 pos, uint8 c)
     r_batch_push_vertex(vec2(pos.x + w, pos.y), bounds_br(glyph.atlas_bounds), 0);
     r_batch_push_vertex(vec2(pos.x, pos.y + h), bounds_tl(glyph.atlas_bounds), 0);
     r_batch_push_vertex(vec2(pos.x + w, pos.y + h), bounds_tr(glyph.atlas_bounds), 0);
+}
+
+internal void
+r_batch_push_string(GlyphAtlas* atlas, String str, Vec2 pos, float32 size)
+{
+    float32 advance_x = 0;
+    for (uint32 i = 0; i < str.length; i++)
+    {
+        Glyph glyph = atlas->glyphs[str.value[i] - 32];
+
+        float32 w = size * (glyph.plane_bounds.right - glyph.plane_bounds.left);
+        float32 h = size * (glyph.plane_bounds.top - glyph.plane_bounds.bottom);
+
+        Vec2 glyph_pos = vec2(pos.x + advance_x, pos.y);
+        r_batch_push_glyph(glyph, glyph_pos, size);
+        advance_x += glyph.advance * size;
+    }
 }

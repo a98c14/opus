@@ -38,7 +38,7 @@ main(void)
 
     EngineTime time = engine_time_new();
 
-    const uint32 font_size = 24;
+    const uint32 font_size = 30;
     InputMouse   mouse     = {0};
 
     VertexAttributeInfo* attr_info = r_attribute_info_new(temp.arena);
@@ -60,7 +60,7 @@ main(void)
         sizeof(ShaderDataBasic),
         false, attr_info);
 
-    GlyphAtlas* glyph_atlas = font_get_atlas(d_state->ctx->font_face, 30);
+    GlyphAtlas* glyph_atlas = font_get_atlas(d_state->ctx->font_face, font_size);
 
     scratch_end(temp);
 
@@ -101,9 +101,7 @@ main(void)
             RenderKey font_key = render_key_new_default(ViewTypeWorld, 5, pass_default, glyph_atlas->texture, font_material);
             r_batch_scope(font_key)
             {
-                r_batch_push_glyph(glyph_atlas, vec2(0, 0), 'A');
-                r_batch_push_glyph(glyph_atlas, vec2(30, 0), 'b');
-                r_batch_push_glyph(glyph_atlas, vec2(60, 0), 'c');
+                r_batch_push_string(glyph_atlas, string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"), vec2(-900, 0), font_size);
             }
 
             r_render(g_renderer, time.dt);
