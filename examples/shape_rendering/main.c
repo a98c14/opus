@@ -8,13 +8,18 @@
 int
 main(void)
 {
-    /*  initialization */
+    /* initialization */
     ThreadContext tctx;
     tctx_init_and_equip(&tctx);
     logger_init();
-    Arena*  persistent_arena = make_arena_reserve(mb(128));
-    Arena*  frame_arena      = make_arena_reserve(mb(128));
-    Window* window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL);
+
+    Arena*       persistent_arena = make_arena_reserve(mb(128));
+    Arena*       frame_arena      = make_arena_reserve(mb(128));
+    Window*      window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL);
+    EngineTime   time             = engine_time_new();
+    InputMouse   mouse            = {0};
+    const uint32 font_size        = 30;
+    font_cache_init(persistent_arena);
 
     RendererConfiguration* r_config = r_config_new(frame_arena);
     r_config_set_screen_size(r_config, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -29,38 +34,11 @@ main(void)
     PassIndex                pass_default = r_pipeline_config_add_pass(config, FRAME_BUFFER_INDEX_DEFAULT);
     r_pipeline_init(config);
 
-    font_cache_init(persistent_arena);
-    draw_context_init(persistent_arena, frame_arena, g_renderer, pass_default);
-    FontFaceIndex ibx_mono = font_load(string("ibx_mono"), string(ASSET_PATH "\\IBMPlexMono-Bold.ttf"), GlyphAtlasTypeFreeType);
+    d_context_init(persistent_arena);
 
-    SpriteAtlas* atlas = sprite_atlas_new(temp.arena, texture, Animations, Sprites, 0, array_count(Animations), array_count(Sprites));
-    draw_activate_font(ibx_mono);
-
-    EngineTime time = engine_time_new();
-
-    const uint32 font_size = 30;
-    InputMouse   mouse     = {0};
-
-    VertexAttributeInfo* attr_info = r_attribute_info_new(temp.arena);
-    r_attribute_info_add_vec2(attr_info); // layout(location = 0) in vec2 a_pos;
-    r_attribute_info_add_vec2(attr_info); // layout(location = 1) in vec2 a_tex_coord;
-    // r_attribute_info_add_int(attr_info);  // layout(location = 2) in flat int a_instance_id;
-
-    MaterialIndex test_material = r_material_create(
-        g_renderer,
-        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\test.vert")),
-        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\test.frag")),
-        sizeof(ShaderDataBasic),
-        false, attr_info);
-
-    MaterialIndex font_material = r_material_create(
-        g_renderer,
-        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\test_glyph.vert")),
-        file_read_all_as_string(temp.arena, string(SHADER_PATH "\\test_glyph.frag")),
-        sizeof(ShaderDataBasic),
-        false, attr_info);
-
-    GlyphAtlas* glyph_atlas = font_get_atlas(d_state->ctx->font_face, font_size);
+    SpriteAtlas*  atlas       = sprite_atlas_new(temp.arena, texture, Animations, Sprites, 0, array_count(Animations), array_count(Sprites));
+    FontFaceIndex ibx_mono    = font_load(string("ibx_mono"), string(ASSET_PATH "\\IBMPlexMono-Bold.ttf"), GlyphAtlasTypeFreeType);
+    GlyphAtlas*   glyph_atlas = font_get_atlas(ibx_mono, font_size);
 
     scratch_end(temp);
 
@@ -79,30 +57,31 @@ main(void)
             FrameBuffer* frame_buffer = &g_renderer->frame_buffers[pass_default];
             r_frame_buffer_begin(frame_buffer);
 
-            Camera* camera = &g_renderer->camera;
             g_renderer->timer += time.dt;
             g_renderer->stat_draw_count   = 0;
             g_renderer->stat_object_count = 0;
 
-            /** setup batch */
+            // /** setup batch */
+            // RenderKey test_key = render_key_new_default(ViewTypeWorld, 5, pass_default, texture, d_context->material_sprite);
+            // r_batch_scope(test_key)
+            // {
+            //     r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(0, 0));
+            //     r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(300, 0));
+            // }
 
-            RenderKey test_key = render_key_new_default(ViewTypeWorld, 5, pass_default, texture, test_material);
-            r_batch_scope(test_key)
-            {
-                r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(0, 0));
-                r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(300, 0));
-            }
+            // r_batch_scope(test_key)
+            // {
+            //     r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(-300, 0));
+            // }
 
-            r_batch_scope(test_key)
-            {
-                r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(-300, 0));
-            }
+            // RenderKey font_key = render_key_new_default(ViewTypeWorld, 5, pass_default, glyph_atlas->texture, d_context->material_text);
+            // r_batch_scope(font_key)
+            // {
+            //     r_batch_push_string(glyph_atlas, string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"), vec2(-900, 0), font_size);
+            // }
 
-            RenderKey font_key = render_key_new_default(ViewTypeWorld, 5, pass_default, glyph_atlas->texture, font_material);
-            r_batch_scope(font_key)
-            {
-                r_batch_push_string(glyph_atlas, string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"), vec2(-900, 0), font_size);
-            }
+            d_line(vec2(0, 0), vec2(100, 100), 3, ColorRed400);
+            d_line(vec2(100, 100), vec2(200, 100), 3, ColorRed400);
 
             r_render(g_renderer, time.dt);
         }

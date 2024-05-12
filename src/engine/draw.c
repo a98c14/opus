@@ -768,9 +768,6 @@ r_batch_push_string(GlyphAtlas* atlas, String str, Vec2 pos, float32 size)
     {
         Glyph glyph = atlas->glyphs[str.value[i] - 32];
 
-        float32 w = size * (glyph.plane_bounds.right - glyph.plane_bounds.left);
-        float32 h = size * (glyph.plane_bounds.top - glyph.plane_bounds.bottom);
-
         Vec2 glyph_pos = vec2(pos.x + advance_x, pos.y);
         r_batch_push_glyph(glyph, glyph_pos, size);
         advance_x += glyph.advance * size;

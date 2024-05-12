@@ -76,7 +76,6 @@ struct StringNode
 {
     String value;
 
-    StringNode* prev;
     StringNode* next;
 };
 
@@ -85,9 +84,22 @@ typedef struct
     StringNode* first;
     StringNode* last;
     uint32      count;
+    uint32      size;
 } StringList;
 
-internal void string_list_push(Arena* arena, StringList* list, String str);
+typedef struct
+{
+    String8 pre;
+    String8 sep;
+    String8 post;
+} StringJoin;
+
+internal StringList  string_list();
+internal StringNode* string_list_push(Arena* arena, StringList* list, String str);
+internal StringNode* string_list_pushf(Arena* arena, StringList* list, char* fmt, ...);
+internal StringNode* string_list_push_front(Arena* arena, StringList* list, String str);
+internal StringNode* string_list_push_frontf(Arena* arena, StringList* list, char* fmt, ...);
+internal String      string_list_join(Arena* arena, StringList* list, StringJoin* optional_params);
 
 /** string storage */
 typedef uint64 StaticStringIndex;

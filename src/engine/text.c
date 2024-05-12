@@ -232,6 +232,7 @@ font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
 {
     FontFace* font_face = &g_font_cache->font_faces[font_face_index];
     xassert(font_face, "Could not find given font face");
+
     // TODO(selim): I don't understand why I need to divide this
     pixel_size /= g_renderer->ppu;
     uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? pixel_size : 32;

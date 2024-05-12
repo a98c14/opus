@@ -38,10 +38,18 @@
 #define defer_loop(begin, end)         for (int _i_ = ((begin), 0); !_i_; _i_ += 1, (end))
 #define defer_loop_checked(begin, end) for (int _i_ = 2 * !(begin); (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
 
+#define memory_set(dst, byte, size) memset((dst), (byte), (size))
+#define memory_compare(a, b, size)  memcmp((a), (b), (size))
+
 #define memory_zero(s, z)       memset((s), 0, (z))
 #define memory_zero_struct(s)   memory_zero((s), sizeof(*(s)))
 #define memory_zero_array(a)    memory_zero((a), sizeof(a))
 #define memory_zero_typed(m, c) memory_zero((m), sizeof(*(m)) * (c))
+
+#define memory_copy(dst, src, size) memmove((dst), (src), (size))
+#define memory_copy_struct(d, s)    memory_copy((d), (s), sizeof(*(d)))
+#define memory_copy_array(d, s)     memory_copy((d), (s), sizeof(d))
+#define memory_copy_typed(d, s, c)  memory_copy((d), (s), sizeof(*(d)) * (c))
 
 #if COMPILER_MSVC && COMPILER_MSVC_YEAR < 2015
 #define this_function_name "unknown"

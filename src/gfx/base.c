@@ -158,12 +158,13 @@ r_attribute_info_new(Arena* arena)
 }
 
 internal void
-r_attribute_info_add(VertexAttributeInfo* info, usize component_size, uint32 component_count)
+r_attribute_info_add(VertexAttributeInfo* info, usize component_size, uint32 component_count, GLenum type)
 {
     VertexAttributeElementNode* n = arena_push_struct_zero(info->arena, VertexAttributeElementNode);
     n->v.component_count          = component_count;
     n->v.size                     = component_count * component_size;
     n->v.index                    = info->attribute_count;
+    n->v.type                     = type;
     dll_push_back(info->first, info->last, n);
     info->attribute_count++;
 }
@@ -171,13 +172,25 @@ r_attribute_info_add(VertexAttributeInfo* info, usize component_size, uint32 com
 internal void
 r_attribute_info_add_vec2(VertexAttributeInfo* info)
 {
-    r_attribute_info_add(info, sizeof(float32), 2);
+    r_attribute_info_add(info, sizeof(float32), 2, GL_FLOAT);
+}
+
+internal void
+r_attribute_info_add_vec4(VertexAttributeInfo* info)
+{
+    r_attribute_info_add(info, sizeof(float32), 4, GL_FLOAT);
 }
 
 internal void
 r_attribute_info_add_int(VertexAttributeInfo* info)
 {
-    r_attribute_info_add(info, sizeof(int32), 1);
+    r_attribute_info_add(info, sizeof(int32), 1, GL_INT);
+}
+
+internal void
+r_attribute_info_add_uint(VertexAttributeInfo* info)
+{
+    r_attribute_info_add(info, sizeof(uint32), 1, GL_UNSIGNED_INT);
 }
 
 internal Camera
@@ -308,7 +321,7 @@ r_material_create(Renderer* renderer, String vertex_shader_text, String fragment
     uint64 offset = 0;
     for_each(n, attribute_info->first)
     {
-        glVertexAttribPointer(n->v.index, n->v.component_count, GL_FLOAT, GL_FALSE, size_per_vertex, (void*)offset);
+        glVertexAttribPointer(n->v.index, n->v.component_count, n->v.type, GL_FALSE, size_per_vertex, (void*)offset);
         glEnableVertexAttribArray(n->v.index);
         offset += n->v.size;
     }

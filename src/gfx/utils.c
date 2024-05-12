@@ -1,8 +1,4 @@
 #include "utils.h"
-#include <base/asserts.h>
-#include <base/memory.h>
-#include <base/strings.h>
-#include <gfx/base.h>
 
 internal TextureIndex
 texture_new_from_file(Renderer* renderer, String texture_path, bool32 pixel_perfect, bool32 flip_vertical)

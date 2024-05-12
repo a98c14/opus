@@ -5,8 +5,6 @@
 - Global variables should generally used my the layer that defined it and not from outside. They are also prefixed with the same abbreviation.
 
 
-
-
 ## Commands
 ### Build & Run
 ```ps1
@@ -34,3 +32,9 @@ msdf-atlas-gen.exe -font .\open_sans.ttf -fontname open_sans -json open_sans -si
 
 ## Notes
 Defining `STB_IMAGE_IMPLEMENTATION` causes clangd to crash for some reason so it is defined during compilation (with `/D` flag) and not in the code. 
+
+
+### Build Shaders
+```
+python .\tools\build_shaders.py --src .\src\shaders\ --out '$HOME\source\github\opus\src\draw\draw_shaders.h'
+```

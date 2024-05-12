@@ -13,5 +13,4 @@ typedef struct
 } EngineTime;
 
 internal EngineTime engine_time_new();
-
 internal EngineTime engine_get_time(EngineTime prev);

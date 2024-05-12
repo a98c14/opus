@@ -227,19 +227,93 @@ string_find(String string, String substr, uint64 start_pos, StringMatchFlags fla
 }
 
 /* string list */
-internal void
+internal StringList
+string_list()
+{
+    StringList result = {0};
+    return result;
+}
+
+internal StringNode*
 string_list_push(Arena* arena, StringList* list, String str)
 {
     StringNode* node = arena_push_struct_zero(arena, StringNode);
     node->value      = str;
-    if (list->last)
-        list->last->next = node;
+    queue_push(list->first, list->last, node);
+    list->count += 1;
+    list->size += str.length;
+}
 
-    if (!list->first)
-        list->first = node;
+internal StringNode*
+string_list_push_front(Arena* arena, StringList* list, String str)
+{
+    StringNode* node = arena_push_struct_zero(arena, StringNode);
+    node->value      = str;
+    queue_push_front(list->first, list->last, node);
+    list->count += 1;
+    list->size += str.length;
+}
 
-    list->last = node;
-    list->count++;
+internal StringNode*
+string_list_pushf(Arena* arena, StringList* list, char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    String      string = string_pushfv(arena, fmt, args);
+    StringNode* result = string_list_push(arena, list, string);
+    va_end(args);
+    return (result);
+}
+
+internal StringNode*
+string_list_push_frontf(Arena* arena, StringList* list, char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    String      string = string_pushfv(arena, fmt, args);
+    StringNode* result = string_list_push_front(arena, list, string);
+    va_end(args);
+    return (result);
+}
+
+internal String
+string_list_join(Arena* arena, StringList* list, StringJoin* optional_params)
+{
+    StringJoin join = {0};
+    if (optional_params != 0)
+    {
+        memory_copy_struct(&join, optional_params);
+    }
+
+    uint64 sep_count = 0;
+    if (list->count > 0)
+    {
+        sep_count = list->count - 1;
+    }
+
+    String result;
+    result.length = join.pre.length + join.post.length + sep_count * join.sep.length + list->size;
+    char* ptr = result.value = arena_push_array(arena, char, result.length + 1);
+
+    memory_copy(ptr, join.pre.value, join.pre.length);
+    ptr += join.pre.length;
+    for (StringNode* node = list->first;
+         node != 0;
+         node = node->next)
+    {
+        memory_copy(ptr, node->value.value, node->value.length);
+        ptr += node->value.length;
+        if (node->next != 0)
+        {
+            memory_copy(ptr, join.sep.value, join.sep.length);
+            ptr += join.sep.length;
+        }
+    }
+    memory_copy(ptr, join.post.value, join.post.length);
+    ptr += join.post.length;
+
+    *ptr = 0;
+    return (result);
 }
 
 /** string storage */

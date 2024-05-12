@@ -24,6 +24,8 @@
 
 #include <physics/intersection.h>
 
+#include <draw/draw_inc.c>
+
 #include <engine/color.c>
 #include <engine/draw.c>
 #include <engine/input.c>

@@ -30,6 +30,7 @@
 
 #include <physics/intersection.c>
 
+#include <draw/draw_inc.h>
 
 #include <engine/color.h>
 #include <engine/draw.h>

@@ -91,12 +91,6 @@ typedef struct
 
 typedef uint32 Color;
 
-// typedef struct
-// {
-//     uint32 index_count;
-//     uint32 vertex_array_object;
-// } Geometry;
-
 typedef struct
 {
     bool32 is_initialized;
@@ -185,6 +179,13 @@ typedef struct
 {
     Vec2 pos;
     Vec2 tex_coord;
+    Vec4 color;
+} VertexAtrribute_TexturedColored;
+
+typedef struct
+{
+    Vec2 pos;
+    Vec2 tex_coord;
     // uint32 instance_id;
 } VertexAtrribute_TexturedI;
 
@@ -193,6 +194,7 @@ typedef struct
     uint32 component_count;
     uint32 index;
     uint64 size;
+    uint32 type;
 } VertexAttributeElement;
 
 typedef struct VertexAttributeElementNode VertexAttributeElementNode;
@@ -344,8 +346,11 @@ internal void renderer_init(Arena* arena, RendererConfiguration* configuration);
 
 /** vertex attributes */
 internal VertexAttributeInfo* r_attribute_info_new(Arena* arena);
-internal void                 r_attribute_info_add(VertexAttributeInfo* info, usize attr_size, uint32 element_count);
+internal void                 r_attribute_info_add(VertexAttributeInfo* info, usize component_size, uint32 component_count, GLenum type);
 internal void                 r_attribute_info_add_vec2(VertexAttributeInfo* info);
+internal void                 r_attribute_info_add_vec4(VertexAttributeInfo* info);
+internal void                 r_attribute_info_add_int(VertexAttributeInfo* info);
+internal void                 r_attribute_info_add_uint(VertexAttributeInfo* info);
 
 /** DEPRECATED: use `r_material_create` instead */
 internal MaterialIndex material_new_deprecated(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);

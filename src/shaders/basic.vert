@@ -1,8 +1,8 @@
 #version 430 core
 
-layout(location = 0) in vec3 a_pos;
-layout(location = 1) in vec3 a_color;
-layout(location = 2) in vec2 a_tex_coord;
+layout(location = 0) in vec2 a_pos;
+layout(location = 1) in vec2 a_tex_coord;
+layout(location = 2) in vec4 a_color;
 
 layout (std140, binding = 0) uniform Global
 {
@@ -21,19 +21,15 @@ layout (std140, binding = 2) uniform Camera
     mat4 view;
 };
 
-layout (std140, binding = 4) uniform Custom
-{
-    vec4 u_color;
-};
-
 uniform mat4 u_model;
-uniform sampler2D u_main_texture;
 
 /* Vertex Data */
 out vec2 v_tex_coord;
+out vec4 v_color;
 
 void main() 
 {
-    gl_Position = projection * view * u_model * vec4(a_pos, 1.0);
     v_tex_coord = a_tex_coord;
+    v_color = a_color;
+    gl_Position = u_model * vec4(a_pos, 0, 1);
 }
