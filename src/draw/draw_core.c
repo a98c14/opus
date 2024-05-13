@@ -14,7 +14,12 @@ d_context_init(Arena* persistent_arena)
     r_attribute_info_add_vec2(attr_info_color); // layout(location = 0) in vec2 a_pos;
     r_attribute_info_add_vec2(attr_info_color); // layout(location = 1) in vec2 a_tex_coord;
     r_attribute_info_add_vec4(attr_info_color); // layout(location = 2) in vec4 a_color;
-    r_attribute_info_add_vec4(attr_info_color); // layout(location = 3) in int a_instance;
+
+    VertexAttributeInfo* attr_info_color_instanced = r_attribute_info_new(temp.arena);
+    r_attribute_info_add_vec2(attr_info_color_instanced); // layout(location = 0) in vec2 a_pos;
+    r_attribute_info_add_vec2(attr_info_color_instanced); // layout(location = 1) in vec2 a_tex_coord;
+    r_attribute_info_add_vec4(attr_info_color_instanced); // layout(location = 2) in vec4 a_color;
+    r_attribute_info_add_vec4(attr_info_color_instanced); // layout(location = 3) in int a_instance;
 
     d_context->material_text = r_material_create(
         g_renderer,
@@ -37,12 +42,19 @@ d_context_init(Arena* persistent_arena)
         16,
         false, attr_info_color);
 
+    d_context->material_rect = r_material_create(
+        g_renderer,
+        d_shader_opengl_rect_vert,
+        d_shader_opengl_rect_frag,
+        16,
+        false, attr_info_color);
+
     d_context->material_circle = r_material_create(
         g_renderer,
         d_shader_opengl_circle_vert,
         d_shader_opengl_circle_frag,
         16,
-        false, attr_info_color);
+        false, attr_info_color_instanced);
 
     d_context->active_pass  = 0;
     d_context->active_layer = 5;
@@ -68,10 +80,10 @@ internal void
 d_batch_push_vertex_pos_tex_color_instanced(Vec2 pos, Vec2 tex_coord, Color c, int32 instance)
 {
     VertexAtrribute_TexturedColoredInstanced attr;
-    attr.pos        = pos;
-    attr.tex_coord  = tex_coord;
-    attr.color      = color_v4(c);
-    attr.instance.r = instance;
+    attr.pos       = pos;
+    attr.tex_coord = tex_coord;
+    attr.color     = color_v4(c);
+    attr.instance  = instance;
 
     R_Batch* batch = r_active_batch();
     memcpy((uint8*)batch->vertex_buffer + batch->vertex_buffer_size, &attr, sizeof(attr));
@@ -96,7 +108,7 @@ d_batch_push_colored_quad(Rect rect, Bounds tex_coord, Color c)
 internal void
 d_line(Vec2 start, Vec2 end, float32 thickness, Color c)
 {
-    RenderKey test_key = render_key_new_default(ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, d_context->material_basic);
+    RenderKey test_key = render_key_new_default(ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, d_context->material_rect);
 
     Vec2 heading = heading_to_vec2(start, end);
     Vec2 A1      = add_vec2(start, mul_vec2_f32(rotate90_vec2(heading), thickness));

@@ -180,10 +180,11 @@ typedef struct
 
 typedef struct
 {
-    Vec2 pos;
-    Vec2 tex_coord;
-    Vec4 color;
-    Vec4 instance;
+    Vec2  pos;
+    Vec2  tex_coord;
+    Vec4  color;
+    int32 instance;
+    Vec3  _;
 } VertexAtrribute_TexturedColoredInstanced;
 
 typedef struct

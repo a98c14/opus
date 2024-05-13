@@ -12,9 +12,10 @@ typedef struct
 
     /** materials */
     MaterialIndex material_basic;
+    MaterialIndex material_rect;
+    MaterialIndex material_circle;
     MaterialIndex material_sprite;
     MaterialIndex material_text;
-    MaterialIndex material_circle;
 } D_Context;
 D_Context* d_context;
 
