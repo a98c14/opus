@@ -13,12 +13,11 @@ main(void)
     tctx_init_and_equip(&tctx);
     logger_init();
 
-    Arena*       persistent_arena = make_arena_reserve(mb(128));
-    Arena*       frame_arena      = make_arena_reserve(mb(128));
-    Window*      window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL);
-    EngineTime   time             = engine_time_new();
-    InputMouse   mouse            = {0};
-    const uint32 font_size        = 30;
+    Arena*     persistent_arena = make_arena_reserve(mb(128));
+    Arena*     frame_arena      = make_arena_reserve(mb(128));
+    Window*    window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL);
+    EngineTime time             = engine_time_new();
+    InputMouse mouse            = {0};
     font_cache_init(persistent_arena);
 
     RendererConfiguration* r_config = r_config_new(frame_arena);
@@ -27,18 +26,16 @@ main(void)
     r_config_set_clear_color(r_config, ColorSlate900);
     renderer_init(persistent_arena, r_config);
 
-    ArenaTemp    temp    = scratch_begin(0, 0);
-    TextureIndex texture = texture_new_from_file(g_renderer, string(ASSET_PATH "\\textures\\game.png"), true, false);
+    ArenaTemp    temp          = scratch_begin(0, 0);
+    TextureIndex texture       = texture_new_from_file(g_renderer, string(ASSET_PATH "\\textures\\game.png"), true, false);
+    SpriteAtlas* atlas         = sprite_atlas_new(temp.arena, texture, Animations, Sprites, 0, array_count(Animations), array_count(Sprites));
+    String       ascii_charset = string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
     R_PipelineConfiguration* config       = r_pipeline_config_new(frame_arena);
     PassIndex                pass_default = r_pipeline_config_add_pass(config, FRAME_BUFFER_INDEX_DEFAULT);
     r_pipeline_init(config);
 
-    d_context_init(persistent_arena);
-
-    SpriteAtlas*  atlas       = sprite_atlas_new(temp.arena, texture, Animations, Sprites, 0, array_count(Animations), array_count(Sprites));
-    FontFaceIndex ibx_mono    = font_load(string("ibx_mono"), string(ASSET_PATH "\\IBMPlexMono-Bold.ttf"), GlyphAtlasTypeFreeType);
-    GlyphAtlas*   glyph_atlas = font_get_atlas(ibx_mono, font_size);
+    d_context_init(persistent_arena, AssetPath);
 
     scratch_end(temp);
 
@@ -77,12 +74,13 @@ main(void)
             // RenderKey font_key = render_key_new_default(ViewTypeWorld, 5, pass_default, glyph_atlas->texture, d_context->material_text);
             // r_batch_scope(font_key)
             // {
-            //     r_batch_push_string(glyph_atlas, string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"), vec2(-900, 0), font_size);
+            //     r_batch_push_string(glyph_atlas, , vec2(-900, 0), font_size);
             // }
 
-            d_line(vec2(0, 0), mouse.screen, 2, ColorRed400);
+            d_debug_line(vec2(0, 0), mouse.screen);
             d_line(vec2(100, 100), vec2(200, 100), 2, ColorRed400);
             d_circle(vec2(10, 10), 100, 0.3, ColorBlue400);
+            d_string(vec2(0, -100), ascii_charset, 14);
 
             r_render(g_renderer, time.dt);
         }

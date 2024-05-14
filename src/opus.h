@@ -18,7 +18,7 @@
 #include <base/strings.h>
 #include <base/thread_context.h>
 #include <base/layout.h>
-
+#include <base/color.h>
 
 #include <gfx/base.h>
 #include <gfx/batch.h>
@@ -30,14 +30,13 @@
 
 #include <physics/intersection.c>
 
+#include <text/text_inc.h>
 #include <draw/draw_inc.h>
 
-#include <engine/color.h>
 #include <engine/draw.h>
 #include <engine/input.h>
 #include <engine/perf_timer.h>
 #include <engine/profiler.h>
-#include <engine/text.h>
 #include <engine/time.h>
 #include <engine/window.h>
 #include <engine/audio.h>

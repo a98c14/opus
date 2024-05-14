@@ -89,9 +89,9 @@ typedef struct
 
 typedef struct
 {
-    String8 pre;
-    String8 sep;
-    String8 post;
+    String pre;
+    String sep;
+    String post;
 } StringJoin;
 
 internal StringList  string_list();

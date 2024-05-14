@@ -95,7 +95,6 @@ if __name__ == "__main__":
         output_file.write("#include <base/defines.h>\n")
         output_file.write("#include <base/math.h>\n")
         output_file.write("#include <gfx/sprite.h>\n")
-        output_file.write("#include <engine/text.h>\n")
         
         # write textures
         output_file.write("\nenum\n{\n")

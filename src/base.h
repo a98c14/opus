@@ -1,5 +1,6 @@
 #pragma once
 #include "base/bitfield.h"
+#include "base/color.h"
 #include "base/datetime.h"
 #include "base/defines.h"
 #include "base/easing.h"
@@ -14,3 +15,4 @@
 #include "base/sort.h"
 #include "base/strings.h"
 #include "base/thread_context.h"
+

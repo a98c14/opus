@@ -85,8 +85,6 @@ typedef struct
     float32 world_width;
 } Camera;
 
-typedef uint32 Color;
-
 typedef struct
 {
     bool32 is_initialized;
@@ -371,8 +369,6 @@ internal void             r_frame_buffer_begin(FrameBuffer* frame_buffer);
 internal TextureIndex     frame_buffer_texture(Renderer* renderer, FrameBufferIndex frame_buffer_index);
 internal FrameBufferIndex r_frame_buffer_new(Renderer* renderer, uint32 width, uint32 height, uint32 filter, Color clear_color);
 internal void             r_frame_buffer_set_blend(FrameBufferIndex frame_buffer_index, uint32 blend_src_rgb, uint32 blend_dst_rgb, uint32 blend_src_alpha, uint32 blend_dst_alpha);
-internal Vec4             color_v4(Color hex);
-internal Color            vec4_to_color(Vec4 c);
 internal void             r_render(Renderer* renderer, float32 dt);
 internal void             r_render_v2(float32 dt);
 internal void             texture_shader_data_set(Renderer* renderer, const Texture* texture);

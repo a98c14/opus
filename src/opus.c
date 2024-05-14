@@ -13,6 +13,7 @@
 #include <base/strings.c>
 #include <base/thread_context.c>
 #include <base/layout.c>
+#include <base/color.c>
 
 #include <gfx/base.c>
 #include <gfx/batch.c>
@@ -24,14 +25,13 @@
 
 #include <physics/intersection.h>
 
+#include <text/text_inc.c>
 #include <draw/draw_inc.c>
 
-#include <engine/color.c>
 #include <engine/draw.c>
 #include <engine/input.c>
 #include <engine/perf_timer.c>
 #include <engine/profiler.c>
-#include <engine/text.c>
 #include <engine/time.c>
 #include <engine/window.c>
 #include <engine/audio.c>

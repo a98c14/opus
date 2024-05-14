@@ -9,7 +9,6 @@
 #include <base/defines.h>
 #include <base/math.h>
 #include <gfx/sprite.h>
-#include <engine/text.h>
 
 enum
 {

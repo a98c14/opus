@@ -1,12 +1,9 @@
 #pragma once
 
 #include <base.h>
-#include <engine/color.h>
 #include <gfx.h>
 #include <physics/intersection.h>
-
-#include "color.h"
-#include "text.h"
+#include <text/text_inc.h>
 
 typedef struct
 {

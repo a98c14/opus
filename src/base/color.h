@@ -1,8 +1,13 @@
 #pragma once
-#include <gfx/base.h>
+#include "defines.h"
+#include "math.h"
+
+typedef uint32 Color;
 
 internal Color lerp_color(Color a, Color b, float32 t);
 internal Color color_set_alpha(Color c, float32 a);
+internal Vec4  color_v4(Color hex);
+internal Color vec4_to_color(Vec4 c);
 
 global const Color ColorClear                = 0x0f172a00;
 global const Color ColorBlack                = 0x000000ff;

@@ -242,6 +242,7 @@ string_list_push(Arena* arena, StringList* list, String str)
     queue_push(list->first, list->last, node);
     list->count += 1;
     list->size += str.length;
+    return node;
 }
 
 internal StringNode*
@@ -252,6 +253,7 @@ string_list_push_front(Arena* arena, StringList* list, String str)
     queue_push_front(list->first, list->last, node);
     list->count += 1;
     list->size += str.length;
+    return node;
 }
 
 internal StringNode*

@@ -36,3 +36,24 @@ lerp_color(Color a, Color b, float32 t)
 {
     return vec4_to_color(lerp_vec4(color_v4(a), color_v4(b), t));
 }
+
+internal Vec4
+color_v4(Color hex)
+{
+    Vec4 result;
+    result.r = (hex >> 24 & ((1 << 8) - 1)) / 255.0f;
+    result.g = (hex >> 16 & ((1 << 8) - 1)) / 255.0f;
+    result.b = (hex >> 8 & ((1 << 8) - 1)) / 255.0f;
+    result.a = (hex >> 0 & ((1 << 8) - 1)) / 255.0f;
+    return result;
+}
+
+internal Color
+vec4_to_color(Vec4 c)
+{
+    uint32 r = (uint8)(c.r * 255.f) << 24;
+    uint32 g = (uint8)(c.g * 255.f) << 16;
+    uint32 b = (uint8)(c.b * 255.f) << 8;
+    uint32 a = (uint8)(c.a * 255.f) << 0;
+    return r + g + b + a;
+}

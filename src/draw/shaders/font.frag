@@ -2,6 +2,7 @@
 
 layout(location = 0) in vec2 a_pos;
 layout(location = 1) in vec2 a_tex_coord;
+layout(location = 2) in vec4 a_color;
 
 layout (std140, binding = 0) uniform Global
 {
@@ -14,22 +15,12 @@ layout (std140, binding = 1) uniform Texture
     float texture_layer_count;
 };
 
-layout (std140, binding = 2) uniform Camera
-{
-    mat4 projection;
-    mat4 view;
-};
-
-layout (std140, binding = 4) uniform Custom
-{
-    vec4 u_color;
-};
-
 uniform mat4 u_model;
 uniform sampler2D u_main_texture;
 
 /* Vertex Data */
 in vec2 v_tex_coord;
+in vec4 v_color;
 out vec4 color;
 
 void main() {
@@ -39,7 +30,7 @@ void main() {
     float aaf = fwidth(d);
     float alpha = smoothstep(0.5 - aaf, 0.5 + aaf, d);
 
-    color = vec4(1, 1, 1, d);
+    color = vec4(v_color.rgb, v_color.a * d);
 #if DEBUG == 1
     color = mix(vec4(1, 0, 0, 1), color, color.a);
 #endif
