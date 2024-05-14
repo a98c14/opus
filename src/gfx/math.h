@@ -3,6 +3,18 @@
 #include <base/math.h>
 #include <base/memory.h>
 
+typedef union
+{
+    struct
+    {
+        Vec2 bl;
+        Vec2 tl;
+        Vec2 br;
+        Vec2 tr;
+    };
+    Vec2 v[4];
+} R_Quad;
+
 internal Mat4 mat4_mvp(Mat4 model, Mat4 view, Mat4 projection);
 
 /* Transforms */

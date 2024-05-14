@@ -85,10 +85,18 @@ typedef struct
     float32 world_width;
 } Camera;
 
+typedef enum
+{
+    R_BatchTypeUndefined = 0,
+    R_BatchTypeBuffer,
+    R_BatchTypeInstanced,
+    R_BatchTypeSingle
+} R_BatchType;
+
 typedef struct
 {
-    bool32 is_initialized;
-    bool32 is_instanced;
+    bool32      is_initialized;
+    R_BatchType batch_type;
 
     uint32 gl_program_id;
     uint32 uniform_buffer_id;
@@ -219,15 +227,17 @@ typedef struct
 
 typedef struct
 {
+    R_BatchType type;
+
     RenderKey key;
-    uint32    element_count;
-    uint32    vertex_count;
 
+    uint32 vertex_count;
     uint32 vertex_buffer_size;
-    uint32 uniform_buffer_size;
+    void*  vertex_buffer;
 
-    void* vertex_buffer;
-    void* uniform_buffer;
+    uint32 element_count;
+    uint32 uniform_buffer_size;
+    void*  uniform_buffer;
 } R_Batch;
 
 typedef struct R_BatchNode R_BatchNode;
@@ -355,7 +365,7 @@ internal void                 r_attribute_info_add_uint(VertexAttributeInfo* inf
 
 /** DEPRECATED: use `r_material_create` instead */
 internal MaterialIndex material_new_deprecated(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
-internal MaterialIndex r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced, VertexAttributeInfo* attribute_info);
+internal MaterialIndex r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, R_BatchType batch_type, VertexAttributeInfo* attribute_info);
 // internal GeometryIndex geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object);
 internal TextureIndex texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
 internal TextureIndex texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);

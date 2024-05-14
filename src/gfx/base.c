@@ -240,7 +240,7 @@ material_new_deprecated(Renderer* renderer, String vertex_shader_text, String fr
     result->location_texture  = glGetUniformLocation(result->gl_program_id, "u_main_texture");
     result->uniform_data_size = uniform_data_size;
     result->is_initialized    = 1;
-    result->is_instanced      = is_instanced;
+    result->batch_type        = 0;
 
     // generate custom shader data UBO
     if (is_instanced)
@@ -270,7 +270,7 @@ material_new_deprecated(Renderer* renderer, String vertex_shader_text, String fr
 }
 
 internal MaterialIndex
-r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced, VertexAttributeInfo* attribute_info)
+r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, R_BatchType batch_type, VertexAttributeInfo* attribute_info)
 {
     MaterialIndex material_index = renderer->material_count;
     renderer->material_count++;
@@ -280,25 +280,14 @@ r_material_create(Renderer* renderer, String vertex_shader_text, String fragment
     result->location_texture  = glGetUniformLocation(result->gl_program_id, "u_main_texture");
     result->uniform_data_size = uniform_data_size;
     result->is_initialized    = 1;
-    result->is_instanced      = is_instanced;
+    result->batch_type        = batch_type;
 
     // generate custom shader data UBO
-    // if (is_instanced)
-    // {
-    // result->location_model = -1;
     glGenBuffers(1, &result->uniform_buffer_id);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, result->uniform_buffer_id);
     glBufferData(GL_SHADER_STORAGE_BUFFER, uniform_data_size * MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY, 0, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    // }
-    // else
-    // {
-    //     glGenBuffers(1, &result->uniform_buffer_id);
-    //     glBindBuffer(GL_UNIFORM_BUFFER, result->uniform_buffer_id);
-    //     glBufferData(GL_UNIFORM_BUFFER, uniform_data_size, NULL, GL_STREAM_DRAW);
-    //     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     result->location_model = glGetUniformLocation(result->gl_program_id, "u_model");
-    // }
 
     unsigned int global_ubo_index = glGetUniformBlockIndex(result->gl_program_id, "Global");
     glUniformBlockBinding(result->gl_program_id, global_ubo_index, BINDING_SLOT_GLOBAL);
