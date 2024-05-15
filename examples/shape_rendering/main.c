@@ -47,7 +47,6 @@ main(void)
             break;
 
         arena_reset(frame_arena);
-
         mouse = input_mouse_get(window, g_renderer->camera, mouse);
         time  = engine_get_time(time);
 
