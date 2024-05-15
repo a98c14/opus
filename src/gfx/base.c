@@ -689,37 +689,6 @@ r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_
     r_draw_single(key, model, uniform_data);
 }
 
-// internal void
-// r_draw_batch_internal(Material* material, uint64 element_count, void* vertex_buffer, void* uniform_data)
-// {
-//     if (material->is_instanced)
-//     {
-//         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_CUSTOM, material->uniform_buffer_id);
-//         // glBindBuffer(GL_SHADER_STORAGE_BUFFER, g_renderer->mvp_ssbo_id);
-//         // glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Mat4) * element_count, models);
-//         glBindBuffer(GL_SHADER_STORAGE_BUFFER, material->uniform_buffer_id);
-//         glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, material->uniform_data_size * element_count, uniform_data);
-//         glDrawElementsInstanced(GL_TRIANGLES, geometry->index_count, GL_UNSIGNED_INT, 0, element_count);
-//         g_renderer->stat_draw_count++;
-//         g_renderer->stat_object_count += element_count;
-//     }
-//     else
-//     {
-//         glBindBuffer(GL_UNIFORM_BUFFER, material->uniform_buffer_id);
-//         glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_UBO_CUSTOM, material->uniform_buffer_id, 0, material->uniform_data_size);
-//         for (uint32 element_index = 0; element_index < element_count; element_index++)
-//         {
-//             Mat4  model       = models[element_index];
-//             void* shader_data = ((uint8*)uniform_data + element_index * material->uniform_data_size);
-//             glBufferSubData(GL_UNIFORM_BUFFER, 0, material->uniform_data_size, shader_data);
-//             glUniformMatrix4fv(material->location_model, 1, GL_FALSE, model.v);
-//             glDrawElements(GL_TRIANGLES, geometry->index_count, GL_UNSIGNED_INT, 0);
-//             g_renderer->stat_draw_count++;
-//         }
-//         g_renderer->stat_object_count += element_count;
-//     }
-// }
-
 internal void
 camera_move(Renderer* renderer, Vec2 position)
 {

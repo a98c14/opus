@@ -29,6 +29,7 @@ typedef struct
     PassIndex      active_pass;
     SortLayerIndex active_layer;
     FontFaceIndex  active_font;
+    ViewType       active_view;
 
     /** materials */
     MaterialIndex material_basic;
@@ -46,6 +47,7 @@ internal void d_mesh_push_vertex(VertexAtrribute_TexturedColored* vertex_buffer,
 internal void d_mesh_push_quad(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Rect rect, Bounds tex_coord, Color color);
 internal void d_mesh_push_glyph(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Glyph glyph, Vec2 pos, float32 size, Color color);
 internal void d_mesh_push_string(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, GlyphAtlas* atlas, String str, Vec2 pos, float32 size, Color c);
+internal void d_mesh_push_triangle_strip(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
 
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);

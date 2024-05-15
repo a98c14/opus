@@ -65,6 +65,25 @@ d_mesh_push_vertex(VertexAtrribute_TexturedColored* vertex_buffer, uint64* verte
 }
 
 internal void
+d_mesh_push_triangle_strip(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 pos, Vec2 tex_coord, Color color)
+{
+    vertex_buffer[*vertex_count].pos       = vertex_buffer[*(vertex_count)-2].pos;
+    vertex_buffer[*vertex_count].tex_coord = vertex_buffer[*(vertex_count)-2].tex_coord;
+    vertex_buffer[*vertex_count].color     = vertex_buffer[*(vertex_count)-2].color;
+    (*vertex_count)++;
+
+    vertex_buffer[*vertex_count].pos       = vertex_buffer[*(vertex_count)-2].pos;
+    vertex_buffer[*vertex_count].tex_coord = vertex_buffer[*(vertex_count)-2].tex_coord;
+    vertex_buffer[*vertex_count].color     = vertex_buffer[*(vertex_count)-2].color;
+    (*vertex_count)++;
+
+    vertex_buffer[*vertex_count].pos       = pos;
+    vertex_buffer[*vertex_count].tex_coord = tex_coord;
+    vertex_buffer[*vertex_count].color     = color_v4(color);
+    (*vertex_count)++;
+}
+
+internal void
 d_mesh_push_quad(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Rect rect, Bounds tex_coord, Color color)
 {
     d_mesh_push_vertex(vertex_buffer, vertex_count, rect_bl(rect), bounds_bl(tex_coord), color);

@@ -261,7 +261,6 @@ typedef struct
     uint8     material_count;
     Material* materials;
 
-    // TODO(selim): !!!!!!!!!!!!! INIT THESE
     uint32 vao_quad;
     uint32 vao_triangle;
     uint32 vao_dynamic;
@@ -346,7 +345,6 @@ internal void r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
 internal void r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
 internal void r_draw_many_no_copy(RenderKey key, uint64 count, Mat4* models, void* uniform_data);
 internal void r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_layer, MaterialIndex material_index, void* uniform_data);
-internal void r_draw_batch_internal(Material* material, uint64 element_count, void* vertex_buffer, void* uniform_data);
 
 /** camera */
 internal Camera camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
