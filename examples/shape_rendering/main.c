@@ -31,8 +31,8 @@ main(void)
     SpriteAtlas* atlas         = sprite_atlas_new(temp.arena, texture, Animations, Sprites, 0, array_count(Animations), array_count(Sprites));
     String       ascii_charset = string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
-    R_PipelineConfiguration* config       = r_pipeline_config_new(frame_arena);
-    PassIndex                pass_default = r_pipeline_config_add_pass(config, FRAME_BUFFER_INDEX_DEFAULT);
+    R_PipelineConfiguration* config = r_pipeline_config_new(frame_arena);
+    r_pipeline_config_add_pass(config, FRAME_BUFFER_INDEX_DEFAULT);
     r_pipeline_init(config);
 
     d_context_init(persistent_arena, frame_arena, AssetPath);
@@ -49,44 +49,20 @@ main(void)
         mouse = input_mouse_get(window, g_renderer->camera, mouse);
         time  = engine_get_time(time);
 
-        /** new render pipelines */
-        {
-            FrameBuffer* frame_buffer = &g_renderer->frame_buffers[pass_default];
-            r_frame_buffer_begin(frame_buffer);
+        g_renderer->timer += time.dt;
+        g_renderer->stat_draw_count   = 0;
+        g_renderer->stat_object_count = 0;
 
-            g_renderer->timer += time.dt;
-            g_renderer->stat_draw_count   = 0;
-            g_renderer->stat_object_count = 0;
+        d_circle(vec2(0, 0), 128, 0.2, ColorRed500);
+        d_circle(vec2(800, 0), 128, 0.2, ColorRed500);
+        d_string(vec2(-800, 0), ascii_charset, 28, ColorWhite);
+        d_line(vec2(-800, 0), vec2(800, 0), 2, ColorGreen400);
+        d_line(vec2(0, -500), vec2(0, 500), 2, ColorGreen400);
 
-            // /** setup batch */
-            // RenderKey test_key = render_key_new_default(ViewTypeWorld, 5, pass_default, texture, d_context->material_sprite);
-            // r_batch_scope(test_key)
-            // {
-            //     r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(0, 0));
-            //     r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(300, 0));
-            // }
+        d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_1, vec2(0, 0), vec2_one());
+        d_string(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 28, ColorWhite);
 
-            // r_batch_scope(test_key)
-            // {
-            //     r_batch_sprite_push_sprite(atlas, SPRITE_GAME_SHIPS_RANGER, vec2(-300, 0));
-            // }
-
-            // RenderKey font_key = render_key_new_default(ViewTypeWorld, 5, pass_default, glyph_atlas->texture, d_context->material_text);
-            // r_batch_scope(font_key)
-            // {
-            //     r_batch_push_string(glyph_atlas, , vec2(-900, 0), font_size);
-            // }
-
-            // d_debug_line(vec2(0, 0), mouse.screen);
-            // d_circle(vec2(10, 10), 100, 0.3, ColorBlue400);
-            d_string(vec2(-200, 0), ascii_charset, 28, ColorWhite);
-            d_line(vec2(-500, 0), vec2(500, 0), 2, ColorYellow400);
-            d_line(vec2(0, -500), vec2(0, 500), 2, ColorYellow400);
-
-            d_string(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 28, ColorWhite);
-
-            r_render(g_renderer, time.dt);
-        }
+        r_render(g_renderer, time.dt);
 
         window_update(window);
     }

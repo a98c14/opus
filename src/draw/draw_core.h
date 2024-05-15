@@ -5,6 +5,22 @@
 
 #include "draw_shaders.h"
 
+/** material uniform data */
+typedef struct
+{
+    Mat4    model;
+    Vec4    color;
+    float32 thickness;
+    Vec3    _;
+} D_ShaderDataCircle;
+
+typedef struct
+{
+    Mat4 model;
+    Vec4 bounds;
+    Vec4 color;
+} D_ShaderDataSprite;
+
 typedef struct
 {
     Arena* frame_arena;
@@ -23,14 +39,6 @@ typedef struct
 } D_Context;
 D_Context* d_context;
 
-typedef struct
-{
-    Mat4    model;
-    Vec4    color;
-    float32 thickness;
-    Vec3    _;
-} D_ShaderDataCircle;
-
 internal void d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path);
 
 /** batch functions */
@@ -45,3 +53,4 @@ internal void d_debug_line(Vec2 start, Vec2 end);
 internal void d_debug_line2(Vec2 start, Vec2 end);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal void d_string(Vec2 pos, String str, int32 size, Color c);
+internal void d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale);

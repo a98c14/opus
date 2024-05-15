@@ -1,4 +1,5 @@
 #version 430 core
+
 layout(location = 0) in vec2 a_pos;
 layout(location = 1) in vec2 a_tex_coord;
 layout(location = 2) in vec3 a_color;
@@ -30,13 +31,13 @@ layout (std140, binding = 2) buffer Custom
 
 /* Vertex Data */
 out vec2 v_tex_coord;
-out vec3 v_color;
+out vec4 v_color;
 out float v_thickness;
 
 void main() 
 {
     v_tex_coord = a_tex_coord;
-    v_color = a_color;
+    v_color = data[gl_InstanceID].color;
     v_thickness = data[gl_InstanceID].thickness;
     gl_Position =  g_projection * g_view * data[gl_InstanceID].model * vec4(a_pos, 0, 1);
 }

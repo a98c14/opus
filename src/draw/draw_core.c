@@ -19,8 +19,8 @@ d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
         g_renderer,
         d_shader_opengl_sprite_vert,
         d_shader_opengl_sprite_frag,
-        16,
-        R_DrawTypePackedBuffer);
+        sizeof(D_ShaderDataSprite),
+        R_DrawTypeInstanced);
 
     d_context->material_basic = r_material_create(
         g_renderer,
@@ -175,5 +175,23 @@ d_string(Vec2 pos, String str, int32 size, Color c)
     batch.vertex_buffer       = vertices;
     batch.vertex_buffer_size  = sizeof(VertexAtrribute_TexturedColored) * vertex_count;
     batch.uniform_buffer      = 0;
+    r_batch_commit(batch);
+}
+
+internal void
+d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale)
+{
+    const Sprite* sprite = &atlas->sprites[sprite_index];
+
+    // TODO(selim): add pivot calculations
+    D_ShaderDataSprite* uniform_data = arena_push_struct(d_context->frame_arena, D_ShaderDataSprite);
+    uniform_data->model              = transform_quad_aligned(pos, vec2(sprite->source_size.x * scale.x, sprite->source_size.y * scale.y));
+    uniform_data->bounds             = sprite->rect.v;
+    uniform_data->color              = color_v4(ColorWhite);
+
+    R_Batch batch;
+    batch.key            = render_key_new(ViewTypeWorld, d_context->active_layer, d_context->active_pass, atlas->texture, MeshTypeQuad, d_context->material_sprite);
+    batch.element_count  = 1;
+    batch.uniform_buffer = uniform_data;
     r_batch_commit(batch);
 }
