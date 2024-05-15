@@ -33,27 +33,36 @@ enum
 
 enum
 {
-    RenderTypeDefault = 0,
-    RenderTypeTrail   = 1,
+    MeshTypeTriangle,
+    MeshTypeQuad,
+    MeshTypeDynamic,
+    MeshTypeCOUNT,
 };
+
+typedef enum
+{
+    R_DrawTypeSingle       = 0,
+    R_DrawTypeInstanced    = 1,
+    R_DrawTypePackedBuffer = 2,
+} DrawType;
 
 typedef int64 RenderKey;
 #define RenderKeyMaterialIndexBitCount  8
+#define RenderKeyMeshTypeBitCount       3
 #define RenderKeyTextureIndexBitCount   4
 #define RenderKeyViewTypeBitCount       2
 #define RenderKeyPassIndexBitCount      4
 #define RenderKeySortLayerIndexBitCount 4
-#define RenderKeyRenderTypeBitCount     4
 
 #define RenderKeyMaterialIndexBitStart  0
-#define RenderKeyTextureIndexBitStart   (RenderKeyMaterialIndexBitStart + RenderKeyMaterialIndexBitCount)
+#define RenderKeyMeshTypeBitStart       (RenderKeyMaterialIndexBitStart + RenderKeyMaterialIndexBitCount)
+#define RenderKeyTextureIndexBitStart   (RenderKeyMeshTypeBitStart + RenderKeyMeshTypeBitCount)
 #define RenderKeyViewTypeBitStart       (RenderKeyTextureIndexBitStart + RenderKeyTextureIndexBitCount)
 #define RenderKeyPassIndexBitStart      (RenderKeyViewTypeBitStart + RenderKeyViewTypeBitCount)
 #define RenderKeySortLayerIndexBitStart (RenderKeyPassIndexBitStart + RenderKeyPassIndexBitCount)
-#define RenderKeyRenderTypeBitStart     (RenderKeySortLayerIndexBitStart + RenderKeySortLayerIndexBitCount)
 
 typedef uint8 ViewType;
-typedef uint8 RenderType;
+typedef uint8 MeshType;
 typedef int8  FrameBufferIndex;
 typedef int8  PassIndex;
 typedef int8  TextureIndex;
@@ -85,29 +94,18 @@ typedef struct
     float32 world_width;
 } Camera;
 
-typedef enum
-{
-    R_BatchTypeUndefined = 0,
-    R_BatchTypeBuffer,
-    R_BatchTypeInstanced,
-    R_BatchTypeSingle
-} R_BatchType;
-
 typedef struct
 {
-    bool32      is_initialized;
-    R_BatchType batch_type;
+    bool32   is_initialized;
+    DrawType draw_type;
 
     uint32 gl_program_id;
     uint32 uniform_buffer_id;
     uint32 uniform_data_size;
 
     uint32 location_model;
-    uint32 location_shader;
+    uint32 location_uniform;
     uint32 location_texture;
-
-    uint32 vertex_array_object;
-    uint64 vertex_size;
 } Material;
 
 typedef struct
@@ -142,6 +140,8 @@ typedef struct
 
 typedef struct
 {
+    Mat4    projection;
+    Mat4    view;
     float32 time;
     Vec3    _;
 } GlobalUniformData;
@@ -153,12 +153,6 @@ typedef struct
     float32 _;
 } TextureUniformData;
 
-typedef struct
-{
-    Mat4 projection;
-    Mat4 view;
-} CameraUniformData;
-
 enum ShaderProgramType
 {
     ShaderProgramTypeVertex   = GL_VERTEX_SHADER,
@@ -168,37 +162,9 @@ enum ShaderProgramType
 typedef struct
 {
     Vec2 pos;
-    Vec4 color;
-} VertexAtrribute_Colored;
-
-typedef struct
-{
-    Vec2 pos;
-    Vec2 tex_coord;
-} VertexAtrribute_Textured;
-
-typedef struct
-{
-    Vec2 pos;
     Vec2 tex_coord;
     Vec4 color;
 } VertexAtrribute_TexturedColored;
-
-typedef struct
-{
-    Vec2  pos;
-    Vec2  tex_coord;
-    Vec4  color;
-    int32 instance;
-    Vec3  _;
-} VertexAtrribute_TexturedColoredInstanced;
-
-typedef struct
-{
-    Vec2 pos;
-    Vec2 tex_coord;
-    // uint32 instance_id;
-} VertexAtrribute_TexturedI;
 
 typedef struct
 {
@@ -227,17 +193,15 @@ typedef struct
 
 typedef struct
 {
-    R_BatchType type;
-
     RenderKey key;
 
-    uint32 vertex_count;
-    uint32 vertex_buffer_size;
-    void*  vertex_buffer;
-
     uint32 element_count;
-    uint32 uniform_buffer_size;
     void*  uniform_buffer;
+
+    // only needs to be set when `MeshTypeDynamic` is used
+    uint32 draw_instance_count;
+    uint64 vertex_buffer_size;
+    void*  vertex_buffer;
 } R_Batch;
 
 typedef struct R_BatchNode R_BatchNode;
@@ -267,9 +231,6 @@ typedef struct
     Arena* arena;
     Arena* frame_arena;
 
-    Arena* vertex_buffer_arena;
-    Arena* uniform_buffer_arena;
-
     float32 window_width;
     float32 window_height;
     float32 world_width;
@@ -297,15 +258,13 @@ typedef struct
     uint8    texture_count;
     Texture* textures;
 
-    // uint8     geometry_count;
-    // Geometry* geometries;
-
     uint8     material_count;
     Material* materials;
 
-    // GeometryIndex quad;
-    // GeometryIndex triangle;
-    // GeometryIndex geometry_empty;
+    // TODO(selim): !!!!!!!!!!!!! INIT THESE
+    uint32 vao_quad;
+    uint32 vao_triangle;
+    uint32 vao_dynamic;
 
     /* stats */
     int32   stat_draw_count;
@@ -365,14 +324,12 @@ internal void                 r_attribute_info_add_uint(VertexAttributeInfo* inf
 
 /** DEPRECATED: use `r_material_create` instead */
 internal MaterialIndex material_new_deprecated(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, bool32 is_instanced);
-internal MaterialIndex r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, R_BatchType batch_type, VertexAttributeInfo* attribute_info);
-// internal GeometryIndex geometry_new(Renderer* renderer, int32 index_count, int32 vertex_array_object);
-internal TextureIndex texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
-internal TextureIndex texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
-internal uint32       shader_load(String vertex_shader_text, String fragment_shader_text);
+internal MaterialIndex r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, DrawType draw_type);
+internal TextureIndex  texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
+internal TextureIndex  texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
+internal uint32        shader_load(String vertex_shader_text, String fragment_shader_text);
 
-internal RenderKey render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, MaterialIndex material_index, RenderType type);
-internal RenderKey render_key_new_default(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, MaterialIndex material_index);
+internal RenderKey render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, MeshType mesh_type, MaterialIndex material_index);
 internal uint64    render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count);
 
 internal void             r_frame_buffer_begin(FrameBuffer* frame_buffer);
@@ -383,13 +340,7 @@ internal void             r_render(Renderer* renderer, float32 dt);
 internal void             r_render_v2(float32 dt);
 internal void             texture_shader_data_set(Renderer* renderer, const Texture* texture);
 
-internal R_BatchNode* r_batch_reserve(RenderKey key);
-internal void         r_batch_commit(R_BatchNode* node);
-internal R_Batch*     r_batch_from_key(RenderKey key);
-internal void         r_batch_begin(RenderKey key);
-internal void         r_batch_end();
-internal R_Batch*     r_active_batch();
-#define r_batch_scope(key) defer_loop(r_batch_begin(key), r_batch_end())
+internal void r_batch_commit(R_Batch batch);
 
 internal void r_draw_single(RenderKey key, Mat4 model, void* uniform_data);
 internal void r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data);

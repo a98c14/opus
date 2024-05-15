@@ -21,7 +21,6 @@
 #include <base/color.h>
 
 #include <gfx/base.h>
-#include <gfx/batch.h>
 #include <gfx/debug.h>
 #include <gfx/math.h>
 #include <gfx/primitives.h>

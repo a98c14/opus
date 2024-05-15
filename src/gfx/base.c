@@ -50,16 +50,14 @@ r_pipeline_config_add_pass(R_PipelineConfiguration* config, FrameBufferIndex fra
 internal void
 renderer_init(Arena* arena, RendererConfiguration* configuration)
 {
-    g_renderer                       = arena_push_struct_zero(arena, Renderer);
-    g_renderer->arena                = arena;
-    g_renderer->frame_arena          = make_arena_reserve(mb(128));
-    g_renderer->vertex_buffer_arena  = make_arena_reserve(mb(128));
-    g_renderer->uniform_buffer_arena = make_arena_reserve(mb(128));
-    g_renderer->window_width         = configuration->window_width;
-    g_renderer->window_height        = configuration->window_height;
-    g_renderer->frame_buffers        = arena_push_array_zero(arena, FrameBuffer, LAYER_CAPACITY);
-    g_renderer->materials            = arena_push_array_zero(arena, Material, MATERIAL_CAPACITY);
-    g_renderer->textures             = arena_push_array_zero(arena, Texture, TEXTURE_CAPACITY);
+    g_renderer                = arena_push_struct_zero(arena, Renderer);
+    g_renderer->arena         = arena;
+    g_renderer->frame_arena   = make_arena_reserve(mb(128));
+    g_renderer->window_width  = configuration->window_width;
+    g_renderer->window_height = configuration->window_height;
+    g_renderer->frame_buffers = arena_push_array_zero(arena, FrameBuffer, LAYER_CAPACITY);
+    g_renderer->materials     = arena_push_array_zero(arena, Material, MATERIAL_CAPACITY);
+    g_renderer->textures      = arena_push_array_zero(arena, Texture, TEXTURE_CAPACITY);
 
     xassert(configuration->world_width > 0 || configuration->world_height > 0, "at least one of world width or world height needs to have a value");
     glViewport(0, 0, g_renderer->window_width, g_renderer->window_height);
@@ -99,14 +97,6 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_TEXTURE, g_renderer->texture_uniform_buffer_id, 0, sizeof(TextureUniformData));
 
-    // TODO(selim): !!!!!!!!!!!!!!!!!!!!
-    // /* Create Camera UBO */
-    // glGenBuffers(1, &g_renderer->camera_uniform_buffer_id);
-    // glBindBuffer(GL_UNIFORM_BUFFER, g_renderer->camera_uniform_buffer_id);
-    // glBufferData(GL_UNIFORM_BUFFER, sizeof(CameraUniformData), NULL, GL_STATIC_DRAW);
-    // glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    // glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_CAMERA, g_renderer->camera_uniform_buffer_id, 0, sizeof(CameraUniformData));
-
     // Reserve the first slot for NULL texture
     g_renderer->texture_count += 1;
 
@@ -123,12 +113,18 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     frame_buffer->blend_src_alpha = GL_ONE;
     frame_buffer->blend_dst_alpha = GL_ONE;
 
-    // Initialize global vertex buffer
-    uint32 vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float32) * 8192, 0, GL_DYNAMIC_DRAW);
+    // Init meshes
+    ArenaTemp temp = scratch_begin(&arena, 1);
 
+    VertexAttributeInfo* attr_info_color = r_attribute_info_new(temp.arena);
+    r_attribute_info_add_vec2(attr_info_color); // layout(location = 0) in vec2 a_pos;
+    r_attribute_info_add_vec2(attr_info_color); // layout(location = 1) in vec2 a_tex_coord;
+    r_attribute_info_add_vec4(attr_info_color); // layout(location = 2) in vec4 a_color;
+
+    g_renderer->vao_quad     = mesh_quad_create(g_renderer);
+    g_renderer->vao_triangle = mesh_triangle_create(g_renderer);
+    g_renderer->vao_dynamic  = mesh_buffer_create(g_renderer, attr_info_color, 1024);
+    scratch_end(temp);
     log_debug("renderer created");
 }
 
@@ -146,7 +142,7 @@ r_pipeline_init(R_PipelineConfiguration* configuration)
         pass_index++;
     }
 
-    g_renderer->active_render_key = render_key_new_default(0, 0, 0, TEXTURE_INDEX_NULL, MATERIAL_CAPACITY - 1); // TODO(selim): find a way to show invalid values properly;
+    g_renderer->active_render_key = render_key_new(0, 0, 0, TEXTURE_INDEX_NULL, MeshTypeQuad, MATERIAL_CAPACITY - 1); // TODO(selim): find a way to show invalid values properly;
 }
 
 internal VertexAttributeInfo*
@@ -240,7 +236,6 @@ material_new_deprecated(Renderer* renderer, String vertex_shader_text, String fr
     result->location_texture  = glGetUniformLocation(result->gl_program_id, "u_main_texture");
     result->uniform_data_size = uniform_data_size;
     result->is_initialized    = 1;
-    result->batch_type        = 0;
 
     // generate custom shader data UBO
     if (is_instanced)
@@ -270,7 +265,7 @@ material_new_deprecated(Renderer* renderer, String vertex_shader_text, String fr
 }
 
 internal MaterialIndex
-r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, R_BatchType batch_type, VertexAttributeInfo* attribute_info)
+r_material_create(Renderer* renderer, String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, DrawType draw_type)
 {
     MaterialIndex material_index = renderer->material_count;
     renderer->material_count++;
@@ -280,7 +275,7 @@ r_material_create(Renderer* renderer, String vertex_shader_text, String fragment
     result->location_texture  = glGetUniformLocation(result->gl_program_id, "u_main_texture");
     result->uniform_data_size = uniform_data_size;
     result->is_initialized    = 1;
-    result->batch_type        = batch_type;
+    result->draw_type         = draw_type;
 
     // generate custom shader data UBO
     glGenBuffers(1, &result->uniform_buffer_id);
@@ -294,26 +289,6 @@ r_material_create(Renderer* renderer, String vertex_shader_text, String fragment
 
     unsigned int texture_ubo_index = glGetUniformBlockIndex(result->gl_program_id, "Texture");
     glUniformBlockBinding(result->gl_program_id, texture_ubo_index, BINDING_SLOT_TEXTURE);
-
-    // set up vertex array attributes
-    glGenVertexArrays(1, &result->vertex_array_object);
-    glBindVertexArray(result->vertex_array_object);
-
-    uint64                      size_per_vertex = 0;
-    VertexAttributeElementNode* n;
-    for_each(n, attribute_info->first)
-    {
-        size_per_vertex += n->v.size;
-    }
-    result->vertex_size = size_per_vertex;
-
-    uint64 offset = 0;
-    for_each(n, attribute_info->first)
-    {
-        glVertexAttribPointer(n->v.index, n->v.component_count, n->v.type, GL_FALSE, size_per_vertex, (void*)offset);
-        glEnableVertexAttribArray(n->v.index);
-        offset += n->v.size;
-    }
 
     return material_index;
 }
@@ -402,7 +377,7 @@ texture_update(Renderer* renderer, TextureIndex texture, void* data)
 }
 
 internal RenderKey
-render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, MaterialIndex material_index, RenderType type)
+render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, MeshType mesh_type, MaterialIndex material_index)
 {
     xassert(view_type < 4, "invalid view_type value provided");
     log_trace("render key new, sort: %2d, pass: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", sort_layer, pass, view_type, texture, geometry, material_index);
@@ -411,7 +386,7 @@ render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, Te
                        ((uint64)view_type << RenderKeyViewTypeBitStart) +
                        ((uint64)texture << RenderKeyTextureIndexBitStart) +
                        ((uint64)material_index << RenderKeyMaterialIndexBitStart) +
-                       ((uint64)type << RenderKeyRenderTypeBitStart);
+                       ((uint64)mesh_type << RenderKeyMeshTypeBitStart);
     return result;
 }
 
@@ -506,13 +481,15 @@ r_render(Renderer* renderer, float32 dt)
     renderer->stat_object_count = 0;
 
     /* setup global shader data */
-    GlobalUniformData global_shader_data = {0};
-    global_shader_data.time              = renderer->timer;
-    glBindBuffer(GL_UNIFORM_BUFFER, renderer->global_uniform_buffer_id);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalUniformData), &global_shader_data);
-
     Mat4 world_view  = mat4_mvp(mat4_identity(), camera->view, camera->projection);
     Mat4 screen_view = mat4_mvp(mat4_identity(), mat4_identity(), camera->projection);
+
+    GlobalUniformData global_shader_data = {0};
+    global_shader_data.time              = renderer->timer;
+    global_shader_data.view              = camera->view;
+    global_shader_data.projection        = camera->projection;
+    glBindBuffer(GL_UNIFORM_BUFFER, renderer->global_uniform_buffer_id);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalUniformData), &global_shader_data);
 
     for (uint32 i = 0; i < renderer->pass_count; i++)
     {
@@ -557,20 +534,74 @@ r_render(Renderer* renderer, float32 dt)
                 {
                     glUseProgram(material->gl_program_id);
                     glUniform1i(material->location_texture, 0);
-                    glBindVertexArray(material->vertex_array_object);
                     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BINDING_SLOT_SSBO_CUSTOM, material->uniform_buffer_id);
                 }
 
-                log_trace("rendering, sort: %2d, layer: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", i, pass->frame_buffer, view_type, texture_index, geometry_index, material_index);
-                if (batch.uniform_buffer_size > 0)
+                MeshType mesh_type = render_key_mask(batch.key, RenderKeyMeshTypeBitStart, RenderKeyMeshTypeBitCount);
+                switch (mesh_type)
                 {
-                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, material->uniform_buffer_id);
-                    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, batch.uniform_buffer_size, batch.uniform_buffer);
+                case MeshTypeQuad:
+                {
+                    batch.draw_instance_count = array_count(shape_indices_quad);
+                    glBindVertexArray(g_renderer->vao_quad);
+                    break;
+                }
+                case MeshTypeTriangle:
+                {
+                    batch.draw_instance_count = array_count(shape_indices_triangle);
+                    glBindVertexArray(g_renderer->vao_triangle);
+                    break;
+                }
+                case MeshTypeDynamic:
+                {
+                    glBindVertexArray(g_renderer->vao_dynamic);
+                    glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertex_buffer_size, batch.vertex_buffer);
+                    break;
+                }
+                default:
+                    not_implemented();
                 }
 
+                log_trace("rendering, sort: %2d, layer: %2d, view: %2d, texture: %2d, geometry: %2d, mesh type: %2d, material: %2d", i, pass->frame_buffer, view_type, texture_index, geometry_index, mesh_type, material_index);
+
+                /** draw */
                 glUniformMatrix4fv(material->location_model, 1, GL_FALSE, view.v);
-                glBufferSubData(GL_ARRAY_BUFFER, 0, batch.vertex_buffer_size, batch.vertex_buffer);
-                glDrawArrays(GL_TRIANGLES, 0, batch.vertex_count);
+                switch (material->draw_type)
+                {
+                case R_DrawTypePackedBuffer:
+                {
+                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, material->uniform_buffer_id);
+                    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, material->uniform_data_size * batch.element_count, batch.uniform_buffer);
+                    glDrawArrays(GL_TRIANGLES, 0, batch.draw_instance_count);
+                    g_renderer->stat_draw_count++;
+                    g_renderer->stat_object_count += batch.element_count;
+                    break;
+                }
+                case R_DrawTypeInstanced:
+                {
+                    glBindBuffer(GL_SHADER_STORAGE_BUFFER, material->uniform_buffer_id);
+                    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, material->uniform_data_size * batch.element_count, batch.uniform_buffer);
+                    glDrawElementsInstanced(GL_TRIANGLES, batch.draw_instance_count, GL_UNSIGNED_INT, 0, batch.element_count);
+                    g_renderer->stat_draw_count++;
+                    g_renderer->stat_object_count += batch.element_count;
+                    break;
+                }
+                case R_DrawTypeSingle:
+                {
+                    glBindBuffer(GL_UNIFORM_BUFFER, material->uniform_buffer_id);
+                    glBindBufferRange(GL_UNIFORM_BUFFER, BINDING_SLOT_UBO_CUSTOM, material->uniform_buffer_id, 0, material->uniform_data_size);
+                    for (uint32 element_index = 0; element_index < batch.element_count; element_index++)
+                    {
+                        glBufferSubData(GL_UNIFORM_BUFFER, 0, material->uniform_data_size, ((uint8*)batch.uniform_buffer + element_index * material->uniform_data_size));
+                        glDrawElements(GL_TRIANGLES, batch.draw_instance_count, GL_UNSIGNED_INT, 0);
+                        g_renderer->stat_draw_count++;
+                    }
+                    g_renderer->stat_object_count += 1;
+                    break;
+                }
+                default:
+                    not_implemented();
+                }
             }
 
             // NOTE(selim): if we don't zero the list it keeps the old references in the next frame
@@ -579,8 +610,6 @@ r_render(Renderer* renderer, float32 dt)
     }
 
     arena_reset(renderer->frame_arena);
-    arena_reset(renderer->uniform_buffer_arena);
-    arena_reset(renderer->vertex_buffer_arena);
     renderer->previous_batch = 0;
     renderer->active_batch   = 0;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -597,20 +626,12 @@ texture_shader_data_set(Renderer* renderer, const Texture* texture)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-internal R_BatchNode*
-r_batch_reserve(RenderKey key)
-{
-    R_BatchNode* batch_node = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
-    batch_node->v.key       = key;
-
-    batch_node->v.vertex_buffer  = arena_push(g_renderer->vertex_buffer_arena, 0);
-    batch_node->v.uniform_buffer = arena_push(g_renderer->uniform_buffer_arena, 0);
-    return batch_node;
-}
-
 internal void
-r_batch_commit(R_BatchNode* node)
+r_batch_commit(R_Batch batch)
 {
+    R_BatchNode* node = arena_push_struct_zero(g_renderer->frame_arena, R_BatchNode);
+    node->v           = batch;
+
     RenderKey      key              = node->v.key;
     PassIndex      pass_index       = render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
     SortLayerIndex sort_layer_index = render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);
@@ -623,55 +644,6 @@ r_batch_commit(R_BatchNode* node)
     pass->is_empty = false;
 }
 
-internal R_Batch*
-r_batch_from_key(RenderKey key)
-{
-    R_BatchNode* batch_node = r_batch_reserve(key);
-    r_batch_commit(batch_node);
-    return &batch_node->v;
-}
-
-internal void
-r_batch_begin(RenderKey key)
-{
-    xassert(!g_renderer->active_batch, "there is already an active batch");
-
-    // If the previous batch has the same key as the new batch,
-    // just extend the preivous batch
-    if (g_renderer->previous_batch && g_renderer->previous_batch->key == key)
-    {
-        g_renderer->active_batch = g_renderer->previous_batch;
-
-        // Since batch size is going to be added at to end of this batch again, we need to rollback
-        // the previous addition
-        g_renderer->vertex_buffer_arena->pos -= g_renderer->active_batch->vertex_buffer_size;
-        g_renderer->uniform_buffer_arena->pos -= g_renderer->active_batch->uniform_buffer_size;
-    }
-    else
-    {
-        g_renderer->active_batch = r_batch_from_key(key);
-    }
-}
-
-internal void
-r_batch_end()
-{
-    xassert(g_renderer->active_batch, "there is no active batch to end");
-    // TODO(selim): bound assertions
-    g_renderer->vertex_buffer_arena->pos += g_renderer->active_batch->vertex_buffer_size;
-    g_renderer->uniform_buffer_arena->pos += g_renderer->active_batch->uniform_buffer_size;
-
-    g_renderer->previous_batch = g_renderer->active_batch;
-    g_renderer->active_batch   = NULL;
-}
-
-internal R_Batch*
-r_active_batch()
-{
-    xassert(g_renderer->active_batch, "there is no active batch");
-    return g_renderer->active_batch;
-}
-
 internal void
 r_draw_single(RenderKey key, Mat4 model, void* uniform_data)
 {
@@ -681,8 +653,7 @@ r_draw_single(RenderKey key, Mat4 model, void* uniform_data)
 internal void
 r_draw_many(RenderKey key, uint64 count, Mat4* models, void* uniform_data)
 {
-    R_Batch* batch = r_batch_from_key(key);
-
+    // R_Batch* batch = r_batch_from_key(key,);
     // memcpy(batch->model_buffer, models, sizeof(Mat4) * count);
     // memcpy((uint8*)batch->uniform_buffer, uniform_data, batch->uniform_data_size * count);
 }
@@ -714,7 +685,7 @@ r_draw_pass(PassIndex source_index, PassIndex target_index, SortLayerIndex sort_
     FrameBuffer* source_frame_buffer = &g_renderer->frame_buffers[source_pass->frame_buffer];
 
     Mat4      model = transform_quad_aligned(vec2_zero(), vec2(g_renderer->world_width, g_renderer->world_height));
-    RenderKey key   = render_key_new_default(ViewTypeScreen, sort_layer, target_index, source_frame_buffer->texture_index, material_index);
+    RenderKey key   = render_key_new(ViewTypeScreen, sort_layer, target_index, source_frame_buffer->texture_index, MeshTypeQuad, material_index);
     r_draw_single(key, model, uniform_data);
 }
 

@@ -35,7 +35,7 @@ main(void)
     PassIndex                pass_default = r_pipeline_config_add_pass(config, FRAME_BUFFER_INDEX_DEFAULT);
     r_pipeline_init(config);
 
-    d_context_init(persistent_arena, AssetPath);
+    d_context_init(persistent_arena, frame_arena, AssetPath);
 
     scratch_end(temp);
 
@@ -77,10 +77,13 @@ main(void)
             //     r_batch_push_string(glyph_atlas, , vec2(-900, 0), font_size);
             // }
 
-            d_debug_line(vec2(0, 0), mouse.screen);
-            d_line(vec2(100, 100), vec2(200, 100), 2, ColorRed400);
-            d_circle(vec2(10, 10), 100, 0.3, ColorBlue400);
-            d_string(vec2(0, -100), ascii_charset, 14);
+            // d_debug_line(vec2(0, 0), mouse.screen);
+            // d_circle(vec2(10, 10), 100, 0.3, ColorBlue400);
+            d_string(vec2(-200, 0), ascii_charset, 28, ColorWhite);
+            d_line(vec2(-500, 0), vec2(500, 0), 2, ColorYellow400);
+            d_line(vec2(0, -500), vec2(0, 500), 2, ColorYellow400);
+
+            d_string(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 28, ColorWhite);
 
             r_render(g_renderer, time.dt);
         }

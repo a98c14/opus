@@ -16,7 +16,6 @@
 #include <base/color.c>
 
 #include <gfx/base.c>
-#include <gfx/batch.c>
 #include <gfx/debug.c>
 #include <gfx/math.c>
 #include <gfx/primitives.c>

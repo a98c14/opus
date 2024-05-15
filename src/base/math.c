@@ -244,10 +244,10 @@ add_vec4(Vec4 a, Vec4 b)
 #ifdef OPUS_USE_SSE
     result.SSE = _mm_add_ps(a.SSE, b.SSE);
 #else
-    result.x = a.x + b.x;
-    result.y = a.y + b.y;
-    result.z = a.z + b.z;
-    result.w = a.w + b.w;
+    result.x       = a.x + b.x;
+    result.y       = a.y + b.y;
+    result.z       = a.z + b.z;
+    result.w       = a.w + b.w;
 #endif
     return result;
 }
@@ -278,10 +278,10 @@ sub_vec4(Vec4 a, Vec4 b)
 #ifdef OPUS_USE_SSE
     result.SSE = _mm_sub_ps(a.SSE, b.SSE);
 #else
-    result.x = a.x - b.x;
-    result.y = a.y - b.y;
-    result.z = a.z - b.z;
-    result.w = a.w - b.w;
+    result.x       = a.x - b.x;
+    result.y       = a.y - b.y;
+    result.z       = a.z - b.z;
+    result.w       = a.w - b.w;
 #endif
     return result;
 }
@@ -613,6 +613,35 @@ mat2_transpose(Mat2 m)
     return result;
 }
 
+internal Mat4
+mat4_transpose(Mat4 m)
+{
+    Mat4 result;
+#ifdef OPUS_USE_SSE
+    result = m;
+    _MM_TRANSPOSE4_PS(result.columns[0].SSE, result.columns[1].SSE, result.columns[2].SSE, result.columns[3].SSE);
+#else
+    result.m[0][0] = m.m[0][0];
+    result.m[0][1] = m.m[1][0];
+    result.m[0][2] = m.m[2][0];
+    result.m[0][3] = m.m[3][0];
+    result.m[1][0] = m.m[0][1];
+    result.m[1][1] = m.m[1][1];
+    result.m[1][2] = m.m[2][1];
+    result.m[1][3] = m.m[3][1];
+    result.m[2][0] = m.m[0][2];
+    result.m[2][1] = m.m[1][2];
+    result.m[2][2] = m.m[2][2];
+    result.m[2][3] = m.m[3][2];
+    result.m[3][0] = m.m[0][3];
+    result.m[3][1] = m.m[1][3];
+    result.m[3][2] = m.m[2][3];
+    result.m[3][3] = m.m[3][3];
+#endif
+
+    return result;
+}
+
 internal Mat3
 mat3_identity(void)
 {
@@ -759,10 +788,10 @@ linear_combine_v4_m4(Vec4 v, Mat4 m)
     result.SSE = _mm_add_ps(result.SSE, _mm_mul_ps(_mm_shuffle_ps(v.SSE, v.SSE, 0xaa), m.columns[2].SSE));
     result.SSE = _mm_add_ps(result.SSE, _mm_mul_ps(_mm_shuffle_ps(v.SSE, v.SSE, 0xff), m.columns[3].SSE));
 #else
-    result.x = v.elements[0] * m.columns[0].x;
-    result.y = v.elements[0] * m.columns[0].y;
-    result.z = v.elements[0] * m.columns[0].z;
-    result.w = v.elements[0] * m.columns[0].w;
+    result.x       = v.elements[0] * m.columns[0].x;
+    result.y       = v.elements[0] * m.columns[0].y;
+    result.z       = v.elements[0] * m.columns[0].z;
+    result.w       = v.elements[0] * m.columns[0].w;
 
     result.x += v.elements[1] * m.columns[1].x;
     result.y += v.elements[1] * m.columns[1].y;

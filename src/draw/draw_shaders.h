@@ -32,6 +32,7 @@ read_only global String d_shader_opengl_basic_frag = string_comp(
 	"void main() {\n"
 	"color = v_color;\n"
 	"}\n"
+	"\n"
 );
 
 read_only global String d_shader_opengl_basic_vert = string_comp(
@@ -72,15 +73,19 @@ read_only global String d_shader_opengl_circle_frag = string_comp(
 	"#version 430 core\n"
 	"layout(location = 0) in vec2 a_pos;\n"
 	"layout(location = 1) in vec2 a_tex_coord;\n"
-	"layout(location = 2) in vec4 a_color;\n"
+	"layout(location = 2) in vec3 a_color;\n"
 	"\n"
 	"struct ShaderData\n"
 	"{\n"
+	"mat4 model;\n"
+	"vec4 color;\n"
 	"float thickness;\n"
 	"};\n"
 	"\n"
 	"layout (std140, binding = 0) uniform Global\n"
 	"{\n"
+	"mat4 g_projection;\n"
+	"mat4 g_view;\n"
 	"vec4 g_time;\n"
 	"};\n"
 	"\n"
@@ -99,37 +104,41 @@ read_only global String d_shader_opengl_circle_frag = string_comp(
 	"\n"
 	"/* Vertex Data */\n"
 	"in vec2 v_tex_coord;\n"
-	"in vec4 v_color;\n"
+	"in vec3 v_color;\n"
 	"in float v_thickness;\n"
 	"\n"
 	"out vec4 color;\n"
 	"\n"
 	"void main() {\n"
 	"vec2 uv = v_tex_coord;\n"
-	"uv = uv * 2.0 - 1.0;\n"
+	"uv = uv * 2 - 1;\n"
 	"float thickness = v_thickness;\n"
 	"\n"
 	"float d = distance(uv, vec2(0.0, 0.0));\n"
 	"float a = 1 - smoothstep(1.0 - 0.05, 1.0, d);\n"
 	"a -= 1 - smoothstep(1.0 - thickness - 0.05, 1 - thickness, d);\n"
-	"color = vec4(v_color.rgb, a * v_color.a);\n"
+	"color = vec4(color.rgb, a);\n"
 	"}\n"
+	"\n"
 );
 
 read_only global String d_shader_opengl_circle_vert = string_comp(
 	"#version 430 core\n"
 	"layout(location = 0) in vec2 a_pos;\n"
 	"layout(location = 1) in vec2 a_tex_coord;\n"
-	"layout(location = 2) in vec4 a_color;\n"
-	"layout(location = 3) in vec4 a_instance_id;\n"
+	"layout(location = 2) in vec3 a_color;\n"
 	"\n"
 	"struct ShaderData\n"
 	"{\n"
+	"mat4 model;\n"
+	"vec4 color;\n"
 	"float thickness;\n"
 	"};\n"
 	"\n"
 	"layout (std140, binding = 0) uniform Global\n"
 	"{\n"
+	"mat4 g_projection;\n"
+	"mat4 g_view;\n"
 	"vec4 g_time;\n"
 	"};\n"
 	"\n"
@@ -144,25 +153,24 @@ read_only global String d_shader_opengl_circle_vert = string_comp(
 	"ShaderData data[];\n"
 	"};\n"
 	"\n"
-	"uniform mat4 u_model;\n"
-	"\n"
 	"/* Vertex Data */\n"
 	"out vec2 v_tex_coord;\n"
-	"out vec4 v_color;\n"
+	"out vec3 v_color;\n"
 	"out float v_thickness;\n"
 	"\n"
 	"void main()\n"
 	"{\n"
 	"v_tex_coord = a_tex_coord;\n"
 	"v_color = a_color;\n"
-	"v_thickness = data[int(a_instance_id.r)].thickness;\n"
-	"gl_Position = u_model * vec4(a_pos, 0, 1);\n"
+	"v_thickness = data[gl_InstanceID].thickness;\n"
+	"gl_Position =  g_projection * g_view * data[gl_InstanceID].model * vec4(a_pos, 0, 1);\n"
 	"}\n"
 );
 
 /** font shader */
 read_only global String d_shader_opengl_font_frag = string_comp(
 	"#version 430 core\n"
+	"#define DEBUG 0\n"
 	"\n"
 	"layout(location = 0) in vec2 a_pos;\n"
 	"layout(location = 1) in vec2 a_tex_coord;\n"
@@ -199,6 +207,7 @@ read_only global String d_shader_opengl_font_frag = string_comp(
 	"color = mix(vec4(1, 0, 0, 1), color, color.a);\n"
 	"#endif\n"
 	"}\n"
+	"\n"
 );
 
 read_only global String d_shader_opengl_font_vert = string_comp(
@@ -274,6 +283,7 @@ read_only global String d_shader_opengl_rect_frag = string_comp(
 	"float a = min(a_x, a_y) * max(a_x, a_y);\n"
 	"color = vec4(v_color.xyz, a * v_color.a);\n"
 	"}\n"
+	"\n"
 );
 
 read_only global String d_shader_opengl_rect_vert = string_comp(
@@ -350,6 +360,7 @@ read_only global String d_shader_opengl_sprite_frag = string_comp(
 	"vec4 texture_color = texture(u_main_texture, uv);\n"
 	"color = vec4(texture_color);\n"
 	"}\n"
+	"\n"
 );
 
 read_only global String d_shader_opengl_sprite_vert = string_comp(

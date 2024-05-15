@@ -4,6 +4,7 @@ python .\\build_shaders.py ---src "$HOME\source\github\opus\src\shaders" --out="
 """
 import os
 import argparse
+import re
 from pprint import pprint
 
 shader_line_end = "\\n\"\n"
@@ -45,8 +46,9 @@ if __name__ == "__main__":
                 c_variable_name = f"d_shader_opengl_{shader_name}_{ext}"
                 out.write(f"read_only global String {c_variable_name} = string_comp(\n")
                 with open(path) as f:
-                    shader_contents = f.readlines()
-                    for line in shader_contents:
+                    contents = f.read()                            
+                    lines = contents.split('\n')
+                    for line in lines:                                                    
                         line.replace("\n", "")
                         out.write(f"\t\"{line.strip()}{shader_line_end}")
                 out.write(f");\n\n")
