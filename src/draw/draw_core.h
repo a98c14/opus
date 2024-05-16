@@ -44,15 +44,17 @@ internal void d_context_init(Arena* persistent_arena, Arena* frame_arena, String
 
 /** batch functions */
 internal void d_mesh_push_vertex(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
-internal void d_mesh_push_quad(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Rect rect, Bounds tex_coord, Color color);
+internal void d_mesh_push_rect(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Rect rect, Bounds tex_coord, Color color);
 internal void d_mesh_push_glyph(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Glyph glyph, Vec2 pos, float32 size, Color color);
 internal void d_mesh_push_string(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, GlyphAtlas* atlas, String str, Vec2 pos, float32 size, Color c);
 internal void d_mesh_push_triangle_strip(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
+internal void d_mesh_push_line(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 start, Vec2 end, float32 thickness, Color c);
 
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);
 internal void d_debug_line(Vec2 start, Vec2 end);
 internal void d_debug_line2(Vec2 start, Vec2 end);
+internal void d_rect(Rect r, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal void d_string(Vec2 pos, String str, int32 size, Color c);
 internal void d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale);

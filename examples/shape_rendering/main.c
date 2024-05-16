@@ -56,7 +56,10 @@ main(void)
         d_line(vec2(-800, 0), vec2(800, 0), 2, ColorGreen400);
         d_line(vec2(0, -500), vec2(0, 500), 2, ColorGreen400);
         d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_1, vec2(0, 0), vec2_one());
-        d_string(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 28, ColorWhite);
+        d_string(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 15, ColorWhite);
+
+        d_rect(rect_at(vec2(100, 100), vec2(100, 100), AlignmentCenter), 0, ColorWhite);
+        d_rect(rect_at(vec2(-100, 100), vec2(100, 100), AlignmentCenter), 4, ColorWhite);
 
         d_trail_push_position(t, mouse.world);
         d_trail_update(t, time.dt);

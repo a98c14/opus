@@ -99,7 +99,6 @@ d_trail_update(Trail* trail, float32 dt)
 internal void
 d_trail_draw(Trail* trail)
 {
-    // ArenaTemp temp = scratch_begin(0, 0);
     // TODO(selim): is the capacity correct?
     VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, VertexAtrribute_TexturedColored, (trail->end - trail->start) * 6);
     uint64                           vertex_count = 0;
@@ -113,22 +112,6 @@ d_trail_draw(Trail* trail)
     batch.vertex_buffer_size  = sizeof(VertexAtrribute_TexturedColored) * vertex_count;
     batch.uniform_buffer      = 0;
     r_batch_commit(batch);
-
-    // TrailVertexData* vertices = arena_push_array(temp.arena, TrailVertexData, vertex_data->count);
-    // for (uint32 i = 0; i < vertex_data->count; i++)
-    // {
-    //     vertices[i].pos   = vec4(vertex_data->v[i].x, vertex_data->v[i].y, 0, 1);
-    //     vertices[i].color = ;
-    // }
-    // batch_node->v.uniform_buffer = arena_push(g_renderer->frame_arena, sizeof(TrailVertexData) * vertex_data->count);
-    // memcpy((uint8*)batch_node->v.uniform_buffer, vertices, batch_node->v.uniform_data_size);
-
-    // RenderKey key              = render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, TEXTURE_INDEX_NULL, MeshTypeDynamic, d_context->material_basic);
-    // Mat4      model            = transform_quad(vec2(0, 0), vec2_one(), 0);
-    // batch_node->v.model_buffer = arena_push_array(g_renderer->frame_arena, Mat4, 1);
-    // memcpy(batch_node->v.model_buffer, &model, sizeof(Mat4) * 1);
-    // r_batch_commit(batch_node);
-    // scratch_end(temp);
 }
 
 internal void

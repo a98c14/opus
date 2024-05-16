@@ -17,8 +17,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/selim/source/github/opus/src/gfx",
-      "program": "c:/Users/selim/source/github/opus/src/gfx/build/Debug/outDebug",
+      "cwd": "c:/Users/selim/source/github/opus/src/draw",
+      "program": "c:/Users/selim/source/github/opus/src/draw/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

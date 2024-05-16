@@ -12,7 +12,7 @@ d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
         g_renderer,
         d_shader_opengl_font_vert,
         d_shader_opengl_font_frag,
-        16,
+        0,
         R_DrawTypePackedBuffer);
 
     d_context->material_sprite = r_material_create(
@@ -26,14 +26,14 @@ d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
         g_renderer,
         d_shader_opengl_basic_vert,
         d_shader_opengl_basic_frag,
-        16,
+        0,
         R_DrawTypePackedBuffer);
 
     d_context->material_rect = r_material_create(
         g_renderer,
         d_shader_opengl_rect_vert,
         d_shader_opengl_rect_frag,
-        16,
+        0,
         R_DrawTypePackedBuffer);
 
     d_context->material_circle = r_material_create(
@@ -84,7 +84,7 @@ d_mesh_push_triangle_strip(VertexAtrribute_TexturedColored* vertex_buffer, uint6
 }
 
 internal void
-d_mesh_push_quad(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Rect rect, Bounds tex_coord, Color color)
+d_mesh_push_rect(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Rect rect, Bounds tex_coord, Color color)
 {
     d_mesh_push_vertex(vertex_buffer, vertex_count, rect_bl(rect), bounds_bl(tex_coord), color);
     d_mesh_push_vertex(vertex_buffer, vertex_count, rect_tl(rect), bounds_tl(tex_coord), color);
@@ -103,7 +103,7 @@ d_mesh_push_glyph(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex
     pos.x = pos.x + glyph.plane_bounds.left * size;
     pos.y = pos.y + glyph.plane_bounds.bottom * size;
 
-    d_mesh_push_quad(vertex_buffer, vertex_count, rect_at(pos, vec2(w, h), AlignmentBottomLeft), glyph.atlas_bounds, color);
+    d_mesh_push_rect(vertex_buffer, vertex_count, rect_at(pos, vec2(w, h), AlignmentBottomLeft), glyph.atlas_bounds, color);
 }
 
 internal void
@@ -120,9 +120,8 @@ d_mesh_push_string(VertexAtrribute_TexturedColored* vertex_buffer, uint64* verte
     }
 }
 
-/** draw functions */
 internal void
-d_line(Vec2 start, Vec2 end, float32 thickness, Color c)
+d_mesh_push_line(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 start, Vec2 end, float32 thickness, Color c)
 {
     Vec2 heading = heading_to_vec2(start, end);
     Vec2 A1      = add_vec2(start, mul_vec2_f32(rotate90_vec2(heading), thickness));
@@ -130,15 +129,22 @@ d_line(Vec2 start, Vec2 end, float32 thickness, Color c)
     Vec2 B1      = add_vec2(end, mul_vec2_f32(rotate90_vec2(heading), thickness));
     Vec2 B2      = add_vec2(end, mul_vec2_f32(rotate90i_vec2(heading), thickness));
 
+    d_mesh_push_vertex(vertex_buffer, vertex_count, A1, vec2(0, 0), c);
+    d_mesh_push_vertex(vertex_buffer, vertex_count, A2, vec2(0, 1), c);
+    d_mesh_push_vertex(vertex_buffer, vertex_count, B1, vec2(1, 0), c);
+    d_mesh_push_vertex(vertex_buffer, vertex_count, B1, vec2(1, 0), c);
+    d_mesh_push_vertex(vertex_buffer, vertex_count, A2, vec2(0, 1), c);
+    d_mesh_push_vertex(vertex_buffer, vertex_count, B2, vec2(1, 1), c);
+}
+
+/** draw functions */
+internal void
+d_line(Vec2 start, Vec2 end, float32 thickness, Color c)
+{
     VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, VertexAtrribute_TexturedColored, 6);
     uint64                           vertex_count = 0;
 
-    d_mesh_push_vertex(vertices, &vertex_count, A1, vec2(0, 0), c);
-    d_mesh_push_vertex(vertices, &vertex_count, A2, vec2(0, 1), c);
-    d_mesh_push_vertex(vertices, &vertex_count, B1, vec2(1, 0), c);
-    d_mesh_push_vertex(vertices, &vertex_count, B1, vec2(1, 0), c);
-    d_mesh_push_vertex(vertices, &vertex_count, A2, vec2(0, 1), c);
-    d_mesh_push_vertex(vertices, &vertex_count, B2, vec2(1, 1), c);
+    d_mesh_push_line(vertices, &vertex_count, start, end, thickness, c);
 
     R_Batch batch;
     batch.key                 = render_key_new(ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, MeshTypeDynamic, d_context->material_rect);
@@ -174,6 +180,36 @@ d_circle(Vec2 pos, float32 radius, float32 thickness, Color c)
     batch.key            = render_key_new(ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, MeshTypeQuad, d_context->material_circle);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
+    r_batch_commit(batch);
+}
+
+internal void
+d_rect(Rect r, float32 thickness, Color c)
+{
+    xassert(thickness >= 0, "rect thickness can't be lower than zero, use zero for filled rects.");
+    VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, VertexAtrribute_TexturedColored, 6 * 4);
+    uint64                           vertex_count = 0;
+
+    if (thickness == 0)
+    {
+        Bounds b = {.bl = vec2(0, 0), .tr = vec2(1, 1)};
+        d_mesh_push_rect(vertices, &vertex_count, r, b, c);
+    }
+    else
+    {
+        d_mesh_push_line(vertices, &vertex_count, add_vec2(rect_tl(r), vec2(0, -thickness)), add_vec2(rect_tr(r), vec2(0, -thickness)), thickness, c);
+        d_mesh_push_line(vertices, &vertex_count, add_vec2(rect_br(r), vec2(0, thickness)), add_vec2(rect_bl(r), vec2(0, thickness)), thickness, c);
+        d_mesh_push_line(vertices, &vertex_count, add_vec2(rect_bl(r), vec2(thickness, 1.5 * thickness)), add_vec2(rect_tl(r), vec2(thickness, 1.5 * -thickness)), thickness, c);
+        d_mesh_push_line(vertices, &vertex_count, add_vec2(rect_tr(r), vec2(-thickness, 1.5 * -thickness)), add_vec2(rect_br(r), vec2(-thickness, 1.5 * thickness)), thickness, c);
+    }
+
+    R_Batch batch;
+    batch.key                 = render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, 0, MeshTypeDynamic, d_context->material_rect);
+    batch.element_count       = 1;
+    batch.draw_instance_count = vertex_count;
+    batch.vertex_buffer       = vertices;
+    batch.vertex_buffer_size  = sizeof(VertexAtrribute_TexturedColored) * vertex_count;
+    batch.uniform_buffer      = 0;
     r_batch_commit(batch);
 }
 

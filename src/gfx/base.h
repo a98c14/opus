@@ -239,6 +239,7 @@ typedef struct
 
     uint32 global_uniform_buffer_id;
     uint32 texture_uniform_buffer_id;
+    bool32 debug;
 
     /* state */
     RenderKey active_render_key;

@@ -491,6 +491,13 @@ r_render(Renderer* renderer, float32 dt)
     glBindBuffer(GL_UNIFORM_BUFFER, renderer->global_uniform_buffer_id);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(GlobalUniformData), &global_shader_data);
 
+#if BUILD_DEBUG == 1
+    if (renderer->debug)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+#endif
+
     for (uint32 i = 0; i < renderer->pass_count; i++)
     {
         R_Pass* pass = &renderer->passes[i];

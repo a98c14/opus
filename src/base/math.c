@@ -1002,3 +1002,12 @@ bounds_from_circle(Circle c)
     result.tr.y = c.center.y + c.radius / 2.0f;
     return result;
 }
+
+internal Bounds
+bounds_from_rect(Rect r)
+{
+    Bounds result;
+    result.bl = rect_bl(r);
+    result.tr = rect_tr(r);
+    return result;
+}

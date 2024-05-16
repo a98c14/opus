@@ -55,14 +55,6 @@ typedef struct
 
 typedef struct
 {
-    Rect text_bounds;
-
-    uint32 glyph_count;
-    Rect*  glyph_rects;
-} TextGlyphPositionResult;
-
-typedef struct
-{
     String str;
     Vec2   size;
 } TextLine;
