@@ -27,7 +27,6 @@
 #include <text/text_inc.c>
 #include <draw/draw_inc.c>
 
-#include <engine/draw.c>
 #include <engine/input.c>
 #include <engine/perf_timer.c>
 #include <engine/profiler.c>

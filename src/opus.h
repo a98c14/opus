@@ -32,7 +32,6 @@
 #include <text/text_inc.h>
 #include <draw/draw_inc.h>
 
-#include <engine/draw.h>
 #include <engine/input.h>
 #include <engine/perf_timer.h>
 #include <engine/profiler.h>

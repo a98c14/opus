@@ -66,7 +66,7 @@ ui_state_update(EngineTime time)
             if (current_frame == exit_animation_length)
                 memory_zero_struct(animator);
 
-            draw_sprite_rect(animator->last_rect, animation.sprite_start_index + current_frame, ANCHOR_C_C);
+            // draw_sprite_rect(animator->last_rect, animation.sprite_start_index + current_frame, ANCHOR_C_C);
         }
         else if (animator->owner.value > 0 && animator->updated_at < last_update_time.current_frame_time)
         {
@@ -177,7 +177,7 @@ ui_expand(float32 w, float32 h)
 internal void
 ui_debug()
 {
-    draw_debug_rect(ui_rect());
+    // draw_debug_rect(ui_rect());
 }
 
 internal Rect

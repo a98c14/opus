@@ -33,7 +33,7 @@ main(void)
 
     /** demo state */
     ArenaTemp    temp          = scratch_begin(0, 0);
-    TextureIndex texture       = texture_new_from_file(g_renderer, string(ASSET_PATH "\\textures\\game.png"), true, false);
+    TextureIndex texture       = texture_new_from_file(g_renderer, string("..\\assets\\textures\\game.png"), true, false);
     SpriteAtlas* atlas         = sprite_atlas_new(temp.arena, texture, Animations, Sprites, 0, array_count(Animations), array_count(Sprites));
     String       ascii_charset = string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
     Trail*       t             = d_trail_new(persistent_arena);
