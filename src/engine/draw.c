@@ -475,65 +475,6 @@ draw_debug_rect_b(Rect rect)
     return draw_rect_outline(rect, ColorGreen500, 4);
 }
 
-internal Rect
-draw_sprite_rect_colored(Rect rect, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha)
-{
-    Rect r      = sprite_rect(sprite);
-    Rect result = rect_anchor(r, rect, anchor);
-    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), color, alpha);
-    return result;
-}
-
-internal Rect
-draw_sprite_rect(Rect rect, SpriteIndex sprite, Anchor anchor)
-{
-    return draw_sprite_rect_colored(rect, sprite, anchor, ColorInvisible, 1);
-}
-
-internal Rect
-draw_sprite_rect_cut_colored(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor, Color color, float32 alpha)
-{
-    Rect r         = sprite_rect(sprite);
-    Rect container = rect_cut_r(rect, r, side);
-    Rect result    = rect_anchor(r, container, anchor);
-    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(1, 1), color, alpha);
-    return result;
-}
-
-internal Rect
-draw_sprite_rect_cut(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor)
-{
-    return draw_sprite_rect_cut_colored(rect, side, sprite, anchor, ColorInvisible, 1);
-}
-
-internal Rect
-draw_sprite_rect_flipped(Rect* rect, CutSide side, SpriteIndex sprite, Anchor anchor)
-{
-    Rect r         = sprite_rect(sprite);
-    Rect container = rect_cut_r(rect, r, side);
-    Rect result    = rect_anchor(r, container, anchor);
-    draw_sprite_colored_ignore_pivot(result.center, 1, sprite, vec2(-1, 1), ColorInvisible, 1);
-    return container;
-}
-
-internal Rect
-sprite_rect(SpriteIndex sprite)
-{
-    const Sprite* s = &d_state->sprite_atlas->sprites[sprite];
-    // NOTE(selim): -2 is removed because by default all our sprites have 1 px padding on each side
-    return rect_from_wh(s->size.w - 2, s->size.h - 2);
-}
-
-internal Rect
-sprite_rect_with_pivot(SpriteIndex sprite, Vec2 position, Vec2 flip, float32 scale_multiplier)
-{
-    Sprite sprite_data   = d_state->sprite_atlas->sprites[sprite];
-    Vec2   pivot         = r_sprite_get_pivot(sprite_data, vec2(scale_multiplier, scale_multiplier), flip);
-    Vec2   scale         = mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale_multiplier);
-    Vec2   rect_position = add_vec2(position, pivot);
-    return rect_at(rect_position, fabs_vec2(scale), AlignmentCenter);
-}
-
 /** TODO(selim): This needs to be a generic solution. */
 internal void
 render_sprites_sorted(Arena* frame_arena, PassIndex pass, SpriteRenderRequest* requests, uint64 count, int32* layer_entity_counts)

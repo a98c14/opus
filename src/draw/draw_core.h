@@ -52,9 +52,13 @@ internal void d_mesh_push_line(VertexAtrribute_TexturedColored* vertex_buffer, u
 
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);
-internal void d_debug_line(Vec2 start, Vec2 end);
-internal void d_debug_line2(Vec2 start, Vec2 end);
 internal void d_rect(Rect r, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal void d_string(Vec2 pos, String str, int32 size, Color c);
 internal void d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale);
+
+/** debug draw functions */
+internal void d_debug_line(Vec2 start, Vec2 end);
+internal void d_debug_line2(Vec2 start, Vec2 end);
+internal void d_debug_rect(Rect r);
+internal void d_debug_rect2(Rect r);

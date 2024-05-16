@@ -157,18 +157,6 @@ d_line(Vec2 start, Vec2 end, float32 thickness, Color c)
 }
 
 internal void
-d_debug_line(Vec2 start, Vec2 end)
-{
-    d_line(start, end, 1.8, ColorRed400);
-}
-
-internal void
-d_debug_line2(Vec2 start, Vec2 end)
-{
-    d_line(start, end, 1.8, ColorGreen400);
-}
-
-internal void
 d_circle(Vec2 pos, float32 radius, float32 thickness, Color c)
 {
     D_ShaderDataCircle* uniform_data = arena_push_struct(d_context->frame_arena, D_ShaderDataCircle);
@@ -249,4 +237,30 @@ d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale)
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
     r_batch_commit(batch);
+}
+
+/** debug draw functions */
+
+internal void
+d_debug_line(Vec2 start, Vec2 end)
+{
+    d_line(start, end, 1.8, ColorRed400);
+}
+
+internal void
+d_debug_line2(Vec2 start, Vec2 end)
+{
+    d_line(start, end, 1.8, ColorGreen400);
+}
+
+internal void
+d_debug_rect(Rect r)
+{
+    d_rect(r, 2, ColorRed400);
+}
+
+internal void
+d_debug_rect2(Rect r)
+{
+    d_rect(r, 2, ColorGreen400);
 }

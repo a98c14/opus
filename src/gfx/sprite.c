@@ -66,3 +66,21 @@ animation_length(Animation animation)
 {
     return animation.sprite_end_index - animation.sprite_start_index;
 }
+
+internal Rect
+sprite_rect(SpriteAtlas* atlas, SpriteIndex sprite)
+{
+    const Sprite* s = &atlas->sprites[sprite];
+    // NOTE(selim): -2 is removed because by default all our sprites have 1 px padding on each side
+    return rect_from_wh(s->source_size.w - 2, s->source_size.h - 2);
+}
+
+internal Rect
+sprite_rect_with_pivot(SpriteAtlas* atlas, SpriteIndex sprite, Vec2 position, Vec2 flip, float32 scale_multiplier)
+{
+    Sprite sprite_data   = atlas->sprites[sprite];
+    Vec2   pivot         = r_sprite_get_pivot(sprite_data, vec2(scale_multiplier, scale_multiplier), flip);
+    Vec2   scale         = mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale_multiplier);
+    Vec2   rect_position = add_vec2(position, pivot);
+    return rect_at(rect_position, fabs_vec2(scale), AlignmentCenter);
+}
