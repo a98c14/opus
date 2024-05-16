@@ -20,6 +20,19 @@ transform_quad(Vec2 position, Vec2 scale, float32 rotation)
 }
 
 internal Mat4
+transform_quad_aligned(Vec2 position, Vec2 scale)
+{
+    Mat4 result    = mat4_identity();
+    result.m[0][0] = scale.x;
+    result.m[1][1] = scale.y;
+    result.m[2][2] = 1;
+    result.m[3][0] = position.x;
+    result.m[3][1] = position.y;
+    result.m[3][2] = 0;
+    return result;
+}
+
+internal Mat4
 transform_quad_around_pivot(Vec2 position, Vec2 scale, float32 rotation, Vec2 pivot)
 {
     Mat4 translation_mat = mat4_translation(vec3_xy_z(position, 0));
@@ -35,14 +48,14 @@ transform_quad_around_pivot(Vec2 position, Vec2 scale, float32 rotation, Vec2 pi
 }
 
 internal Mat4
-transform_quad_aligned(Vec2 position, Vec2 scale)
+transform_quad_aligned_at_pivot(Vec2 position, Vec2 scale, Vec2 pivot)
 {
     Mat4 result    = mat4_identity();
     result.m[0][0] = scale.x;
     result.m[1][1] = scale.y;
     result.m[2][2] = 1;
-    result.m[3][0] = position.x;
-    result.m[3][1] = position.y;
+    result.m[3][0] = position.x + pivot.x;
+    result.m[3][1] = position.y + pivot.y;
     result.m[3][2] = 0;
     return result;
 }

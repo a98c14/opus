@@ -1,7 +1,8 @@
 #include "sprite.h"
 
 internal SpriteAtlas*
-sprite_atlas_new(Arena* arena, TextureIndex texture_index, const Animation* animations, const Sprite* sprites, const TextureIndex* texture_indices, uint32 animation_count, uint32 sprite_count)
+sprite_atlas_new(Arena* arena, TextureIndex texture_index, const Animation* animations, const Sprite* sprites,
+                 const TextureIndex* texture_indices, uint32 animation_count, uint32 sprite_count)
 {
     SpriteAtlas* atlas            = arena_push_struct_zero(arena, SpriteAtlas);
     atlas->sprites                = sprites;
@@ -50,8 +51,9 @@ internal inline Vec2
 r_sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip)
 {
     Vec2 result;
-    result.x = (sprite.size.w / 2.0 + sprite.size.x - sprite.pivot.x) * flip.x * scale.x;
-    result.y = -(sprite.size.h / 2.0 + sprite.size.y - sprite.pivot.y) * flip.y * scale.y;
+    // TODO(selim): first part needs to be done at startup for all sprites
+    result.x = (sprite.source_size.x / 2.0 + sprite.size.x - sprite.pivot.x) * flip.x * scale.x;
+    result.y = -(sprite.source_size.y / 2.0 + sprite.size.y - sprite.pivot.y) * flip.y * scale.y;
     return result;
 }
 
@@ -76,11 +78,11 @@ sprite_rect(SpriteAtlas* atlas, SpriteIndex sprite)
 }
 
 internal Rect
-sprite_rect_with_pivot(SpriteAtlas* atlas, SpriteIndex sprite, Vec2 position, Vec2 flip, float32 scale_multiplier)
+sprite_rect_at(SpriteAtlas* atlas, SpriteIndex sprite, Vec2 position, Vec2 scale, Vec2 flip)
 {
     Sprite sprite_data   = atlas->sprites[sprite];
-    Vec2   pivot         = r_sprite_get_pivot(sprite_data, vec2(scale_multiplier, scale_multiplier), flip);
-    Vec2   scale         = mul_vec2_f32(vec2(sprite_data.size.w * flip.x, sprite_data.size.h * flip.y), scale_multiplier);
+    Vec2   pivot         = r_sprite_get_pivot(sprite_data, scale, flip);
+    Vec2   actual_scale  = vec2(sprite_data.source_size.w * flip.x * scale.x, sprite_data.source_size.h * flip.y * scale.y);
     Vec2   rect_position = add_vec2(position, pivot);
-    return rect_at(rect_position, fabs_vec2(scale), AlignmentCenter);
+    return rect_at(rect_position, actual_scale, AlignmentCenter);
 }

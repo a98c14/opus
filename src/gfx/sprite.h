@@ -57,4 +57,4 @@ internal inline Animation animation_from_atlas(SpriteAtlas* atlas, AnimationInde
 internal inline uint16    animation_length(Animation animation);
 
 internal Rect sprite_rect(SpriteAtlas* atlas, SpriteIndex sprite);
-internal Rect sprite_rect_with_pivot(SpriteAtlas* atlas, SpriteIndex sprite, Vec2 position, Vec2 flip, float32 scale_multiplier);
+internal Rect sprite_rect_at(SpriteAtlas* atlas, SpriteIndex sprite, Vec2 position, Vec2 scale, Vec2 flip);

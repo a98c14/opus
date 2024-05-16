@@ -6,45 +6,14 @@ d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
     d_context              = arena_push_struct_zero(persistent_arena, D_Context);
     d_context->frame_arena = frame_arena;
 
-    ArenaTemp temp = scratch_begin(&persistent_arena, 1);
-
-    d_context->material_text = r_material_create(
-        g_renderer,
-        d_shader_opengl_font_vert,
-        d_shader_opengl_font_frag,
-        0,
-        R_DrawTypePackedBuffer);
-
-    d_context->material_sprite = r_material_create(
-        g_renderer,
-        d_shader_opengl_sprite_vert,
-        d_shader_opengl_sprite_frag,
-        sizeof(D_ShaderDataSprite),
-        R_DrawTypeInstanced);
-
-    d_context->material_basic = r_material_create(
-        g_renderer,
-        d_shader_opengl_basic_vert,
-        d_shader_opengl_basic_frag,
-        0,
-        R_DrawTypePackedBuffer);
-
-    d_context->material_rect = r_material_create(
-        g_renderer,
-        d_shader_opengl_rect_vert,
-        d_shader_opengl_rect_frag,
-        0,
-        R_DrawTypePackedBuffer);
-
-    d_context->material_circle = r_material_create(
-        g_renderer,
-        d_shader_opengl_circle_vert,
-        d_shader_opengl_circle_frag,
-        sizeof(D_ShaderDataCircle),
-        R_DrawTypeInstanced);
-
-    d_context->active_pass  = 0;
-    d_context->active_layer = 5;
+    ArenaTemp temp             = scratch_begin(&persistent_arena, 1);
+    d_context->material_text   = r_material_create(g_renderer, d_shader_opengl_font_vert, d_shader_opengl_font_frag, 0, R_DrawTypePackedBuffer);
+    d_context->material_sprite = r_material_create(g_renderer, d_shader_opengl_sprite_vert, d_shader_opengl_sprite_frag, sizeof(D_ShaderDataSprite), R_DrawTypeInstanced);
+    d_context->material_basic  = r_material_create(g_renderer, d_shader_opengl_basic_vert, d_shader_opengl_basic_frag, 0, R_DrawTypePackedBuffer);
+    d_context->material_rect   = r_material_create(g_renderer, d_shader_opengl_rect_vert, d_shader_opengl_rect_frag, 0, R_DrawTypePackedBuffer);
+    d_context->material_circle = r_material_create(g_renderer, d_shader_opengl_circle_vert, d_shader_opengl_circle_frag, sizeof(D_ShaderDataCircle), R_DrawTypeInstanced);
+    d_context->active_pass     = 0;
+    d_context->active_layer    = 5;
 
     StringList path = string_list();
     string_list_push(temp.arena, &path, asset_path);
@@ -222,25 +191,51 @@ d_string(Vec2 pos, String str, int32 size, Color c)
 }
 
 internal void
-d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale)
+d_sprite_many(SpriteAtlas* atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort)
 {
-    const Sprite* sprite = &atlas->sprites[sprite_index];
+    if (sort)
+    {
+        // TODO(selim):
+    }
 
-    // TODO(selim): add pivot calculations
-    D_ShaderDataSprite* uniform_data = arena_push_struct(d_context->frame_arena, D_ShaderDataSprite);
-    uniform_data->model              = transform_quad_aligned(pos, vec2(sprite->source_size.x * scale.x, sprite->source_size.y * scale.y));
-    uniform_data->bounds             = sprite->rect.v;
-    uniform_data->color              = color_v4(ColorWhite);
+    D_ShaderDataSprite* uniform_data = arena_push_array(d_context->frame_arena, D_ShaderDataSprite, sprite_count);
+    for (uint64 i = 0; i < sprite_count; i++)
+    {
+        D_DrawDataSprite* data = &draw_data[i];
+
+        const Sprite* sprite = &atlas->sprites[data->sprite];
+
+        Vec2 flip  = vec2(-2 * ((data->flags & D_DrawFlagsSpriteFlipX) > 0) + 1, -2 * ((data->flags & D_DrawFlagsSpriteFlipY) > 0) + 1);
+        Vec2 pivot = r_sprite_get_pivot(*sprite, draw_data->scale, flip);
+        pivot      = mul_vec2_f32(pivot, (data->flags & D_DrawFlagsSpriteIgnorePivot) > 1);
+        Vec2 scale = vec2(sprite->source_size.x * draw_data->scale.x * flip.x, sprite->source_size.y * draw_data->scale.y * flip.y);
+
+        uniform_data->bounds = sprite->rect.v;
+        uniform_data->color  = color_v4(ColorWhite);
+        uniform_data->model  = data->rotation == 0 ? transform_quad_aligned_at_pivot(data->position.xy, scale, pivot)
+                                                   : transform_quad_around_pivot(data->position.xy, scale, data->rotation, pivot);
+    }
 
     R_Batch batch;
-    batch.key            = render_key_new(ViewTypeWorld, d_context->active_layer, d_context->active_pass, atlas->texture, MeshTypeQuad, d_context->material_sprite);
-    batch.element_count  = 1;
+    batch.key            = render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, MeshTypeQuad, d_context->material_sprite);
+    batch.element_count  = sprite_count;
     batch.uniform_buffer = uniform_data;
     r_batch_commit(batch);
 }
 
-/** debug draw functions */
+internal void
+d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation)
+{
+    D_DrawDataSprite data;
+    data.sprite   = sprite_index;
+    data.position = vec3(pos.x, pos.y, 0);
+    data.scale    = scale;
+    data.rotation = rotation;
+    data.flags    = D_DrawFlagsSpriteNone;
+    d_sprite_many(atlas, &data, 1, false);
+}
 
+/** debug draw functions */
 internal void
 d_debug_line(Vec2 start, Vec2 end)
 {

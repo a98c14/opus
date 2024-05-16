@@ -38,6 +38,5 @@ out vec4 color;
 void main() {
     vec2 uv = v_tex_coord;
     vec4 texture_color = texture(u_main_texture, uv);
-    color = vec4(texture_color.xyz, 1.0);
-    // color = vec4(uv.x, uv.y, 1.0, 1.0);
+    color = texture_color;
 }

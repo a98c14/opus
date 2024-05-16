@@ -38,6 +38,8 @@ main(void)
     String       ascii_charset = string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
     Trail*       t             = d_trail_new(persistent_arena);
     d_trail_set_color(t, ColorWhite, ColorBlue400);
+
+    float32 sprite_rotation = 0;
     scratch_end(temp);
 
     /* main loop */
@@ -56,12 +58,17 @@ main(void)
         d_line(vec2(-800, -300), vec2(800, -300), 2, ColorGreen400);
         d_line(vec2(-800, 0), vec2(800, 0), 2, ColorGreen400);
         d_line(vec2(0, -500), vec2(0, 500), 2, ColorGreen400);
-        d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_1, vec2(0, 0), vec2_one());
         d_string(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 15, ColorWhite);
 
         d_rect(rect_at(vec2(100, 300), vec2(100, 100), AlignmentCenter), 0, ColorWhite);
         d_rect(rect_at(vec2(-100, 300), vec2(100, 100), AlignmentCenter), 2, ColorWhite);
-        d_debug_rect(sprite_rect(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_1));
+
+        Vec2 sprite_pos = vec2(500, 300);
+        d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_1, sprite_pos, vec2_one(), 0);
+        d_debug_rect(sprite_rect_at(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_1, sprite_pos, vec2_one(), vec2_one()));
+
+        sprite_rotation += 10 * time.dt;
+        d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 300), vec2_one(), sprite_rotation);
 
         d_trail_push_position(t, mouse.world);
         d_trail_update(t, time.dt);

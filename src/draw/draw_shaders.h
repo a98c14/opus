@@ -361,8 +361,7 @@ read_only global String d_shader_opengl_sprite_frag = string_comp(
 	"void main() {\n"
 	"vec2 uv = v_tex_coord;\n"
 	"vec4 texture_color = texture(u_main_texture, uv);\n"
-	"color = vec4(texture_color.xyz, 1.0);\n"
-	"// color = vec4(uv.x, uv.y, 1.0, 1.0);\n"
+	"color = texture_color;\n"
 	"}\n"
 	"\n"
 );
