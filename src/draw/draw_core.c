@@ -195,7 +195,7 @@ d_sprite_many(SpriteAtlas* atlas, D_DrawDataSprite* draw_data, uint32 sprite_cou
 {
     if (sort)
     {
-        // TODO(selim):
+        qsort(draw_data, sprite_count, sizeof(D_DrawDataSprite), d_compare_sprite_draw_data);
     }
 
     D_ShaderDataSprite* uniform_data = arena_push_array(d_context->frame_arena, D_ShaderDataSprite, sprite_count);
@@ -204,16 +204,16 @@ d_sprite_many(SpriteAtlas* atlas, D_DrawDataSprite* draw_data, uint32 sprite_cou
         D_DrawDataSprite* data = &draw_data[i];
 
         const Sprite* sprite = &atlas->sprites[data->sprite];
+        Vec2          flip   = vec2(-2 * ((data->flags & D_DrawFlagsSpriteFlipX) > 0) + 1, -2 * ((data->flags & D_DrawFlagsSpriteFlipY) > 0) + 1);
+        Vec2          pivot  = r_sprite_get_pivot(*sprite, draw_data->scale, flip);
+        pivot                = mul_vec2_f32(pivot, (data->flags & D_DrawFlagsSpriteIgnorePivot) > 1);
+        // Vec2 scale           = vec2(sprite->source_size.x * draw_data->scale.x * flip.x, sprite->source_size.y * draw_data->scale.y * flip.y);
+        Vec2 scale = vec2(sprite->size.w * draw_data->scale.x * flip.x, sprite->size.h * draw_data->scale.y * flip.y);
 
-        Vec2 flip  = vec2(-2 * ((data->flags & D_DrawFlagsSpriteFlipX) > 0) + 1, -2 * ((data->flags & D_DrawFlagsSpriteFlipY) > 0) + 1);
-        Vec2 pivot = r_sprite_get_pivot(*sprite, draw_data->scale, flip);
-        pivot      = mul_vec2_f32(pivot, (data->flags & D_DrawFlagsSpriteIgnorePivot) > 1);
-        Vec2 scale = vec2(sprite->source_size.x * draw_data->scale.x * flip.x, sprite->source_size.y * draw_data->scale.y * flip.y);
-
-        uniform_data->bounds = sprite->rect.v;
-        uniform_data->color  = color_v4(ColorWhite);
-        uniform_data->model  = data->rotation == 0 ? transform_quad_aligned_at_pivot(data->position.xy, scale, pivot)
-                                                   : transform_quad_around_pivot(data->position.xy, scale, data->rotation, pivot);
+        uniform_data[i].bounds = sprite->rect.v;
+        uniform_data[i].color  = color_v4(ColorWhite);
+        uniform_data[i].model  = data->rotation == 0 ? transform_quad_aligned_at_pivot(data->position.xy, scale, pivot)
+                                                     : transform_quad_around_pivot(data->position.xy, scale, data->rotation, pivot);
     }
 
     R_Batch batch;
@@ -258,4 +258,13 @@ internal void
 d_debug_rect2(Rect r)
 {
     d_rect(r, 2, ColorGreen400);
+}
+
+internal int
+d_compare_sprite_draw_data(const void* p, const void* q)
+{
+    float32 x = (*(const D_DrawDataSprite*)p).position.z;
+    float32 y = (*(const D_DrawDataSprite*)q).position.z;
+    return (x < y) ? -1 : (x > y) ? 1
+                                  : 0;
 }

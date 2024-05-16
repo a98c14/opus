@@ -84,4 +84,4 @@ internal void d_debug_rect(Rect r);
 internal void d_debug_rect2(Rect r);
 
 /** sort */
-internal void d_sort_sprite();
+internal int d_compare_sprite_draw_data(const void* p, const void* q);

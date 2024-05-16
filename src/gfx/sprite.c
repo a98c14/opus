@@ -52,8 +52,8 @@ r_sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip)
 {
     Vec2 result;
     // TODO(selim): first part needs to be done at startup for all sprites
-    result.x = (sprite.source_size.x / 2.0 + sprite.size.x - sprite.pivot.x) * flip.x * scale.x;
-    result.y = -(sprite.source_size.y / 2.0 + sprite.size.y - sprite.pivot.y) * flip.y * scale.y;
+    result.x = (sprite.size.w / 2.0 + sprite.size.x - sprite.pivot.x) * flip.x * scale.x;
+    result.y = (sprite.size.h / 2.0 + sprite.size.y - sprite.pivot.y) * flip.y * scale.y;
     return result;
 }
 
@@ -74,15 +74,16 @@ sprite_rect(SpriteAtlas* atlas, SpriteIndex sprite)
 {
     const Sprite* s = &atlas->sprites[sprite];
     // NOTE(selim): -2 is removed because by default all our sprites have 1 px padding on each side
-    return rect_from_wh(s->source_size.w - 2, s->source_size.h - 2);
+    return rect_from_wh(s->size.w, s->source_size.h);
 }
 
 internal Rect
 sprite_rect_at(SpriteAtlas* atlas, SpriteIndex sprite, Vec2 position, Vec2 scale, Vec2 flip)
 {
-    Sprite sprite_data   = atlas->sprites[sprite];
-    Vec2   pivot         = r_sprite_get_pivot(sprite_data, scale, flip);
-    Vec2   actual_scale  = vec2(sprite_data.source_size.w * flip.x * scale.x, sprite_data.source_size.h * flip.y * scale.y);
-    Vec2   rect_position = add_vec2(position, pivot);
+    const float32 padding       = 2;
+    Sprite        sprite_data   = atlas->sprites[sprite];
+    Vec2          pivot         = r_sprite_get_pivot(sprite_data, scale, flip);
+    Vec2          actual_scale  = vec2((sprite_data.size.w + padding) * flip.x * scale.x, (sprite_data.size.h + padding) * flip.y * scale.y);
+    Vec2          rect_position = add_vec2(position, pivot);
     return rect_at(rect_position, actual_scale, AlignmentCenter);
 }

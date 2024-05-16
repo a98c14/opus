@@ -64,15 +64,27 @@ main(void)
         d_rect(rect_at(vec2(-100, 300), vec2(100, 100), AlignmentCenter), 2, ColorWhite);
 
         Vec2 sprite_pos = vec2(500, 300);
-        d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_1, sprite_pos, vec2_one(), 0);
-        d_debug_rect(sprite_rect_at(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_1, sprite_pos, vec2_one(), vec2_one()));
+        d_sprite(atlas, SPRITE_GAME_UI_GAME_TITLE, sprite_pos, vec2_one(), 0);
+        d_debug_rect(sprite_rect_at(atlas, SPRITE_GAME_UI_GAME_TITLE, sprite_pos, vec2_one(), vec2_one()));
 
         sprite_rotation += 10 * time.dt;
         d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 300), vec2_one(), sprite_rotation);
+        d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 50), vec2(2, 2), sprite_rotation);
 
         d_trail_push_position(t, mouse.world);
         d_trail_update(t, time.dt);
         d_trail_draw(t);
+
+        D_DrawDataSprite* draw_data = arena_push_array(frame_arena, D_DrawDataSprite, 10);
+        for (int64 i = 0; i < 10; i++)
+        {
+            draw_data[i].sprite   = SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_0 + i;
+            draw_data[i].position = vec3(sinf(time.current_frame_time / 1000.0f) * (i + 1) * 30, cosf(time.current_frame_time / 1300.0f) * (i + 1) * 20, -i);
+            draw_data[i].scale    = vec2_one();
+            draw_data[i].rotation = 0;
+            draw_data[i].flags    = D_DrawFlagsSpriteNone;
+        }
+        d_sprite_many(atlas, draw_data, 10, false);
 
         r_render(g_renderer, time.dt);
         window_update(window);

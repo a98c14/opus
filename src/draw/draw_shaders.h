@@ -407,7 +407,7 @@ read_only global String d_shader_opengl_sprite_vert = string_comp(
 	"{\n"
 	"vec4 bounds = data[gl_InstanceID].bounds;\n"
 	"float x = (a_tex_coord.x * bounds.z + bounds.x) / texture_size.x;\n"
-	"float y = (a_tex_coord.y * bounds.w + bounds.y) / texture_size.y;\n"
+	"float y = ((1 - a_tex_coord.y) * bounds.w + bounds.y) / texture_size.y;\n"
 	"v_tex_coord = vec2(x, y);\n"
 	"gl_Position = g_projection * g_view * data[gl_InstanceID].model * vec4(a_pos, 0, 1);\n"
 	"}\n"
