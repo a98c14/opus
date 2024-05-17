@@ -5,6 +5,7 @@ python .\generate_sprite_header.py --data "$HOME\\source\\github\\greenrock\\ass
 import json
 import os
 import argparse
+from pathlib import Path
 
 def log_info(message):
     print(f"[info] {message}")
@@ -34,9 +35,13 @@ if __name__ == "__main__":
     
     raw_texture_data_dict = {}
     for path in args.data:
+        if not os.path.exists(path):
+            print("No such file or directory: %s", path)
+            continue
+        
         with open(path, 'r') as data_file:
             data = json.load(data_file)
-            texture_name, _ = data['meta']['image'].split('.')
+            texture_name = Path(data['meta']['image']).stem
             texture_name = texture_name.upper()
             w, h = data['meta']['size']['w'], data['meta']['size']['h']
             raw_texture_data_dict[texture_name] = {}

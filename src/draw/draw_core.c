@@ -206,9 +206,8 @@ d_sprite_many(SpriteAtlas* atlas, D_DrawDataSprite* draw_data, uint32 sprite_cou
         const Sprite* sprite = &atlas->sprites[data->sprite];
         Vec2          flip   = vec2(-2 * ((data->flags & D_DrawFlagsSpriteFlipX) > 0) + 1, -2 * ((data->flags & D_DrawFlagsSpriteFlipY) > 0) + 1);
         Vec2          pivot  = r_sprite_get_pivot(*sprite, draw_data->scale, flip);
-        pivot                = mul_vec2_f32(pivot, (data->flags & D_DrawFlagsSpriteIgnorePivot) > 1);
-        // Vec2 scale           = vec2(sprite->source_size.x * draw_data->scale.x * flip.x, sprite->source_size.y * draw_data->scale.y * flip.y);
-        Vec2 scale = vec2(sprite->size.w * draw_data->scale.x * flip.x, sprite->size.h * draw_data->scale.y * flip.y);
+        pivot                = mul_vec2_f32(pivot, !(data->flags & D_DrawFlagsSpriteIgnorePivot));
+        Vec2 scale           = vec2(sprite->size.w * draw_data->scale.x * flip.x, sprite->size.h * draw_data->scale.y * flip.y);
 
         uniform_data[i].bounds = sprite->rect.v;
         uniform_data[i].color  = color_v4(ColorWhite);
@@ -239,25 +238,25 @@ d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, flo
 internal void
 d_debug_line(Vec2 start, Vec2 end)
 {
-    d_line(start, end, 1.8, ColorRed400);
+    d_line(start, end, 1.2 * g_renderer->ppu, ColorRed400);
 }
 
 internal void
 d_debug_line2(Vec2 start, Vec2 end)
 {
-    d_line(start, end, 1.8, ColorGreen400);
+    d_line(start, end, 1.2 * g_renderer->ppu, ColorGreen400);
 }
 
 internal void
 d_debug_rect(Rect r)
 {
-    d_rect(r, 2, ColorRed400);
+    d_rect(r, 1.2 * g_renderer->ppu, ColorRed400);
 }
 
 internal void
 d_debug_rect2(Rect r)
 {
-    d_rect(r, 2, ColorGreen400);
+    d_rect(r, 1.2 * g_renderer->ppu, ColorGreen400);
 }
 
 internal int

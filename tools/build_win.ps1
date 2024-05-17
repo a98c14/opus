@@ -6,7 +6,7 @@ foreach ($arg in $args) {
     $commands[$parts[0]] = if ($parts.Length -gt 1) { $parts[1] } else { 1 }
 }
 
-$root_directory = "$PSScriptRoot\.."
+$root_directory = "$PSScriptRoot\.." | Resolve-Path
 if ($null -eq $commands["output"]) {
     $commands["output"] = "$root_directory\dist\main.exe"
 }
@@ -20,7 +20,6 @@ if ($commands["rebuild_shaders"]) {
     Write-Host "[BUILD] rebuilding shaders" 
     python .\tools\build_shaders.py --src "$root_directory\src\draw\shaders" --out "$root_directory\src\draw\draw_shaders.h"
 }
-
 
 # --- Set Compile Flags -----------------------------------
 if (-not $commands["release"]) { $commands["debug"] = 1; }
@@ -79,14 +78,18 @@ $source_file_path = ""
 if ($commands["trail_rendering"]) { $source_file_path = "$root_directory\examples\trail_rendering\main.c" }
 elseif ($commands["shape_rendering"]) { $source_file_path = "$root_directory\examples\shape_rendering\main.c" }
 
-New-Item -ItemType Directory -Force -Path $output_directory | Out-Null;
-Push-Location $root_directory
-$compile_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-cl $compile_args $source_file_path /link $link_args;
-Write-Host "[BUILD] target: $source_file_path";
-Write-Host "[BUILD] time compilation: $(($compile_stopwatch.ElapsedMilliseconds / 1000.0).ToString("0.00"))s, total: $(($total_stopwatch.ElapsedMilliseconds / 1000.0).ToString("0.00"))s"
-Pop-Location
-Push-Location $output_directory | Out-Null
-if ($commands["run"]) { Invoke-Expression "$output_directory\$output_basename.exe" }
-Pop-Location;
-
+if ($source_file_path -ne "") {
+    New-Item -ItemType Directory -Force -Path $output_directory | Out-Null;
+    Push-Location $root_directory
+    $compile_stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    cl $compile_args $source_file_path /link $link_args;
+    Write-Host "[BUILD] target: $source_file_path";
+    Write-Host "[BUILD] time compilation: $(($compile_stopwatch.ElapsedMilliseconds / 1000.0).ToString("0.00"))s, total: $(($total_stopwatch.ElapsedMilliseconds / 1000.0).ToString("0.00"))s"
+    Pop-Location
+    Push-Location $output_directory | Out-Null
+    if ($commands["run"]) { Invoke-Expression "$output_directory\$output_basename.exe" }
+    Pop-Location;
+}
+else {
+    Write-Host "[BUILD] no target defined, skipping build";
+}

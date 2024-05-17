@@ -88,6 +88,8 @@ typedef int16_t   int16;
 typedef int32_t   int32;
 typedef int64_t   int64;
 typedef int32_t   bool32;
+typedef int16_t   bool16;
+typedef int8_t    bool8;
 typedef float     float32;
 typedef double    float64;
 typedef uintptr_t uptr;

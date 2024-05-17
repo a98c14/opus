@@ -53,7 +53,7 @@ r_sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip)
     Vec2 result;
     // TODO(selim): first part needs to be done at startup for all sprites
     result.x = (sprite.size.w / 2.0 + sprite.size.x - sprite.pivot.x) * flip.x * scale.x;
-    result.y = (sprite.size.h / 2.0 + sprite.size.y - sprite.pivot.y) * flip.y * scale.y;
+    result.y = -(sprite.size.h / 2.0 + sprite.size.y - sprite.pivot.y) * flip.y * scale.y;
     return result;
 }
 
