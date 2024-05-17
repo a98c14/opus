@@ -7,7 +7,7 @@
 
 typedef struct
 {
-    float32 last_frame_time; // TODO(selim): Do we need this?
+    float32 last_frame_time;
     float32 current_frame_time;
     float32 dt;
 } EngineTime;

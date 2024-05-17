@@ -52,19 +52,19 @@ typedef struct
 } InputManager;
 global InputManager* g_input_manager;
 
-/* -------------------------------------------------------------------------- */
-/*                                INPUT MANAGER                               */
-/* -------------------------------------------------------------------------- */
-internal void input_manager_init(Arena* arena, Window* window);
+/** raw */
+internal bool32 input_key_pressed_raw(Window* window, uint16 key);
+internal bool32 input_mouse_pressed_raw(Window* window, uint16 key);
 
-/** `action_id` should be a value of an enum, there shouldn't be any gaps ideally. */
+/** `action_id` should be a value of an enum, there shouldn't be any gaps. */
+internal void   input_manager_init(Arena* arena, Window* window);
 internal void   input_manager_register_action(String action_name, uint64 action_id, uint16 key);
 internal void   input_manager_update(EngineTime time);
-internal Vec2   mouse_world_position(Vec2 raw_mouse_pos, Camera camera);
-internal bool32 input_key_pressed_raw(Window* window, uint16 key);
+internal void   input_set_key_state(EngineTime time, uint64 action_id, InputKeyState key_state);
 internal bool32 input_action_pressed(uint64 action_id);
 
 /** mouse */
+internal Vec2       input_mouse_world_position(Vec2 raw_mouse_pos, Camera camera);
 internal InputMouse input_mouse_get(Window* window, Camera camera, InputMouse prev_state);
 internal bool32     input_mouse_pressed(InputMouse mouse, MouseButtonState state);
 internal bool32     input_mouse_held(InputMouse mouse, MouseButtonState state);

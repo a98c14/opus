@@ -134,3 +134,11 @@ typedef size_t    usize;
 
 #define likely(expr)   expect(expr, 1)
 #define unlikely(expr) expect(expr, 0)
+
+#define flag_set(n, f)        ((n) |= (f))
+#define flag_clear(n, f)      ((n) &= ~(f))
+#define flag_toggle(n, f)     ((n) ^= (f))
+#define flag_is_set(n, f)     (((n) & (f)) == (f)) // Checks if all bits in 'f' are set in 'n'. Returns true if f == 0
+#define flag_not_set(n, f)    (((n) & (f)) == 0)   // Checks if none of the bits in 'f' are set in 'n'.
+#define flag_equals(n, f)     (((n) == (f)))       // Checks if 'n' is exactly equal to 'f'.
+#define flag_intersects(n, f) (((n) & (f)) > 0)    // Checks if any bits in 'f' are set in 'n'.

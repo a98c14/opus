@@ -1,5 +1,17 @@
 #include "input.h"
 
+internal bool32
+input_key_pressed_raw(Window* window, uint16 key)
+{
+    return glfwGetKey(window->glfw_window, key) == GLFW_PRESS;
+}
+
+internal bool32
+input_mouse_pressed_raw(Window* window, uint16 key)
+{
+    return glfwGetMouseButton(window->glfw_window, key) == GLFW_PRESS;
+}
+
 internal void
 input_manager_init(Arena* arena, Window* window)
 {
@@ -25,42 +37,41 @@ input_manager_update(EngineTime time)
         if (state->key == 0)
             continue;
 
-        InputKeyState new_state = input_key_pressed_raw(g_input_manager->window, state->key) ? InputKeyStatePressed : InputKeyStateReleased;
-        bool32        is_new    = (state->key_state & new_state) == 0;
-
-        state->key_state = new_state;
-        state->key_state = is_new ? (state->key_state | InputKeyStateNew) : (state->key_state & ~InputKeyStateNew);
-
-        if (new_state == InputKeyStatePressed && is_new)
-        {
-            state->t_press = time.current_frame_time;
-        }
-        else if (new_state == InputKeyStateReleased && is_new)
-        {
-            state->t_release = time.current_frame_time;
-        }
+        InputKeyState new_state = input_key_pressed_raw(g_input_manager->window, state->key);
+        input_set_key_state(time, i, new_state);
     }
 }
 
-internal bool32
-input_key_pressed_raw(Window* window, uint16 key)
+internal void
+input_set_key_state(EngineTime time, uint64 action_id, InputKeyState key_state)
 {
-    return glfwGetKey(window->glfw_window, key) == GLFW_PRESS;
+    InputState* state  = &g_input_manager->key_states[action_id];
+    bool32      is_new = (state->key_state & key_state) == 0;
+    state->key_state   = key_state;
+    state->key_state   = is_new ? (state->key_state | InputKeyStateNew) : (state->key_state & ~InputKeyStateNew);
+
+    if (key_state == InputKeyStatePressed && is_new)
+    {
+        state->t_press = time.current_frame_time;
+    }
+    else if (key_state == InputKeyStateReleased && is_new)
+    {
+        state->t_release = time.current_frame_time;
+    }
 }
 
 internal bool32
 input_action_pressed(uint64 action_id)
 {
-    return (g_input_manager->key_states[action_id].key_state & InputKeyStatePressedNew) == InputKeyStatePressedNew;
+    return flag_is_set(g_input_manager->key_states[action_id].key_state, InputKeyStatePressedNew);
 }
 
 internal Vec2
-mouse_world_position(Vec2 raw_mouse_pos, Camera camera)
+input_mouse_world_position(Vec2 raw_mouse_pos, Camera camera)
 {
     Vec2 mouse_world = vec2(-raw_mouse_pos.x / camera.window_width, raw_mouse_pos.y / camera.window_height);
-
-    mouse_world = sub_vec2(vec2(0, 1), mouse_world);
-    mouse_world = add_vec2_f32(mouse_world, -0.5);
+    mouse_world      = sub_vec2(vec2(0, 1), mouse_world);
+    mouse_world      = add_vec2_f32(mouse_world, -0.5);
     mouse_world.x *= camera.world_width;
     mouse_world.y *= camera.world_height;
 
@@ -85,12 +96,12 @@ input_mouse_get(Window* window, Camera camera, InputMouse prev_state)
     InputMouse result = {0};
     glfwGetCursorPos(window->glfw_window, &result.raw_x, &result.raw_y);
     result.prev_button_state = prev_state.button_state;
-    result.button_state += (glfwGetMouseButton(window->glfw_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) << 0;
-    result.button_state += (glfwGetMouseButton(window->glfw_window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) << 1;
-    result.button_state += (glfwGetMouseButton(window->glfw_window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) << 2;
+    result.button_state += input_mouse_pressed_raw(window, GLFW_MOUSE_BUTTON_LEFT) << 0;
+    result.button_state += input_mouse_pressed_raw(window, GLFW_MOUSE_BUTTON_RIGHT) << 1;
+    result.button_state += input_mouse_pressed_raw(window, GLFW_MOUSE_BUTTON_MIDDLE) << 2;
 
     Vec2 mouse_raw = vec2(result.raw_x, result.raw_y);
-    result.world   = mouse_world_position(mouse_raw, camera);
+    result.world   = input_mouse_world_position(mouse_raw, camera);
     result.screen  = mouse_screen_position(mouse_raw, camera);
     return result;
 }
