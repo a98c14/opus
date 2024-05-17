@@ -48,13 +48,13 @@ typedef struct
     float32 height;
 } SpriteAtlas;
 
-internal SpriteAtlas*     sprite_atlas_new(Arena* arena, TextureIndex texture_index, const Animation* animations, const Sprite* sprites, const TextureIndex* texture_indices, uint32 animation_count, uint32 sprite_count);
+internal SpriteAtlas      sprite_atlas_new(TextureIndex texture_index, const Animation* animations, const Sprite* sprites, const TextureIndex* texture_indices, uint32 animation_count, uint32 sprite_count);
 internal inline Vec2      r_sprite_get_pivot(Sprite sprite, Vec2 scale, Vec2 flip);
-internal Bounds           r_sprite_tex_coords(SpriteAtlas* atlas, SpriteIndex sprite_index);
-internal Rect             r_sprite_rect_scaled(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, float32 scale);
-internal Rect             r_sprite_rect(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos);
-internal inline Animation animation_from_atlas(SpriteAtlas* atlas, AnimationIndex index);
+internal Bounds           r_sprite_tex_coords(SpriteAtlas atlas, SpriteIndex sprite_index);
+internal Rect             r_sprite_rect_scaled(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, float32 scale);
+internal Rect             r_sprite_rect(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos);
+internal inline Animation animation_from_atlas(SpriteAtlas atlas, AnimationIndex index);
 internal inline uint16    animation_length(Animation animation);
 
-internal Rect sprite_rect(SpriteAtlas* atlas, SpriteIndex sprite);
-internal Rect sprite_rect_at(SpriteAtlas* atlas, SpriteIndex sprite, Vec2 position, Vec2 scale, Vec2 flip);
+internal Rect sprite_rect(SpriteAtlas atlas, SpriteIndex sprite);
+internal Rect sprite_rect_at(SpriteAtlas atlas, SpriteIndex sprite, Vec2 position, Vec2 scale, Vec2 flip);

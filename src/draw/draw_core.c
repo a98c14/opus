@@ -171,14 +171,17 @@ d_rect(Rect r, float32 thickness, Color c)
 }
 
 internal void
-d_string(Vec2 pos, String str, int32 size, Color c)
+d_string(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
 {
-    GlyphAtlas* atlas = font_get_atlas(d_context->active_font, size);
+    GlyphAtlas* atlas         = font_get_atlas(d_context->active_font, size);
+    Rect        string_bounds = text_calculate_bounds(atlas, pos, alignment, str, size);
+    Vec2        base_offset   = {
+                 .x = string_bounds.w * FontAlignmentMultiplierX[alignment],
+                 .y = string_bounds.h * FontAlignmentMultiplierY[alignment]};
 
-    VertexAtrribute_TexturedColored* vertices = arena_push_array(d_context->frame_arena, VertexAtrribute_TexturedColored, str.length * 6);
-
-    uint64 vertex_count = 0;
-    d_mesh_push_string(vertices, &vertex_count, atlas, str, pos, size, c);
+    VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, VertexAtrribute_TexturedColored, str.length * 6);
+    uint64                           vertex_count = 0;
+    d_mesh_push_string(vertices, &vertex_count, atlas, str, add_vec2(pos, base_offset), size, c);
 
     R_Batch batch;
     batch.key                 = render_key_new(ViewTypeWorld, d_context->active_layer, d_context->active_pass, atlas->texture, MeshTypeDynamic, d_context->material_text);
@@ -191,7 +194,7 @@ d_string(Vec2 pos, String str, int32 size, Color c)
 }
 
 internal void
-d_sprite_many(SpriteAtlas* atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort)
+d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort)
 {
     if (sort)
     {
@@ -203,7 +206,7 @@ d_sprite_many(SpriteAtlas* atlas, D_DrawDataSprite* draw_data, uint32 sprite_cou
     {
         D_DrawDataSprite* data = &draw_data[i];
 
-        const Sprite* sprite = &atlas->sprites[data->sprite];
+        const Sprite* sprite = &atlas.sprites[data->sprite];
         Vec2          flip   = vec2(-2 * ((data->flags & D_DrawFlagsSpriteFlipX) > 0) + 1, -2 * ((data->flags & D_DrawFlagsSpriteFlipY) > 0) + 1);
         Vec2          pivot  = r_sprite_get_pivot(*sprite, draw_data->scale, flip);
         pivot                = mul_vec2_f32(pivot, !(data->flags & D_DrawFlagsSpriteIgnorePivot));
@@ -216,14 +219,14 @@ d_sprite_many(SpriteAtlas* atlas, D_DrawDataSprite* draw_data, uint32 sprite_cou
     }
 
     R_Batch batch;
-    batch.key            = render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, MeshTypeQuad, d_context->material_sprite);
+    batch.key            = render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas.texture, MeshTypeQuad, d_context->material_sprite);
     batch.element_count  = sprite_count;
     batch.uniform_buffer = uniform_data;
     r_batch_commit(batch);
 }
 
 internal void
-d_sprite(SpriteAtlas* atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation)
+d_sprite(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation)
 {
     D_DrawDataSprite data;
     data.sprite   = sprite_index;

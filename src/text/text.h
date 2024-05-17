@@ -12,9 +12,11 @@
 
 #define DEBUG_TEXT 0
 
-// Center,  Bottom,   Top,  Right,  Left,  BottomLeft,  BottomRight,  TopLeft,  TopRight
-const float32 FontAlignmentMultiplierX[AlignmentCount] = {0, 0, 0, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5};
-const float32 FontAlignmentMultiplierY[AlignmentCount] = {0, -0.5, 0.5, 0, 0, 0.5, 0.5, 0.5, 0.5};
+// clang-format off
+//                                                        Center,  Bottom,   Top,  Right,  Left,  BottomLeft,  BottomRight,  TopLeft,  TopRight
+const float32 FontAlignmentMultiplierX[AlignmentCount] = {  -0.5,    -0.5,  -0.5,     -1,     0,           0,           -1,        0,        -1};
+const float32 FontAlignmentMultiplierY[AlignmentCount] = {  -0.5,       0,    -1,   -0.5,  -0.5,           0,            0,       -1,        -1};
+// clang-format on
 
 typedef enum
 {
@@ -138,4 +140,4 @@ FontCache* g_font_cache;
 
 internal void          font_cache_init(Arena* arena);
 internal FontFaceIndex font_load(String font_name, String font_path, GlyphAtlasType atlas_type);
-internal GlyphAtlas*   font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size);
+internal GlyphAtlas*   font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size);

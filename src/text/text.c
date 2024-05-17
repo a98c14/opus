@@ -228,14 +228,16 @@ font_load(String font_name, String font_path, GlyphAtlasType atlas_type)
 }
 
 internal GlyphAtlas*
-font_get_atlas(FontFaceIndex font_face_index, uint32 pixel_size)
+font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
 {
+    xassert(pixel_size > 0, "font size needs to be larger than 0");
     FontFace* font_face = &g_font_cache->font_faces[font_face_index];
-    xassert(font_face, "Could not find given font face");
+    xassert(font_face, "could not find given font face");
 
+    int32 font_size = ceilf(pixel_size);
     // TODO(selim): I don't understand why I need to divide this
-    pixel_size /= g_renderer->ppu;
-    uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? pixel_size : 32;
+    font_size /= g_renderer->ppu;
+    uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? font_size : 32;
     uint64         params[]    = {font_face_index, size};
     uint64         hash        = hash_array_uint64(params, array_count(params));
     FontCacheList* font_bucket = &g_font_cache->rasterized_font_cache[hash % g_font_cache->rasterized_font_cache_capacity];
