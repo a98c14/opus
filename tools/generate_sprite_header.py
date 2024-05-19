@@ -8,7 +8,7 @@ import argparse
 from pathlib import Path
 
 def log_info(message):
-    print(f"[info] {message}")
+    print(f"[INFO] {message}")
 
 def is_animation(filename):
     return filename.split('.')[0].split('_')[-1].isdigit()
@@ -170,5 +170,5 @@ if __name__ == "__main__":
                 output_file.write("},\n")
         output_file.write("};\n")
 
-    print(f"[info] generated header successfully at '{os.path.abspath(args.out)}'")
+    log_info(f"generated header successfully at '{os.path.abspath(args.out)}'")
 

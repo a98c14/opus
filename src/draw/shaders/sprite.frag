@@ -35,8 +35,19 @@ uniform sampler2D u_main_texture;
 in vec2 v_tex_coord;
 out vec4 color;
 
+vec2 calculate_uv(vec2 uv, vec2 tex_size) 
+{
+    vec2 pixels = uv * tex_size;
+    vec2 alpha = 0.7 * fwidth(pixels);
+    vec2 pixels_fract = fract(pixels);
+    vec2 pixels_diff = clamp( .5 / alpha * pixels_fract, 0.0, .5 ) + clamp( .5 / alpha * (pixels_fract - 1) + .5, 0.0, .5 );
+    pixels = floor(pixels) + pixels_diff;
+    return pixels / tex_size;
+}
+
 void main() {
-    vec2 uv = v_tex_coord;
+    vec2 uv = calculate_uv(v_tex_coord, texture_size);
+    // vec2 uv = v_tex_coord;
     vec4 texture_color = texture(u_main_texture, uv);
     color = texture_color;
 }
