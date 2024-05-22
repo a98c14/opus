@@ -234,7 +234,7 @@ typedef enum
 typedef struct
 {
     Vec2 vertices[QuadVertexIndexCOUNT];
-    Vec2 normals[QuadNormalIndexCOUNT];
+    Vec2 normals[QuadVertexIndexCOUNT];
 } Quad;
 
 /* Constructors */

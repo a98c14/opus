@@ -112,6 +112,65 @@ intersects_rect(Rect a, Rect b)
 }
 
 internal Intersection
+intersects_polygon(P_Polygon a, P_Polygon b)
+{
+    Intersection result = {0};
+
+    ArenaTemp temp         = scratch_begin(0, 0);
+    int32     normal_count = a.normal_count + b.normal_count;
+    Vec2*     normals      = arena_push_array(temp.arena, Vec2, normal_count);
+    memory_copy_typed(normals, a.normals, a.normal_count);
+    memory_copy_typed(normals + a.normal_count, b.normals, b.normal_count);
+
+    Vec2    min_overlap_vector;
+    float32 min_overlap_amount = FLOAT32_MAX;
+    float32 sign;
+    for (int32 i = 0; i < normal_count; i++)
+    {
+        Projection p1 = project_polygon(a, normals[i]);
+        Projection p2 = project_polygon(b, normals[i]);
+        if (!projection_overlaps(p1, p2))
+            return result;
+
+        float32 overlap_amount = projection_overlap_amount(p1, p2);
+        if (projection_contains(p1, p2) || projection_contains(p2, p1))
+        {
+            overlap_amount += min(fabs(p2.min - p1.min), fabs(p2.max - p1.max));
+        }
+
+        if (overlap_amount < min_overlap_amount)
+        {
+            min_overlap_vector = normals[i];
+            min_overlap_amount = overlap_amount;
+            sign               = (p1.max < p2.max ? -1 : 1);
+        }
+    }
+    scratch_end(temp);
+
+    result.intersects = true;
+    result.mtv        = mul_vec2_f32(min_overlap_vector, min_overlap_amount * sign);
+    return result;
+}
+
+internal Intersection
+intersects_quad(Quad a, Quad b)
+{
+    P_Polygon ap;
+    ap.vertices     = a.vertices;
+    ap.vertex_count = 4;
+    ap.normals      = a.normals;
+    ap.normal_count = 2;
+
+    P_Polygon bp;
+    bp.vertices     = b.vertices;
+    bp.vertex_count = 4;
+    bp.normals      = b.normals;
+    bp.normal_count = 2;
+
+    return intersects_polygon(ap, bp);
+}
+
+internal Intersection
 intersects_circle_rect(Circle a, Rect b)
 {
     Intersection result = {0};
@@ -200,6 +259,39 @@ project_rect(Rect r, Vec2 line)
 }
 
 internal Projection
+project_quad(Quad q, Vec2 line)
+{
+    Projection result;
+    float32    d0 = dot_vec2(q.vertices[QuadVertexIndexBottomLeft], line);
+    float32    d1 = dot_vec2(q.vertices[QuadVertexIndexTopLeft], line);
+    float32    d2 = dot_vec2(q.vertices[QuadVertexIndexTopRight], line);
+    float32    d3 = dot_vec2(q.vertices[QuadVertexIndexBottomRight], line);
+
+    result.min = min(min(d0, d1), min(d2, d3));
+    result.max = max(max(d0, d1), max(d2, d3));
+    return result;
+}
+
+internal Projection
+project_polygon(P_Polygon a, Vec2 line)
+{
+    Projection result;
+    float32    min = FLOAT32_MAX;
+    float32    max = FLOAT32_MIN;
+    for (int32 i = 0; i < a.vertex_count; i++)
+    {
+        Vec2    vertex = a.vertices[i];
+        float32 d      = dot_vec2(vertex, line);
+        min            = min(d, min);
+        max            = max(d, max);
+    }
+
+    result.min = min;
+    result.max = max;
+    return result;
+}
+
+internal Projection
 project_vertices(Vec2* vertices, uint32 vertex_count, Vec2 line)
 {
     Projection result;
@@ -216,6 +308,12 @@ project_vertices(Vec2* vertices, uint32 vertex_count, Vec2 line)
     result.min = min;
     result.max = max;
     return result;
+}
+
+internal bool32
+projection_contains(Projection a, Projection b)
+{
+    return a.min < b.min && a.max > b.max;
 }
 
 internal bool32

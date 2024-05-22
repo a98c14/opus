@@ -126,6 +126,12 @@ d_line(Vec2 start, Vec2 end, float32 thickness, Color c)
 }
 
 internal void
+d_direction(Vec2 start, Vec2 direction, float32 thickness, Color c)
+{
+    d_line(start, add_vec2(start, direction), thickness, c);
+}
+
+internal void
 d_circle(Vec2 pos, float32 radius, float32 thickness, Color c)
 {
     D_ShaderDataCircle* uniform_data = arena_push_struct(d_context->frame_arena, D_ShaderDataCircle);
@@ -173,16 +179,33 @@ d_rect(Rect r, float32 thickness, Color c)
 internal void
 d_quad(Quad q, float32 thickness, Color c)
 {
-    xassert(thickness >= 0, "rect thickness can't be lower than zero, use zero for filled rects.");
+    xassert(thickness >= 0, "quad thickness can't be lower than zero, use zero for filled rects.");
+    VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, VertexAtrribute_TexturedColored, 6 * 6);
+    uint64                           vertex_count = 0;
 
     Vec2 bl = q.vertices[QuadVertexIndexBottomLeft];
     Vec2 tl = q.vertices[QuadVertexIndexTopLeft];
     Vec2 br = q.vertices[QuadVertexIndexBottomRight];
     Vec2 tr = q.vertices[QuadVertexIndexTopRight];
-    d_line(tl, tr, thickness, c);
-    d_line(tr, br, thickness, c);
-    d_line(br, bl, thickness, c);
-    d_line(bl, tl, thickness, c);
+    d_mesh_push_line(vertices, &vertex_count, tl, tr, thickness, c);
+    d_mesh_push_line(vertices, &vertex_count, tr, br, thickness, c);
+    d_mesh_push_line(vertices, &vertex_count, br, bl, thickness, c);
+    d_mesh_push_line(vertices, &vertex_count, bl, tl, thickness, c);
+
+    // draw normals
+    Vec2 nh = q.normals[QuadNormalIndexHorizontal];
+    Vec2 nv = q.normals[QuadNormalIndexVertical];
+    d_mesh_push_line(vertices, &vertex_count, lerp_vec2(tl, tr, 0.5), add_vec2(lerp_vec2(tl, tr, 0.5), mul_vec2_f32(nv, 30 * g_renderer->ppu)), thickness, ColorSlate400);
+    d_mesh_push_line(vertices, &vertex_count, lerp_vec2(tl, bl, 0.5), add_vec2(lerp_vec2(tl, bl, 0.5), mul_vec2_f32(nh, 30 * g_renderer->ppu)), thickness, ColorSlate400);
+
+    R_Batch batch;
+    batch.key                 = render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, 0, MeshTypeDynamic, d_context->material_rect);
+    batch.element_count       = 1;
+    batch.draw_instance_count = vertex_count;
+    batch.vertex_buffer       = vertices;
+    batch.vertex_buffer_size  = sizeof(VertexAtrribute_TexturedColored) * vertex_count;
+    batch.uniform_buffer      = 0;
+    r_batch_commit(batch);
 }
 
 internal void

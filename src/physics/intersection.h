@@ -1,7 +1,14 @@
 #pragma once
 
-#include <base/defines.h>
-#include <base/math.h>
+#include <base.h>
+
+typedef struct
+{
+    Vec2* vertices;
+    int32 vertex_count;
+    Vec2* normals;
+    int32 normal_count;
+} P_Polygon;
 
 typedef union
 {
@@ -36,13 +43,18 @@ internal bool32       intersects_rect_fast(Rect a, Rect b);
 internal Intersection intersects_ray(Ray2 a, Ray2 b);
 internal Intersection intersects_circle(Circle a, Circle b);
 internal Intersection intersects_circle_rect(Circle a, Rect b);
+internal Intersection intersects_polygon(P_Polygon a, P_Polygon b);
 internal Intersection intersects_rect(Rect a, Rect b);
+internal Intersection intersects_quad(Quad a, Quad b);
 
 internal Projection project_circle(Circle c, Vec2 line);
 internal Projection project_bounds(Bounds b, Vec2 line);
 internal Projection project_rect(Rect r, Vec2 line);
+internal Projection project_quad(Quad q, Vec2 line);
+internal Projection project_polygon(P_Polygon a, Vec2 line);
 internal Projection project_vertices(Vec2* vertices, uint32 vertex_count, Vec2 line);
 internal bool32     projection_overlaps(Projection p0, Projection p1);
+internal bool32     projection_contains(Projection a, Projection b);
 internal bool32     projection_overlaps_point(Projection p, float32 v);
 internal float32    projection_overlap_amount(Projection p0, Projection p1);
 
