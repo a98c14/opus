@@ -215,6 +215,28 @@ typedef struct
     int32 max;
 } IRange;
 
+typedef enum
+{
+    QuadVertexIndexBottomLeft  = 0,
+    QuadVertexIndexTopLeft     = 1,
+    QuadVertexIndexBottomRight = 2,
+    QuadVertexIndexTopRight    = 3,
+    QuadVertexIndexCOUNT,
+} QuadVertexIndex;
+
+typedef enum
+{
+    QuadNormalIndexHorizontal = 0,
+    QuadNormalIndexVertical   = 1,
+    QuadNormalIndexCOUNT,
+} QuadNormalIndex;
+
+typedef struct
+{
+    Vec2 vertices[QuadVertexIndexCOUNT];
+    Vec2 normals[QuadNormalIndexCOUNT];
+} Quad;
+
 /* Constructors */
 internal Vec2 vec2(float32 x, float32 y);
 internal Vec2 vec2_zero();
@@ -289,6 +311,10 @@ internal Vec2    direction_to_vec2(Vec2 start, Vec2 end, float32 scale);
 internal Vec2    inverse_direction_to_vec2(Vec2 start, Vec2 end, float32 scale);
 internal Vec2    move_towards_vec2(Vec2 from, Vec2 to, float32 length);
 internal Vec2    move_vec2(Vec2 from, Vec2 heading, float32 length);
+
+/** quad */
+internal Quad quad_at(Vec2 pos, Vec2 size, float32 rotation);
+internal Quad quad_from_rect(Rect r, float32 rotation);
 
 /* Matrix Operations*/
 internal Mat2 mat2_identity(void);

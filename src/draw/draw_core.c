@@ -171,6 +171,21 @@ d_rect(Rect r, float32 thickness, Color c)
 }
 
 internal void
+d_quad(Quad q, float32 thickness, Color c)
+{
+    xassert(thickness >= 0, "rect thickness can't be lower than zero, use zero for filled rects.");
+
+    Vec2 bl = q.vertices[QuadVertexIndexBottomLeft];
+    Vec2 tl = q.vertices[QuadVertexIndexTopLeft];
+    Vec2 br = q.vertices[QuadVertexIndexBottomRight];
+    Vec2 tr = q.vertices[QuadVertexIndexTopRight];
+    d_line(tl, tr, thickness, c);
+    d_line(tr, br, thickness, c);
+    d_line(br, bl, thickness, c);
+    d_line(bl, tl, thickness, c);
+}
+
+internal void
 d_string(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
 {
     GlyphAtlas* atlas         = font_get_atlas(d_context->active_font, size);

@@ -38,7 +38,7 @@ typedef struct
     MaterialIndex material_sprite;
     MaterialIndex material_text;
 } D_Context;
-D_Context* d_context;
+global D_Context* d_context;
 
 /** draw data */
 typedef uint32 D_DrawFlagsSprite;
@@ -72,6 +72,7 @@ internal void d_mesh_push_line(VertexAtrribute_TexturedColored* vertex_buffer, u
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);
 internal void d_rect(Rect r, float32 thickness, Color c);
+internal void d_quad(Quad q, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal void d_string(Vec2 pos, String str, float32 size, Color c, Alignment alignment);
 internal void d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);

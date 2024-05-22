@@ -579,6 +579,28 @@ rotate90i_vec2(Vec2 v)
     return vec2(v.y, -v.x);
 }
 
+/** Quad */
+internal Quad
+quad_at(Vec2 pos, Vec2 size, float32 rotation)
+{
+    return quad_from_rect(rect_from_xy_wh(pos.x, pos.y, size.x, size.h), rotation);
+}
+
+internal Quad
+quad_from_rect(Rect r, float32 rotation)
+{
+    Mat2 rotation_matrix = mat2_rotation(rotation);
+    Quad result;
+    result.vertices[QuadVertexIndexBottomLeft]  = add_vec2(r.center, mul_mat2_vec2(rotation_matrix, vec2(-r.w / 2.0f, -r.h / 2.0f)));
+    result.vertices[QuadVertexIndexTopRight]    = add_vec2(r.center, mul_mat2_vec2(rotation_matrix, vec2(r.w / 2.0f, r.h / 2.0f)));
+    result.vertices[QuadVertexIndexTopLeft]     = add_vec2(r.center, mul_mat2_vec2(rotation_matrix, vec2(-r.w / 2.0f, r.h / 2.0f)));
+    result.vertices[QuadVertexIndexBottomRight] = add_vec2(r.center, mul_mat2_vec2(rotation_matrix, vec2(r.w / 2.0f, -r.h / 2.0f)));
+
+    result.normals[QuadNormalIndexHorizontal] = rotate90_vec2(heading_to_vec2(result.vertices[QuadVertexIndexBottomLeft], result.vertices[QuadVertexIndexTopLeft]));
+    result.normals[QuadNormalIndexVertical]   = rotate90_vec2(heading_to_vec2(result.vertices[QuadVertexIndexTopLeft], result.vertices[QuadVertexIndexTopRight]));
+    return result;
+}
+
 /* Matrix Operations */
 internal Mat2
 mat2_identity(void)
