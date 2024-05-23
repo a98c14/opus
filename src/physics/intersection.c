@@ -9,6 +9,20 @@ ray(Vec2 start, Vec2 direction)
     return result;
 }
 
+internal Bounds
+p_quad_get_bounds(Quad a)
+{
+    Bounds result = (Bounds){.bl = vec2(FLOAT32_MAX, FLOAT32_MAX), .tr = vec2(FLOAT32_MIN, FLOAT32_MIN)};
+    for (uint32 i = 0; i < QuadVertexIndexCOUNT; i++)
+    {
+        result.bl.x = min(result.bl.x, a.vertices[i].x);
+        result.bl.y = min(result.bl.y, a.vertices[i].y);
+        result.tr.x = max(result.tr.x, a.vertices[i].x);
+        result.tr.y = max(result.tr.y, a.vertices[i].y);
+    }
+    return result;
+}
+
 internal Intersection
 intersects_rect_point(Rect a, Vec2 b)
 {
