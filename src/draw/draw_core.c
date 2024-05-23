@@ -146,7 +146,7 @@ d_circle(Vec2 pos, float32 radius, float32 thickness, Color c)
     r_batch_commit(batch);
 }
 
-internal void
+internal Rect
 d_rect(Rect r, float32 thickness, Color c)
 {
     xassert(thickness >= 0, "rect thickness can't be lower than zero, use zero for filled rects.");
@@ -174,6 +174,7 @@ d_rect(Rect r, float32 thickness, Color c)
     batch.vertex_buffer_size  = sizeof(VertexAtrribute_TexturedColored) * vertex_count;
     batch.uniform_buffer      = 0;
     r_batch_commit(batch);
+    return r;
 }
 
 internal void
@@ -209,7 +210,31 @@ d_quad(Quad q, float32 thickness, Color c)
 }
 
 internal void
-d_string(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
+d_string(Rect r, String str, float32 size, Color c, Anchor anchor)
+{
+    GlyphAtlas* atlas         = font_get_atlas(d_context->active_font, size);
+    Vec2        pos           = rect_get(r, anchor.parent);
+    Rect        string_bounds = text_calculate_bounds(atlas, pos, anchor.child, str, size);
+    Vec2        base_offset   = {
+                 .x = string_bounds.w * FontAlignmentMultiplierX[anchor.child],
+                 .y = string_bounds.h * FontAlignmentMultiplierY[anchor.child]};
+
+    VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, VertexAtrribute_TexturedColored, str.length * 6);
+    uint64                           vertex_count = 0;
+    d_mesh_push_string(vertices, &vertex_count, atlas, str, add_vec2(pos, base_offset), size, c);
+
+    R_Batch batch;
+    batch.key                 = render_key_new(ViewTypeWorld, d_context->active_layer, d_context->active_pass, atlas->texture, MeshTypeDynamic, d_context->material_text);
+    batch.element_count       = 1;
+    batch.draw_instance_count = vertex_count;
+    batch.vertex_buffer       = vertices;
+    batch.vertex_buffer_size  = sizeof(VertexAtrribute_TexturedColored) * vertex_count;
+    batch.uniform_buffer      = 0;
+    r_batch_commit(batch);
+}
+
+internal void
+d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
 {
     GlyphAtlas* atlas         = font_get_atlas(d_context->active_font, size);
     Rect        string_bounds = text_calculate_bounds(atlas, pos, alignment, str, size);

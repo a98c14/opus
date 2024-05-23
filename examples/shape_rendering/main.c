@@ -54,11 +54,11 @@ main(void)
 
         d_circle(vec2(-800, 0), 128, 0.2, ColorRed500);
         d_circle(vec2(800, 0), 128, 0.2, ColorRed500);
-        d_string(vec2(-800, -300), ascii_charset, 28, ColorWhite);
+        d_string_at(vec2(-800, -300), ascii_charset, 28, ColorWhite);
         d_line(vec2(-800, -300), vec2(800, -300), 2, ColorGreen400);
         d_line(vec2(-800, 0), vec2(800, 0), 2, ColorGreen400);
         d_line(vec2(0, -500), vec2(0, 500), 2, ColorGreen400);
-        d_string(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 15, ColorWhite);
+        d_string_at(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 15, ColorWhite);
 
         d_rect(rect_at(vec2(100, 300), vec2(100, 100), AlignmentCenter), 0, ColorWhite);
         d_rect(rect_at(vec2(-100, 300), vec2(100, 100), AlignmentCenter), 2, ColorWhite);

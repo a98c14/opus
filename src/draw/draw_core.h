@@ -72,10 +72,10 @@ internal void d_mesh_push_line(VertexAtrribute_TexturedColored* vertex_buffer, u
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);
 internal void d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thickness, Color c);
-internal void d_rect(Rect r, float32 thickness, Color c);
+internal Rect d_rect(Rect r, float32 thickness, Color c);
 internal void d_quad(Quad q, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
-internal void d_string(Vec2 pos, String str, float32 size, Color c, Alignment alignment);
+internal void d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment);
 internal void d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
 internal void d_sprite(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation);
 
