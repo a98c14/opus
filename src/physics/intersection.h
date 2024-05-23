@@ -1,6 +1,7 @@
 #pragma once
 
 #include <base.h>
+#include <draw/draw_inc.h>
 
 typedef struct
 {
@@ -61,3 +62,5 @@ internal float32    projection_overlap_amount(Projection p0, Projection p1);
 internal Vec2 closest_point_rect(Rect r, Vec2 v);
 
 internal Vec2 minimum_translation_vector(Vec2 normal, Projection p0, Projection p1, Vec2 center_0, Vec2 center_1);
+
+internal Vec2 p_polygon_tr(P_Polygon p);

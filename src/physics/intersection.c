@@ -124,7 +124,7 @@ intersects_polygon(P_Polygon a, P_Polygon b)
 
     Vec2    min_overlap_vector;
     float32 min_overlap_amount = FLOAT32_MAX;
-    float32 sign;
+    float32 min_sign;
     for (int32 i = 0; i < normal_count; i++)
     {
         Projection p1 = project_polygon(a, normals[i]);
@@ -133,22 +133,30 @@ intersects_polygon(P_Polygon a, P_Polygon b)
             return result;
 
         float32 overlap_amount = projection_overlap_amount(p1, p2);
-        if (projection_contains(p1, p2) || projection_contains(p2, p1))
+
+        float32 sign = (p1.max < p2.max ? -1 : 1);
+
+        bool32 contains = (projection_contains(p1, p2) || projection_contains(p2, p1));
+        if (contains && fabs(p1.min - p2.min) > fabs(p1.max - p2.max))
         {
-            overlap_amount += min(fabs(p2.min - p1.min), fabs(p2.max - p1.max));
+            sign *= -1;
         }
+
+        Vec2 t_offset = mul_vec2_f32(rotate90_vec2(normals[i]), -2.5);
+        d_line(mul_vec2_f32(normals[i], p1.min), mul_vec2_f32(normals[i], p1.max), 0.4, ColorRed400);
+        d_line(add_vec2(mul_vec2_f32(normals[i], p2.min), t_offset), add_vec2(mul_vec2_f32(normals[i], p2.max), t_offset), 0.4, ColorGreen400);
 
         if (overlap_amount < min_overlap_amount)
         {
             min_overlap_vector = normals[i];
             min_overlap_amount = overlap_amount;
-            sign               = (p1.max < p2.max ? -1 : 1);
+            min_sign           = sign;
         }
     }
     scratch_end(temp);
 
     result.intersects = true;
-    result.mtv        = mul_vec2_f32(min_overlap_vector, min_overlap_amount * sign);
+    result.mtv        = mul_vec2_f32(min_overlap_vector, min_overlap_amount * min_sign);
     return result;
 }
 
@@ -381,4 +389,16 @@ minimum_translation_vector(Vec2 normal, Projection p0, Projection p1, Vec2 cente
     float32 d         = dot_vec2(v, normal);
     float32 sign      = d > 0 ? 1 : -1;
     return mul_vec2_f32(mul_vec2_f32(normal, sign), m);
+}
+
+internal Vec2
+p_polygon_tr(P_Polygon p)
+{
+    Vec2 max = vec2(FLOAT32_MIN, FLOAT32_MIN);
+    for (int32 i = 0; i < p.vertex_count; i++)
+    {
+        max.x = max(p.vertices[i].x, max.x);
+        max.y = max(p.vertices[i].y, max.y);
+    }
+    return max;
 }
