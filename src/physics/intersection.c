@@ -125,6 +125,7 @@ intersects_polygon(P_Polygon a, P_Polygon b)
     Vec2    min_overlap_vector;
     float32 min_overlap_amount = FLOAT32_MAX;
     float32 min_sign;
+
     for (int32 i = 0; i < normal_count; i++)
     {
         Projection p1 = project_polygon(a, normals[i]);
@@ -142,10 +143,6 @@ intersects_polygon(P_Polygon a, P_Polygon b)
             sign *= -1;
         }
 
-        Vec2 t_offset = mul_vec2_f32(rotate90_vec2(normals[i]), -2.5);
-        d_line(mul_vec2_f32(normals[i], p1.min), mul_vec2_f32(normals[i], p1.max), 0.4, ColorRed400);
-        d_line(add_vec2(mul_vec2_f32(normals[i], p2.min), t_offset), add_vec2(mul_vec2_f32(normals[i], p2.max), t_offset), 0.4, ColorGreen400);
-
         if (overlap_amount < min_overlap_amount)
         {
             min_overlap_vector = normals[i];
@@ -157,6 +154,20 @@ intersects_polygon(P_Polygon a, P_Polygon b)
 
     result.intersects = true;
     result.mtv        = mul_vec2_f32(min_overlap_vector, min_overlap_amount * min_sign);
+
+    // HACK(selim): I don't know how to get the contact points
+    // so this i a buggy workaround for now.
+    float32 min_d = FLOAT32_MAX;
+    for (int32 i = 0; i < b.vertex_count; i++)
+    {
+        float32 d = dot_vec2(b.vertices[i], mul_vec2_f32(result.mtv, -1));
+        if (d < min_d)
+        {
+            min_d           = d;
+            result.position = b.vertices[i];
+        }
+    }
+
     return result;
 }
 

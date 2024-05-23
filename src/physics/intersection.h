@@ -11,6 +11,12 @@ typedef struct
     int32 normal_count;
 } P_Polygon;
 
+typedef struct
+{
+    Vec2 start;
+    Vec2 end;
+} P_Edge;
+
 typedef union
 {
     struct

@@ -71,7 +71,7 @@ internal void d_mesh_push_line(VertexAtrribute_TexturedColored* vertex_buffer, u
 
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);
-internal void d_direction(Vec2 start, Vec2 direction, float32 thickness, Color c);
+internal void d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thickness, Color c);
 internal void d_rect(Rect r, float32 thickness, Color c);
 internal void d_quad(Quad q, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);

@@ -126,9 +126,9 @@ d_line(Vec2 start, Vec2 end, float32 thickness, Color c)
 }
 
 internal void
-d_direction(Vec2 start, Vec2 direction, float32 thickness, Color c)
+d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thickness, Color c)
 {
-    d_line(start, add_vec2(start, direction), thickness, c);
+    d_line(start, add_vec2(start, mul_vec2_f32(direction, scale)), thickness, c);
 }
 
 internal void
