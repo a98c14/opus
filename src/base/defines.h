@@ -136,6 +136,7 @@ typedef size_t    usize;
 #define unlikely(expr) expect(expr, 0)
 
 #define flag_set(n, f)        ((n) |= (f))
+#define flag_sete(n, f)       ((n) |= (1 << (f))) // enum version
 #define flag_clear(n, f)      ((n) &= ~(f))
 #define flag_toggle(n, f)     ((n) ^= (f))
 #define flag_is_set(n, f)     (((n) & (f)) == (f)) // Checks if all bits in 'f' are set in 'n'. Returns true if f == 0
