@@ -268,6 +268,7 @@ internal Vec2 sub_vec2(Vec2 a, Vec2 b);
 internal Vec3 sub_vec3(Vec3 a, Vec3 b);
 internal Vec4 sub_vec4(Vec4 a, Vec4 b);
 internal Vec2 mul_vec2_f32(Vec2 a, float32 b);
+internal Vec2 mul_vec2(Vec2 a, Vec2 b);
 internal Vec3 mul_vec3_f32(Vec3 a, float32 b);
 internal Mat3 mul_mat3(Mat3 a, Mat3 b);
 internal Vec2 mul_mat2_vec2(Mat2 m, Vec2 v);

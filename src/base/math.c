@@ -295,6 +295,15 @@ mul_vec2_f32(Vec2 a, float32 b)
     return result;
 }
 
+internal Vec2
+mul_vec2(Vec2 a, Vec2 b)
+{
+    Vec2 result;
+    result.x = a.x * b.x;
+    result.y = a.y * b.y;
+    return result;
+}
+
 internal Vec3
 mul_vec3_f32(Vec3 a, float32 b)
 {
