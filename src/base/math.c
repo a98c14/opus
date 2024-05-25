@@ -488,9 +488,21 @@ lensqr_vec2(Vec2 a)
 }
 
 internal float32
+lensqr_vec3(Vec3 a)
+{
+    return dot_vec3(a, a);
+}
+
+internal float32
 len_vec2(Vec2 a)
 {
     return sqrtf(lensqr_vec2(a));
+}
+
+internal float32
+len_vec3(Vec3 a)
+{
+    return sqrtf(lensqr_vec3(a));
 }
 
 internal float32
@@ -1032,4 +1044,11 @@ bounds_from_rect(Rect r)
     result.bl = rect_bl(r);
     result.tr = rect_tr(r);
     return result;
+}
+
+/** Rounding */
+internal float32
+floor_to(float32 v, float32 floor_to)
+{
+    return (int32)(v / floor_to) * floor_to;
 }

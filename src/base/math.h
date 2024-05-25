@@ -293,7 +293,9 @@ internal Vec3    norm_vec3(Vec3 a);
 internal Vec2    clamp_vec2_length(float32 min, Vec2 a, float32 max);
 internal Vec2    clamp_vec2(Vec2 a, Rect r);
 internal float32 lensqr_vec2(Vec2 a);
+internal float32 lensqr_vec3(Vec3 a);
 internal float32 len_vec2(Vec2 a);
+internal float32 len_vec3(Vec3 a);
 internal float32 distsqr_vec2(Vec2 a, Vec2 b);
 internal float32 dist_vec2(Vec2 a, Vec2 b);
 internal float32 angle_vec2(Vec2 v);
@@ -312,7 +314,7 @@ internal Vec2    inverse_direction_to_vec2(Vec2 start, Vec2 end, float32 scale);
 internal Vec2    move_towards_vec2(Vec2 from, Vec2 to, float32 length);
 internal Vec2    move_vec2(Vec2 from, Vec2 heading, float32 length);
 
-/** quad */
+/** Quad */
 internal Quad quad_at(Vec2 pos, Vec2 size, float32 rotation);
 internal Quad quad_from_rect(Rect r, float32 rotation);
 
@@ -371,3 +373,6 @@ internal Bounds bounds_from_circle(Circle c);
 internal Bounds bounds_from_rect(Rect r);
 
 internal void b32_flip(bool32* b);
+
+/** Rounding */
+internal float32 floor_to(float32 v, float32 floor_to);
