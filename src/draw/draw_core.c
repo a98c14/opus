@@ -132,10 +132,10 @@ d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thickness, Color 
 }
 
 internal void
-d_circle(Vec2 pos, float32 radius, float32 thickness, Color c)
+d_circle_scaled(Vec2 pos, float32 radius, Vec2 scale, float32 thickness, Color c)
 {
     D_ShaderDataCircle* uniform_data = arena_push_struct(d_context->frame_arena, D_ShaderDataCircle);
-    uniform_data->model              = transform_quad_aligned(pos, vec2(radius, radius));
+    uniform_data->model              = transform_quad_aligned(pos, vec2(radius * scale.x, radius * scale.y));
     uniform_data->thickness          = thickness;
     uniform_data->color              = color_v4(c);
 
@@ -144,6 +144,12 @@ d_circle(Vec2 pos, float32 radius, float32 thickness, Color c)
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
     r_batch_commit(batch);
+}
+
+internal void
+d_circle(Vec2 pos, float32 radius, float32 thickness, Color c)
+{
+    d_circle_scaled(pos, radius, vec2_one(), thickness, c);
 }
 
 internal Rect
@@ -287,7 +293,6 @@ d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_coun
     batch.uniform_buffer = uniform_data;
     r_batch_commit(batch);
 }
-
 internal void
 d_sprite(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation)
 {

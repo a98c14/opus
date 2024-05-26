@@ -7,7 +7,7 @@ window_error_callback(int error, const char* description)
 }
 
 internal Window*
-window_create(Arena* arena, uint32 width, uint32 height, char* name, WindowKeyCallback key_callback)
+window_create(Arena* arena, uint32 width, uint32 height, char* name, WindowKeyCallback key_callback, bool32 vsync_enabled)
 {
     Window* window = arena_push_struct_zero(arena, Window);
 
@@ -30,7 +30,7 @@ window_create(Arena* arena, uint32 width, uint32 height, char* name, WindowKeyCa
     glfwSetKeyCallback(window->glfw_window, key_callback);
     glfwMakeContextCurrent(window->glfw_window);
     gladLoadGL(glfwGetProcAddress);
-    glfwSwapInterval(1);
+    glfwSwapInterval(vsync_enabled);
     renderer_enable_debug();
     log_debug("window created");
     return window;

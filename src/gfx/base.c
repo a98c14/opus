@@ -643,8 +643,7 @@ r_batch_commit(R_Batch batch)
     PassIndex      pass_index       = render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
     SortLayerIndex sort_layer_index = render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);
     R_Pass*        pass             = &g_renderer->passes[pass_index];
-
-    R_BatchGroup* batch_group = &pass->batch_groups[sort_layer_index];
+    R_BatchGroup*  batch_group      = &pass->batch_groups[sort_layer_index];
     batch_group->batch_count++;
     queue_push(batch_group->first, batch_group->last, node);
 
