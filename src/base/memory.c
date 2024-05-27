@@ -28,6 +28,7 @@ arena_release(Arena* arena)
 internal void*
 arena_push(Arena* arena, uint64 size)
 {
+    xassert(arena->pos + size <= arena->cap, "arena buffer overflow");
     void* result = 0;
     if (arena->pos + size <= arena->cap)
     {
@@ -81,4 +82,60 @@ internal void
 arena_end_temp(ArenaTemp temp)
 {
     arena_pop_to(temp.arena, temp.pos);
+}
+
+/** ring buffers */
+internal RingBuffer
+make_ring_buffer(Arena* arena, uint64 size)
+{
+    RingBuffer result = {0};
+    result.base       = arena_push_array_zero(arena, uint8, size);
+    result.size       = size;
+    return result;
+}
+
+internal RingBufferEntry
+ring_write(RingBuffer* buffer, void* src, uint64 size)
+{
+    xassert(size <= buffer->size, "ring buffer doesn't have enough room to write given data");
+    RingBufferEntry result;
+    result.position = buffer->write_pos;
+    result.size     = size;
+
+    uint64 ring_off           = buffer->write_pos % buffer->size;
+    uint64 bytes_before_split = buffer->size - ring_off;
+    uint64 pre_split_bytes    = min(bytes_before_split, size);
+    uint64 pst_split_bytes    = size - pre_split_bytes;
+    void*  pre_split_data     = src;
+    void*  pst_split_data     = ((uint8*)src + pre_split_bytes);
+    memory_copy(buffer->base + ring_off, pre_split_data, pre_split_bytes);
+    memory_copy(buffer->base + 0, pst_split_data, pst_split_bytes);
+    buffer->write_pos += size;
+
+    return result;
+}
+
+internal RingBufferEntry
+ring_read(RingBuffer* buffer, void* dst, uint32 size)
+{
+    xassert(size <= buffer->size, "ring buffer doesn't have enough room to read given data");
+    RingBufferEntry result;
+    result.position = buffer->read_pos;
+    result.size     = size;
+
+    ring_read_entry(buffer, dst, result);
+    buffer->read_pos += size;
+    return result;
+}
+
+internal void
+ring_read_entry(RingBuffer* buffer, void* dst, RingBufferEntry entry)
+{
+    xassert(entry.position + buffer->size > buffer->write_pos, "trying to read overwritten data from ring buffer");
+    uint64 ring_off           = entry.position % buffer->size;
+    uint64 bytes_before_split = buffer->size - ring_off;
+    uint64 pre_split_bytes    = min(bytes_before_split, entry.size);
+    uint64 pst_split_bytes    = entry.size - pre_split_bytes;
+    memory_copy(dst, buffer->base + ring_off, pre_split_bytes);
+    memory_copy((uint8*)dst + pre_split_bytes, buffer->base + 0, pst_split_bytes);
 }

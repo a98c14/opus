@@ -33,7 +33,8 @@
 #define alignof(x)                               (usize) _Alignof(x)
 #define countof(a)                               (sizeof(a) / sizeof(*(a)))
 #define lengthof(s)                              (countof(s) - 1)
-#define align_pow2(number, alignment)            ((number + alignment - 1) & ~(alignment - 1))
+#define align_pow2(number, alignment)            ((number + (alignment)-1) & ~((alignment)-1))
+#define align_down_pow2(number, alignment)       (((number) & ~(alignment - 1)))
 
 #define defer_loop(begin, end)         for (int _i_ = ((begin), 0); !_i_; _i_ += 1, (end))
 #define defer_loop_checked(begin, end) for (int _i_ = 2 * !(begin); (_i_ == 2 ? ((end), 0) : !_i_); _i_ += 1, (end))
@@ -77,6 +78,20 @@
 #define to_mb(x) ((x) >> 20)
 #define to_gb(x) ((x) >> 30)
 #define to_tb(x) ((x) >> 40)
+
+/** Asserts */
+#if _MSC_VER
+#include <intrin.h>
+#define assert_break() __debugbreak()
+#else
+#define assert_break() __builtin_trap()
+#endif
+
+#if BUILD_DEBUG
+#define static_assert(condition) statement(if (!(condition)) { assert_break(); })
+#else
+#define static_assert(condition)
+#endif
 
 /* Primitive Types */
 typedef uint8_t   uint8;

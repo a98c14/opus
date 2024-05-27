@@ -1,6 +1,5 @@
 #pragma once
 
-#include "asserts.h"
 #include "datetime.h"
 #include "defines.h"
 #include <stdarg.h>
