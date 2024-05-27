@@ -116,6 +116,23 @@ ring_write(RingBuffer* buffer, void* src, uint64 size)
 }
 
 internal RingBufferEntry
+ring_write_contiguous(RingBuffer* buffer, void* src, uint64 size)
+{
+    xassert(size <= buffer->size, "ring buffer doesn't have enough room to write given data");
+    uint64 ring_off = buffer->write_pos % buffer->size;
+    if (ring_off + size > buffer->size)
+        ring_off = 0;
+
+    RingBufferEntry result;
+    result.position = ring_off;
+    result.size     = size;
+
+    memory_copy(buffer->base + ring_off, src, size);
+    buffer->write_pos += size;
+    return result;
+}
+
+internal RingBufferEntry
 ring_read(RingBuffer* buffer, void* dst, uint32 size)
 {
     xassert(size <= buffer->size, "ring buffer doesn't have enough room to read given data");
@@ -131,6 +148,7 @@ ring_read(RingBuffer* buffer, void* dst, uint32 size)
 internal void
 ring_read_entry(RingBuffer* buffer, void* dst, RingBufferEntry entry)
 {
+    xassert(entry.size <= buffer->size, "ring buffer doesn't have enough room to read given data");
     xassert(entry.position + buffer->size > buffer->write_pos, "trying to read overwritten data from ring buffer");
     uint64 ring_off           = entry.position % buffer->size;
     uint64 bytes_before_split = buffer->size - ring_off;
@@ -138,4 +156,13 @@ ring_read_entry(RingBuffer* buffer, void* dst, RingBufferEntry entry)
     uint64 pst_split_bytes    = entry.size - pre_split_bytes;
     memory_copy(dst, buffer->base + ring_off, pre_split_bytes);
     memory_copy((uint8*)dst + pre_split_bytes, buffer->base + 0, pst_split_bytes);
+}
+
+internal void*
+ring_peek_entry(RingBuffer* buffer, RingBufferEntry entry)
+{
+    uint64 ring_off = entry.position % buffer->size;
+    xassert(entry.size <= buffer->size, "ring buffer doesn't have enough room to read given data");
+    xassert(ring_off + entry.size < buffer->size, "trying to peek to an entry that wraps around. use `ring_write_contiguous` to create entries that doesn't wrap around.");
+    return buffer->base + ring_off;
 }

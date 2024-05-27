@@ -60,7 +60,9 @@ typedef struct
 
 internal RingBuffer      make_ring_buffer(Arena* arena, uint64 size);
 internal RingBufferEntry ring_write(RingBuffer* buffer, void* src, uint64 size);
+internal RingBufferEntry ring_write_contiguous(RingBuffer* buffer, void* src, uint64 size);
 internal RingBufferEntry ring_read(RingBuffer* buffer, void* dst, uint32 size);
 internal void            ring_read_entry(RingBuffer* buffer, void* dst, RingBufferEntry entry);
+internal void*           ring_peek_entry(RingBuffer* buffer, RingBufferEntry entry);
 #define ring_write_struct(buffer, ptr) ring_write((buffer), (ptr), sizeof(*(ptr)))
 #define ring_read_struct(buffer, ptr)  ring_read((buffer), (ptr), sizeof(*(ptr)))
