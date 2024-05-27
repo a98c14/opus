@@ -33,6 +33,7 @@ uniform sampler2D u_main_texture;
 
 /* Vertex Data */
 out vec2 v_tex_coord;
+out vec4 v_color;
 
 void main() 
 {
@@ -40,5 +41,6 @@ void main()
     float x = (a_tex_coord.x * bounds.z + bounds.x) / texture_size.x;
     float y = ((1 - a_tex_coord.y) * bounds.w + bounds.y) / texture_size.y;
     v_tex_coord = vec2(x, y);
+    v_color = data[gl_InstanceID].color;
     gl_Position = g_projection * g_view * data[gl_InstanceID].model * vec4(a_pos, 0, 1);
 }

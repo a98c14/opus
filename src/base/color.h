@@ -11,9 +11,10 @@ internal Color vec4_to_color(Vec4 c);
 
 global const Color ColorClear                = 0x0f172a00;
 global const Color ColorBlack                = 0x000000ff;
-global const Color ColorBlackA               = 0x000000aa;
+global const Color ColorBlackA1              = 0x000000cc;
+global const Color ColorBlackA2              = 0x000000aa;
 global const Color ColorBlackAA              = 0x00000088;
-global const Color ColorBlackAAA             = 0x00000088;
+global const Color ColorBlackAAA             = 0x00000044;
 global const Color ColorInvisible            = 0x00000000;
 global const Color ColorInvisibleWhite       = 0xffffff00;
 global const Color ColorWhite                = 0xffffffff;

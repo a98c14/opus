@@ -282,7 +282,7 @@ d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_coun
         Vec2 scale           = vec2(sprite->size.w * draw_data->scale.x * flip.x, sprite->size.h * draw_data->scale.y * flip.y);
 
         uniform_data[i].bounds = sprite->rect.v;
-        uniform_data[i].color  = color_v4(ColorWhite);
+        uniform_data[i].color  = color_v4(ColorInvisibleWhite);
         uniform_data[i].model  = data->rotation == 0 ? transform_quad_aligned_at_pivot(data->position.xy, scale, pivot)
                                                      : transform_quad_around_pivot(data->position.xy, scale, data->rotation, pivot);
     }
@@ -293,8 +293,9 @@ d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_coun
     batch.uniform_buffer = uniform_data;
     r_batch_commit(batch);
 }
+
 internal void
-d_sprite(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation)
+d_sprite_at(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation)
 {
     D_DrawDataSprite data;
     data.sprite   = sprite_index;
@@ -303,6 +304,28 @@ d_sprite(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, floa
     data.rotation = rotation;
     data.flags    = D_DrawFlagsSpriteNone;
     d_sprite_many(atlas, &data, 1, false);
+}
+
+internal Rect
+d_sprite(SpriteAtlas atlas, SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c)
+{
+    const Sprite* sprite = &atlas.sprites[sprite_index];
+
+    Rect sprite_bounds = rect_from_wh(sprite->size.w * scale.x, sprite->size.h * scale.y);
+    Rect final         = rect_anchor(sprite_bounds, rect, anchor);
+
+    D_ShaderDataSprite* uniform_data = arena_push_array(d_context->frame_arena, D_ShaderDataSprite, 1);
+    uniform_data[0].bounds           = sprite->rect.v;
+    uniform_data[0].color            = color_v4(c);
+    uniform_data[0].model            = transform_quad_aligned(final.center, final.size);
+
+    R_Batch batch;
+    batch.key            = render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas.texture, MeshTypeQuad, d_context->material_sprite);
+    batch.element_count  = 1;
+    batch.uniform_buffer = uniform_data;
+    r_batch_commit(batch);
+
+    return final;
 }
 
 /** debug draw functions */

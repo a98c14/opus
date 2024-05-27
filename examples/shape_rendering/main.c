@@ -64,12 +64,12 @@ main(void)
         d_rect(rect_at(vec2(-100, 300), vec2(100, 100), AlignmentCenter), 2, ColorWhite);
 
         Vec2 sprite_pos = vec2(500, 300);
-        d_sprite(atlas, SPRITE_GAME_UI_GAME_TITLE, sprite_pos, vec2_one(), 0);
+        d_sprite_at(atlas, SPRITE_GAME_UI_GAME_TITLE, sprite_pos, vec2_one(), 0);
         d_debug_rect(sprite_rect_at(atlas, SPRITE_GAME_UI_GAME_TITLE, sprite_pos, vec2_one(), vec2_one()));
 
         sprite_rotation += 10 * time.dt;
-        d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 300), vec2_one(), sprite_rotation);
-        d_sprite(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 50), vec2(2, 2), sprite_rotation);
+        d_sprite_at(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 300), vec2_one(), sprite_rotation);
+        d_sprite_at(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 50), vec2(2, 2), sprite_rotation);
 
         d_trail_push_position(t, mouse.world);
         d_trail_update(t, time.dt);

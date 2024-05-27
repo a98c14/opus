@@ -33,6 +33,7 @@ uniform sampler2D u_main_texture;
 
 /* Vertex Data */
 in vec2 v_tex_coord;
+in vec4 v_color;
 out vec4 color;
 
 vec2 calculate_uv(vec2 uv, vec2 tex_size) 
@@ -47,7 +48,8 @@ vec2 calculate_uv(vec2 uv, vec2 tex_size)
 
 void main() {
     vec2 uv = calculate_uv(v_tex_coord, texture_size);
-    // vec2 uv = v_tex_coord;
     vec4 texture_color = texture(u_main_texture, uv);
-    color = texture_color;
+
+    vec3 mixed_color = mix(texture_color.xyz, v_color.xyz, v_color.a);
+    color = vec4(mixed_color, texture_color.a);
 }
