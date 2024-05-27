@@ -57,6 +57,7 @@ typedef struct
     float32           rotation;
     D_DrawFlagsSprite flags;
     SpriteIndex       sprite;
+    Color             color;
 } D_DrawDataSprite;
 
 internal void d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path);

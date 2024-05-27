@@ -282,7 +282,7 @@ d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_coun
         Vec2 scale           = vec2(sprite->size.w * draw_data->scale.x * flip.x, sprite->size.h * draw_data->scale.y * flip.y);
 
         uniform_data[i].bounds = sprite->rect.v;
-        uniform_data[i].color  = color_v4(ColorInvisibleWhite);
+        uniform_data[i].color  = color_v4(data->color);
         uniform_data[i].model  = data->rotation == 0 ? transform_quad_aligned_at_pivot(data->position.xy, scale, pivot)
                                                      : transform_quad_around_pivot(data->position.xy, scale, data->rotation, pivot);
     }
