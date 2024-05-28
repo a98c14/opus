@@ -116,7 +116,7 @@ read_only global String d_shader_opengl_circle_frag = string_comp(
 	"float d = distance(uv, vec2(0.0, 0.0));\n"
 	"float a = 1 - smoothstep(1.0 - 0.05, 1.0, d);\n"
 	"a -= 1 - smoothstep(1.0 - thickness - 0.05, 1 - thickness, d);\n"
-	"color = vec4(v_color.rgb,  a);\n"
+	"color = vec4(v_color.rgb,  a * v_color.a);\n"
 	"}\n"
 	"\n"
 );

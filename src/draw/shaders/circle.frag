@@ -44,5 +44,5 @@ void main() {
     float d = distance(uv, vec2(0.0, 0.0));
     float a = 1 - smoothstep(1.0 - 0.05, 1.0, d);
     a -= 1 - smoothstep(1.0 - thickness - 0.05, 1 - thickness, d);
-    color = vec4(v_color.rgb,  a);
+    color = vec4(v_color.rgb,  a * v_color.a);
 }
