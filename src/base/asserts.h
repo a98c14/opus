@@ -10,4 +10,5 @@
 #define not_implemented()           statement(log_assertion_failure("not_implemented", this_function_name, __FILE__, __LINE__); assert_break();)
 #else
 #define xassert(condition, message)
+#define not_implemented()
 #endif
