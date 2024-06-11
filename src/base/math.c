@@ -426,6 +426,49 @@ lerp_rect(Rect a, Rect b, float32 t)
     return result;
 }
 
+internal float32
+exp_decay_f32_(float32 a, float32 b, float32 decay, float32 dt)
+{
+    return b + (a - b) * expf(-decay * dt);
+}
+
+internal Vec2
+exp_decay_vec2_(Vec2 a, Vec2 b, float32 decay, float32 dt)
+{
+    Vec2 result;
+    result.x = exp_decay_f32_(a.x, b.x, decay, dt);
+    result.y = exp_decay_f32_(a.y, b.y, decay, dt);
+    return result;
+}
+
+internal Vec3
+exp_decay_vec3_(Vec3 a, Vec3 b, float32 decay, float32 dt)
+{
+    Vec3 result;
+    result.x = exp_decay_f32_(a.x, b.x, decay, dt);
+    result.y = exp_decay_f32_(a.y, b.y, decay, dt);
+    result.z = exp_decay_f32_(a.z, b.z, decay, dt);
+    return result;
+}
+
+internal float32
+exp_decay_f32(float32 a, float32 b, float32 dt)
+{
+    return exp_decay_f32_(a, b, _default_decay, dt);
+}
+
+internal Vec2
+exp_decay_vec2(Vec2 a, Vec2 b, float32 dt)
+{
+    return exp_decay_vec2_(a, b, _default_decay, dt);
+}
+
+internal Vec3
+exp_decay_vec3(Vec3 a, Vec3 b, float32 dt)
+{
+    return exp_decay_vec3_(a, b, _default_decay, dt);
+}
+
 /* Vector Operations */
 internal float32
 dot_vec2(Vec2 a, Vec2 b)

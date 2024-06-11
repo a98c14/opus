@@ -1,0 +1,3 @@
+- if boomerang is out, player shouldn't be able to throw another one
+- if picked up, spawn `equipped_boomerang` (another prefab)
+- if thrown, destroy `equipped_boomerang` and spawn `attacking_boomerang`

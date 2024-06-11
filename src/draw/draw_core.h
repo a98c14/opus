@@ -80,6 +80,7 @@ internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal void d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment);
 internal void d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
 internal Rect d_sprite(SpriteAtlas atlas, SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
+internal void d_sprite_at(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);
 
 /** debug draw functions */
 internal void d_debug_line(Vec2 start, Vec2 end);

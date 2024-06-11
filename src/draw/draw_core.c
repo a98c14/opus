@@ -295,12 +295,13 @@ d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_coun
 }
 
 internal void
-d_sprite_at(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation)
+d_sprite_at(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color)
 {
     D_DrawDataSprite data;
     data.sprite   = sprite_index;
     data.position = vec3(pos.x, pos.y, 0);
     data.scale    = scale;
+    data.color    = color;
     data.rotation = rotation;
     data.flags    = D_DrawFlagsSpriteNone;
     d_sprite_many(atlas, &data, 1, false);
