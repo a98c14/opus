@@ -123,7 +123,7 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
 
     g_renderer->vao_quad     = mesh_quad_create(g_renderer);
     g_renderer->vao_triangle = mesh_triangle_create(g_renderer);
-    g_renderer->vao_dynamic  = mesh_buffer_create(g_renderer, attr_info_color, 1024);
+    g_renderer->vao_dynamic  = mesh_buffer_create(g_renderer, attr_info_color, 1024 * 32);
     scratch_end(temp);
     log_debug("renderer created");
 }

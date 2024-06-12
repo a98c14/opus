@@ -8,7 +8,7 @@
 internal Trail*
 d_trail_new(Arena* arena)
 {
-    const uint32 max_trail_capacity = 1024;
+    const uint32 max_trail_capacity = 1024 * 4;
     Trail*       result             = arena_push_struct_zero(arena, Trail);
     result->capacity                = max_trail_capacity;
     result->buffer                  = arena_push_array_zero(arena, TrailPoint, max_trail_capacity);
@@ -29,6 +29,7 @@ d_trail_reset(Trail* trail)
 internal void
 d_trail_push_position(Trail* trail, Vec2 position)
 {
+    xassert(trail->end - trail->start < trail->capacity, "trail point count exceeded capacity");
     trail->buffer[(trail->end) % trail->capacity].position    = position;
     trail->buffer[(trail->end) % trail->capacity].t_remaining = trail->t_lifetime;
     trail->end++;

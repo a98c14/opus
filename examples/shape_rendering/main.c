@@ -15,7 +15,7 @@ main(void)
 
     Arena*     persistent_arena = make_arena_reserve(mb(128));
     Arena*     frame_arena      = make_arena_reserve(mb(128));
-    Window*    window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL);
+    Window*    window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL, false);
     EngineTime time             = engine_time_new();
     InputMouse mouse            = {0};
     font_cache_init(persistent_arena);
@@ -32,14 +32,13 @@ main(void)
     d_context_init(persistent_arena, frame_arena, AssetPath);
 
     /** demo state */
-    ArenaTemp    temp          = scratch_begin(0, 0);
-    TextureIndex texture       = texture_new_from_file(g_renderer, string("..\\assets\\textures\\game.png"), true, false);
-    SpriteAtlas* atlas         = sprite_atlas_new(temp.arena, texture, Animations, Sprites, 0, array_count(Animations), array_count(Sprites));
-    String       ascii_charset = string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
-    Trail*       t             = d_trail_new(persistent_arena);
-    d_trail_set_color(t, ColorWhite, ColorBlue400);
+    ArenaTemp temp          = scratch_begin(0, 0);
+    String    ascii_charset = string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
-    float32 sprite_rotation = 0;
+    const float32 trail_rate  = 0.05f;
+    float32       trail_clock = 0;
+    Trail*        t           = d_trail_new(persistent_arena);
+    d_trail_set_color(t, ColorWhite, ColorBlue400);
     scratch_end(temp);
 
     /* main loop */
@@ -54,37 +53,23 @@ main(void)
 
         d_circle(vec2(-800, 0), 128, 0.2, ColorRed500);
         d_circle(vec2(800, 0), 128, 0.2, ColorRed500);
-        d_string_at(vec2(-800, -300), ascii_charset, 28, ColorWhite);
+        d_string_at(vec2(-800, -300), ascii_charset, 28, ColorWhite, AlignmentCenter);
         d_line(vec2(-800, -300), vec2(800, -300), 2, ColorGreen400);
         d_line(vec2(-800, 0), vec2(800, 0), 2, ColorGreen400);
         d_line(vec2(0, -500), vec2(0, 500), 2, ColorGreen400);
-        d_string_at(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 15, ColorWhite);
+        d_string_at(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 15, ColorWhite, AlignmentCenter);
 
         d_rect(rect_at(vec2(100, 300), vec2(100, 100), AlignmentCenter), 0, ColorWhite);
         d_rect(rect_at(vec2(-100, 300), vec2(100, 100), AlignmentCenter), 2, ColorWhite);
 
-        Vec2 sprite_pos = vec2(500, 300);
-        d_sprite_at(atlas, SPRITE_GAME_UI_GAME_TITLE, sprite_pos, vec2_one(), 0);
-        d_debug_rect(sprite_rect_at(atlas, SPRITE_GAME_UI_GAME_TITLE, sprite_pos, vec2_one(), vec2_one()));
-
-        sprite_rotation += 10 * time.dt;
-        d_sprite_at(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 300), vec2_one(), sprite_rotation);
-        d_sprite_at(atlas, SPRITE_GAME_CELESTIAL_OBJECTS_PLANET_1, vec2(-400, 50), vec2(2, 2), sprite_rotation);
-
-        d_trail_push_position(t, mouse.world);
+        trail_clock -= time.dt;
+        if (trail_clock <= 0)
+        {
+            d_trail_push_position(t, mouse.world);
+            trail_clock = trail_rate;
+        }
         d_trail_update(t, time.dt);
         d_trail_draw(t);
-
-        D_DrawDataSprite* draw_data = arena_push_array(frame_arena, D_DrawDataSprite, 10);
-        for (int64 i = 0; i < 10; i++)
-        {
-            draw_data[i].sprite   = SPRITE_GAME_CELESTIAL_OBJECTS_NEBULA_0 + i;
-            draw_data[i].position = vec3(sinf(time.current_frame_time / 1000.0f) * (i + 1) * 30, cosf(time.current_frame_time / 1300.0f) * (i + 1) * 20, -i);
-            draw_data[i].scale    = vec2_one();
-            draw_data[i].rotation = 0;
-            draw_data[i].flags    = D_DrawFlagsSpriteNone;
-        }
-        d_sprite_many(atlas, draw_data, 10, false);
 
         r_render(g_renderer, time.dt);
         window_update(window);
