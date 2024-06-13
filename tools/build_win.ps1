@@ -77,6 +77,7 @@ if ($commands["debug"]) {
 $source_file_path = ""
 if ($commands["trail_rendering"]) { $source_file_path = "$root_directory\examples\trail_rendering\main.c" }
 elseif ($commands["shape_rendering"]) { $source_file_path = "$root_directory\examples\shape_rendering\main.c" }
+elseif ($commands["networking"]) { $source_file_path = "$root_directory\examples\networking\networking_main.c" }
 
 if ($source_file_path -ne "") {
     New-Item -ItemType Directory -Force -Path $output_directory | Out-Null;
