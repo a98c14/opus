@@ -1,4 +1,6 @@
 #pragma once
+#include "base/architecture.h"
+
 #include "base/asserts.h"
 #include "base/bitfield.h"
 #include "base/color.h"

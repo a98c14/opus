@@ -26,7 +26,6 @@ main(void)
     /* engine initialization */
     ThreadContext tctx;
     tctx_init_and_equip(&tctx);
-    logger_init();
 
     Arena*     persistent_arena = make_arena_reserve(mb(128));
     Arena*     frame_arena      = make_arena_reserve(mb(128));
@@ -45,6 +44,14 @@ main(void)
     r_pipeline_config_add_pass(config, FRAME_BUFFER_INDEX_DEFAULT);
     r_pipeline_init(config);
     d_context_init(persistent_arena, frame_arena, AssetPath);
+
+    /** random test */
+    {
+        net_init();
+        String ip = net_get_ip(frame_arena);
+        log_info("IPv4 address is: %s", ip.value);
+        net_connect(frame_arena, string("www.google.com"), string("80"));
+    }
 
     /** demo state */
 
@@ -73,6 +80,5 @@ main(void)
     }
 
     window_destroy(window);
-    logger_flush();
     return 0;
 }

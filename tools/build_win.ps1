@@ -59,6 +59,9 @@ $compile_args += "/DSTB_IMAGE_IMPLEMENTATION"
 $compile_args += "/DVERSION_NUMBER=\""$($commands["version"])\"""
 
 # --- Libs -------------------------------------------------
+if ($commands["networking"]) {
+    $compile_args += "ws2_32.lib";
+}
 $compile_args += ".\lib\soloud_x64_d.lib";
 $compile_args += ".\lib\freetype.lib";
 $compile_args += ".\lib\glfw3dll.lib";

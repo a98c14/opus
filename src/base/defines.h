@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+#include "architecture.h"
+
 /* Defines */
 #define global        static
 #define local_persist static
@@ -114,6 +116,9 @@ typedef size_t    usize;
 #define check_null(p) ((p) == 0)
 #define set_null(p)   ((p) = 0)
 
+#define int_from_ptr(ptr) ((uint64)(ptr))
+#define ptr_from_int(i)   (void*)((uint8*)0 + (i))
+
 #define queue_push_nz(f, l, n, next, zchk, zset)       (zchk(f) ? (((f) = (l) = (n)), zset((n)->next)) : ((l)->next = (n), (l) = (n), zset((n)->next)))
 #define queue_push_front_nz(f, l, n, next, zchk, zset) (zchk(f) ? (((f) = (l) = (n)), zset((n)->next)) : ((n)->next = (f)), ((f) = (n)))
 #define queue_pop_nz(f, l, next, zset)                 ((f) == (l) ? (zset(f), zset(l)) : ((f) = (f)->next))
@@ -158,3 +163,39 @@ typedef size_t    usize;
 #define flag_not_set(n, f)    (((n) & (f)) == 0)   // Checks if none of the bits in 'f' are set in 'n'.
 #define flag_equals(n, f)     (((n) == (f)))       // Checks if 'n' is exactly equal to 'f'.
 #define flag_intersects(n, f) (((n) & (f)) > 0)    // Checks if any bits in 'f' are set in 'n'.
+
+/** Time */
+#define ns_to_us(x) ((uint32)((x + (thousand(1) - 1)) / thousand(1)))
+#define ns_to_ms(x) ((uint32)((x + (million(1) - 1)) / million(1)))
+#define us_to_ms(x) ((uint32)((x + (thousand(1) - 1)) / thousand(1)))
+
+/** Atomic */
+#if OS_WINDOWS
+#include <intrin.h>
+#include <tmmintrin.h>
+#include <windows.h>
+#include <wmmintrin.h>
+
+#if ARCH_X64
+#define interlocked_eval_u64(x)              InterlockedAdd64((volatile __int64*)(x), 0)
+#define interlocked_inc_u64(x)               InterlockedIncrement64((volatile __int64*)(x))
+#define interlocked_dec_u64(x)               InterlockedDecrement64((volatile __int64*)(x))
+#define interlocked_assign_u64(x, c)         InterlockedExchange64((volatile __int64*)(x), (c))
+#define interlocked_add_u64(x, c)            InterlockedAdd64((volatile __int64*)(x), c)
+#define interlocked_cond_assign_u64(x, k, c) InterlockedCompareExchange64((volatile __int64*)(x), (k), (c))
+#define interlocked_eval_u32(x, c)           InterlockedAdd((volatile LONG*)(x), 0)
+#define interlocked_assign_u32(x, c)         InterlockedExchange((volatile LONG*)(x), (c))
+#define interlocked_cond_assign_u32(x, k, c) InterlockedCompareExchange((volatile LONG*)(x), (k), (c))
+#define interlocked_ptr_assign(x, c)         (void*)ins_atomic_u64_eval_assign((volatile __int64*)(x), (__int64)(c))
+#else
+#error Atomic intrinsics not defined for this operating system / architecture combination.
+#endif
+#elif OS_LINUX
+#if ARCH_X64
+#define interlocked_inc_u64(x) __sync_fetch_and_add((volatile U64*)(x), 1)
+#else
+#error Atomic intrinsics not defined for this operating system / architecture combination.
+#endif
+#else
+#error Atomic intrinsics not defined for this operating system.
+#endif

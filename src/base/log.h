@@ -7,11 +7,6 @@
 #include <string.h>
 #include <vadefs.h>
 
-#if BUILD_DEBUG == 0
-#define LOG_TO_FILE 1
-#else
-#define LOG_TO_FILE 0
-#endif
 #define LOG_TO_CONSOLE         1
 #define LOG_MESSAGE_SIZE_LIMIT 32000
 
@@ -32,10 +27,6 @@ typedef enum
 
 internal void
 log_output(LogLevel level, const char* message, ...);
-
-internal bool32 logger_init();
-
-internal void logger_flush();
 
 #ifndef log_fatal
 #define log_fatal(message, ...) log_output(LogLevelFatal, message, ##__VA_ARGS__)

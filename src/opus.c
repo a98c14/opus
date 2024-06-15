@@ -15,6 +15,8 @@
 #include <base/layout.c>
 #include <base/color.c>
 
+#include <os/os_inc.c>
+
 #include <gfx/base.c>
 #include <gfx/debug.c>
 #include <gfx/math.c>
