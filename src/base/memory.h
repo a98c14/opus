@@ -46,10 +46,6 @@ typedef struct
     uint64 size;
     uint64 write_pos;
     uint64 read_pos;
-
-    // TODO(selim):
-    // OS_Handle mutex;
-    // OS_Handle cv;
 } RingBuffer;
 
 typedef struct

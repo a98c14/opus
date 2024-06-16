@@ -23,13 +23,13 @@ global read_only String AssetPath = string_comp("..\\assets");
 int
 main(void)
 {
-    /* engine initialization */
     ThreadContext tctx;
     tctx_init_and_equip(&tctx);
+    os_init();
 
     Arena*     persistent_arena = make_arena_reserve(mb(128));
     Arena*     frame_arena      = make_arena_reserve(mb(128));
-    Window*    window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Networking Demo", NULL, false);
+    Window*    window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Networking Demo", NULL, true);
     EngineTime time             = engine_time_new();
     InputMouse mouse            = {0};
     font_cache_init(persistent_arena);
@@ -54,12 +54,18 @@ main(void)
     }
 
     /** demo state */
+    uint64 start = os_now_us();
 
     /* main loop */
+    ArenaTemp temp = scratch_begin(0, 0);
     while (!glfwWindowShouldClose(window->glfw_window))
     {
+        scratch_end(temp);
         if (input_key_pressed_raw(window, GLFW_KEY_RIGHT_BRACKET))
             break;
+
+        uint64 frame_duration_us = os_now_us() - start;
+        start                    = os_now_us();
 
         arena_reset(frame_arena);
         mouse = input_mouse_get(window, g_renderer->camera, mouse);
@@ -67,6 +73,7 @@ main(void)
 
         Rect ui = rect_shrink_f32(screen_rect(), 28);
         d_string(rect_cut_top(&ui, 20), string("Networking Demo"), 20, ColorWhite, ANCHOR_TL_TL);
+        d_string(rect_cut_top(&ui, 20), string_pushf(temp.arena, "Frame: %.2fms", us_to_ms_f(frame_duration_us)), 20, ColorWhite, ANCHOR_TL_TL);
 
         // random shapes
         d_circle(vec2(-800, 0), 128, 0.2, ColorRed500);

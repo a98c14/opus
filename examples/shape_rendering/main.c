@@ -14,7 +14,7 @@ main(void)
 
     Arena*     persistent_arena = make_arena_reserve(mb(128));
     Arena*     frame_arena      = make_arena_reserve(mb(128));
-    Window*    window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL, false);
+    Window*    window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Scratch Window", NULL, true);
     EngineTime time             = engine_time_new();
     InputMouse mouse            = {0};
     font_cache_init(persistent_arena);

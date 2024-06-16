@@ -165,9 +165,12 @@ typedef size_t    usize;
 #define flag_intersects(n, f) (((n) & (f)) > 0)    // Checks if any bits in 'f' are set in 'n'.
 
 /** Time */
-#define ns_to_us(x) ((uint32)((x + (thousand(1) - 1)) / thousand(1)))
-#define ns_to_ms(x) ((uint32)((x + (million(1) - 1)) / million(1)))
-#define us_to_ms(x) ((uint32)((x + (thousand(1) - 1)) / thousand(1)))
+#define ns_to_us(x)   ((uint32)((x + (thousand(1) - 1)) / thousand(1)))
+#define ns_to_ms(x)   ((uint32)((x + (million(1) - 1)) / million(1)))
+#define us_to_ms(x)   ((uint32)((x + (thousand(1) - 1)) / thousand(1)))
+#define ns_to_us_f(x) ((float32)((x) / (float64)thousand(1)))
+#define ns_to_ms_f(x) ((float32)((x) / (float64)million(1)))
+#define us_to_ms_f(x) ((float32)((x) / (float64)thousand(1)))
 
 /** Atomic */
 #if OS_WINDOWS

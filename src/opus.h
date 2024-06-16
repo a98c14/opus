@@ -1,7 +1,5 @@
 // clang-format off
 #pragma once
-
-
 #include <base.h>
 
 #include <os/os_inc.h>
