@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ui_core.h"
+// i don't like that we have to include this
+// can we move the intersection code to `base` layer?
+#include <physics/intersection.h>
 
-internal void
-ui_widget_animated_label(UI_Key key, String text, AnimationIndex animation, bool32 loop);
+internal bool32 ui_button(UI_Key key, String label);

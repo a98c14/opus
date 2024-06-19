@@ -41,8 +41,9 @@ os_init()
         }
     }
 
-    w32_perm_arena = make_arena_reserve(mb(4));
+    InitializeCriticalSection(&w32_mutex);
 
+    w32_perm_arena = make_arena_reserve(mb(4));
     LARGE_INTEGER large_int_resolution;
     if (QueryPerformanceFrequency(&large_int_resolution))
     {
@@ -61,7 +62,7 @@ os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params)
     entity->thread.func    = func;
     entity->thread.data    = data;
     entity->reference_mask = W32_PARENT_THREAD_MASK | W32_CHILD_THREAD_MASK;
-    CreateThread(0, 0, w32_thread_base, data, 0, &entity->thread.id);
+    CreateThread(0, 0, w32_thread_base, entity, 0, &entity->thread.id);
     OS_Handle handle = {int_from_ptr(entity)};
     return handle;
 }
@@ -69,6 +70,7 @@ os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params)
 internal bool32
 os_thread_wait(OS_Handle handle, uint64 time_us)
 {
+    not_implemented();
 }
 
 internal void
@@ -89,6 +91,12 @@ os_thread_name_set(String name)
     {
         w32_set_thread_description_func(GetCurrentThread(), (WCHAR*)name.value);
     }
+}
+
+internal void
+os_thread_sleep_ms(uint32 ms)
+{
+    Sleep(ms);
 }
 
 /** mutexes */
@@ -282,10 +290,11 @@ internal DWORD
 w32_thread_base(void* ptr)
 {
     W32_Entity* entity = (W32_Entity*)ptr;
+    void*       data   = entity->thread.data;
 
     ThreadContext tctx_;
     tctx_init_and_equip(&tctx_);
-    entity->thread.func(entity->thread.data);
+    entity->thread.func(data);
     tctx_release();
 
     LONG result = InterlockedAnd((LONG*)&entity->reference_mask, ~W32_CHILD_THREAD_MASK);

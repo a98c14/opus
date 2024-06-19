@@ -60,7 +60,6 @@ internal bool32 input_mouse_pressed_raw(Window* window, uint16 key);
 internal void   input_manager_init(Arena* arena, Window* window);
 internal void   input_manager_register_action(String action_name, uint64 action_id, uint16 key);
 internal void   input_manager_update(EngineTime time);
-internal void   input_set_key_state(EngineTime time, uint64 action_id, InputKeyState key_state);
 internal bool32 input_action_pressed(uint64 action_id);
 
 /** mouse */

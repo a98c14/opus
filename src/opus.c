@@ -16,6 +16,7 @@
 #include <base/color.c>
 
 #include <os/os_inc.c>
+#include <net/net_inc.c>
 
 #include <gfx/base.c>
 #include <gfx/debug.c>
@@ -36,7 +37,7 @@
 #include <engine/window.c>
 #include <engine/audio.c>
 
-#include <ui.c>
+#include <ui/ui_inc.c>
 
 #include <ecs/component.c>
 #include <ecs/events.c>

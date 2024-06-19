@@ -37,26 +37,21 @@ input_manager_update(EngineTime time)
         if (state->key == 0)
             continue;
 
-        InputKeyState new_state = input_key_pressed_raw(g_input_manager->window, state->key);
-        input_set_key_state(time, i, new_state);
-    }
-}
+        bool32        is_pressed = input_key_pressed_raw(g_input_manager->window, state->key);
+        InputKeyState new_state  = is_pressed ? InputKeyStatePressed : InputKeyStateReleased;
 
-internal void
-input_set_key_state(EngineTime time, uint64 action_id, InputKeyState key_state)
-{
-    InputState* state  = &g_input_manager->key_states[action_id];
-    bool32      is_new = (state->key_state & key_state) == 0;
-    state->key_state   = key_state;
-    state->key_state   = is_new ? (state->key_state | InputKeyStateNew) : (state->key_state & ~InputKeyStateNew);
+        bool32 is_new    = (state->key_state & new_state) == 0;
+        state->key_state = new_state;
+        state->key_state = is_new ? (state->key_state | InputKeyStateNew) : (state->key_state & ~InputKeyStateNew);
 
-    if (key_state == InputKeyStatePressed && is_new)
-    {
-        state->t_press = time.current_frame_time;
-    }
-    else if (key_state == InputKeyStateReleased && is_new)
-    {
-        state->t_release = time.current_frame_time;
+        if (new_state == InputKeyStatePressed && is_new)
+        {
+            state->t_press = time.current_frame_time;
+        }
+        else if (new_state == InputKeyStateReleased && is_new)
+        {
+            state->t_release = time.current_frame_time;
+        }
     }
 }
 

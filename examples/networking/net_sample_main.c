@@ -1,3 +1,4 @@
+// clang-format off
 #pragma once
 #include "ft2build.h"
 #include FT_FREETYPE_H
@@ -7,11 +8,11 @@
 #pragma comment(lib, "user32.lib")
 
 #include <opus.h>
-
-#include <net/net_inc.h>
-
-#include <net/win/net_impl_win.c>
 #include <opus.c>
+
+#include "net_sample_server.c"
+#include "net_sample_client.c"
+// clang-format on
 
 #define WINDOW_WIDTH           1920
 #define WINDOW_HEIGHT          1080
@@ -20,18 +21,24 @@
 
 global read_only String AssetPath = string_comp("..\\assets");
 
+typedef enum
+{
+    AppKey_Mutex,
+} AppKey;
+
 int
 main(void)
 {
     ThreadContext tctx;
     tctx_init_and_equip(&tctx);
     os_init();
+    net_init();
 
     Arena*     persistent_arena = make_arena_reserve(mb(128));
     Arena*     frame_arena      = make_arena_reserve(mb(128));
     Window*    window           = window_create(persistent_arena, WINDOW_WIDTH, WINDOW_HEIGHT, "Networking Demo", NULL, true);
     EngineTime time             = engine_time_new();
-    InputMouse mouse            = {0};
+
     font_cache_init(persistent_arena);
 
     RendererConfiguration* r_config = r_config_new(frame_arena);
@@ -45,16 +52,14 @@ main(void)
     r_pipeline_init(config);
     d_context_init(persistent_arena, frame_arena, AssetPath);
 
-    /** random test */
-    {
-        net_init();
-        String ip = net_get_ip(frame_arena);
-        log_info("IPv4 address is: %s", ip.value);
-        net_connect(frame_arena, string("www.google.com"), string("80"));
-    }
+    InputMouse mouse = {0};
+    input_manager_init(persistent_arena, window);
+    input_manager_register_action(string("mutex"), AppKey_Mutex, GLFW_KEY_L);
 
     /** demo state */
     uint64 start = os_now_us();
+
+    ui_state_init(persistent_arena);
 
     /* main loop */
     ArenaTemp temp = scratch_begin(0, 0);
@@ -64,6 +69,8 @@ main(void)
         if (input_key_pressed_raw(window, GLFW_KEY_RIGHT_BRACKET))
             break;
 
+        input_manager_update(time);
+
         uint64 frame_duration_us = os_now_us() - start;
         start                    = os_now_us();
 
@@ -71,9 +78,33 @@ main(void)
         mouse = input_mouse_get(window, g_renderer->camera, mouse);
         time  = engine_get_time(time);
 
-        Rect ui = rect_shrink_f32(screen_rect(), 28);
-        d_string(rect_cut_top(&ui, 20), string("Networking Demo"), 20, ColorWhite, ANCHOR_TL_TL);
-        d_string(rect_cut_top(&ui, 20), string_pushf(temp.arena, "Frame: %.2fms", us_to_ms_f(frame_duration_us)), 20, ColorWhite, ANCHOR_TL_TL);
+        ui_state_update(time, mouse);
+        ui_create_fixed(screen_rect())
+        {
+            ui_shrink(28, 28);
+            d_string(ui_cut_top(20), string("Networking Demo"), 20, ColorWhite, ANCHOR_TL_TL);
+            d_string(ui_cut_top(20), string_pushf(temp.arena, "Frame: %.2fms", us_to_ms_f(frame_duration_us)), 20, ColorWhite, ANCHOR_TL_TL);
+
+            ui_create(CutSideLeft, 300)
+            {
+                d_rect(ui_rect(), 0, ColorWhite100AA); // background
+                ui_shrink(4, 4);
+                if (ui_button(ui_key_cstr("server_button"), string("Server")))
+                {
+                    ServerOptions options = {.name = string("test_server"), .port = string("5055")};
+                    os_thread_launch(server_entry_point, &options, 0);
+                    log_info("server thread launched");
+                }
+
+                ui_cut_top(4);
+                if (ui_button(ui_key_cstr("client_button"), string("Client")))
+                {
+                    ClientOptions options = {.name = string("test_client"), .address = string("127.0.0.1"), .port = string("5055")};
+                    os_thread_launch(client_entry_point, &options, 0);
+                    log_info("client thread launched");
+                }
+            }
+        }
 
         // random shapes
         d_circle(vec2(-800, 0), 128, 0.2, ColorRed500);

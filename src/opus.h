@@ -3,6 +3,7 @@
 #include <base.h>
 
 #include <os/os_inc.h>
+#include <net/net_inc.h>
 
 #include <gfx/base.h>
 #include <gfx/debug.h>
@@ -23,7 +24,7 @@
 #include <engine/window.h>
 #include <engine/audio.h>
 
-#include <ui.h>
+#include <ui/ui_inc.h>
 
 #include <ecs/component.h>
 #include <ecs/events.h>

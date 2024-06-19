@@ -1,30 +1,24 @@
 #include "ui_components.h"
 
-internal void
-ui_widget_animated_label(UI_Key key, String text, AnimationIndex animation, bool32 loop)
+internal bool32
+ui_button(UI_Key key, String label)
 {
-    xassert(ui_state->sprite_atlas, "SpriteAtlas needs to be loaded before calling `ui_widget_animated_label`");
-    Animation animation_data = ui_state->sprite_atlas->animations[animation];
-
-    Rect   animation_rect         = rect_shrink(ui_animation_rect(animation_data.sprite_start_index), vec2(8, 4));
-    uint16 start_animation_length = animation_length(animation_data);
-
-    ui_create_with_key(key, CutSideTop, animation_rect.h)
+    Rect         button_container = ui_cut_top(32);
+    Intersection i                = intersects_rect_point(button_container, ui_state->input_mouse.screen);
+    if (i.intersects)
     {
-        UI_SpriteAnimator* animator = ui_animator_get(key);
-        if (animator->started_at <= 0)
-        {
-            animator->started_at = ui_state->time.current_frame_time;
-        }
-
-        uint16 current_frame = (ui_state->time.current_frame_time - animator->started_at) / UI_ANIMATION_UPDATE_RATE;
-        current_frame        = loop ? current_frame % start_animation_length : min(current_frame, start_animation_length - 1);
-
-        Rect rect            = ui_cut_left(animation_rect.w);
-        animator->last_rect  = rect;
-        animator->updated_at = ui_state->time.current_frame_time;
-
-        draw_sprite_rect(rect, animation_data.sprite_start_index + current_frame, ANCHOR_C_C);
-        draw_text(text, ui_rect(), ANCHOR_L_L, 8, ColorWhite);
+        ui_state->hot = key;
     }
+
+    d_rect(button_container, 0, i.intersects ? ColorSlate600 : ColorSlate800);
+    d_string(button_container, label, 24, ColorWhite, ANCHOR_C_C);
+
+    bool32 is_hot = ui_key_same(ui_state->hot, key);
+    if (is_hot && input_mouse_pressed(ui_state->input_mouse, MouseButtonStateLeft))
+    {
+        log_info("clicked %s", label.value);
+        return true;
+    }
+
+    return false;
 }

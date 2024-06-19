@@ -12,6 +12,7 @@ internal void      os_init();
 internal OS_Handle os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params);
 internal bool32    os_thread_wait(OS_Handle thread_handle, uint64 time_us);
 internal void      os_thread_name_set(String name);
+internal void      os_thread_sleep_ms(uint32 ms);
 
 /** mutexes */
 internal OS_Handle os_mutex_alloc(void);

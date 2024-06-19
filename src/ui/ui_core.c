@@ -45,11 +45,14 @@ ui_state_load_atlas(SpriteAtlas* atlas)
 }
 
 internal void
-ui_state_update(EngineTime time)
+ui_state_update(EngineTime time, InputMouse mouse)
 {
     EngineTime last_update_time = ui_state->time;
     ui_state->frame++;
-    ui_state->time = time;
+    ui_state->time        = time;
+    ui_state->input_mouse = mouse;
+    ui_state->hot         = ui_key_null;
+    ui_state->active      = ui_key_null;
     arena_reset(ui_state->frame_arena);
 
     for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)

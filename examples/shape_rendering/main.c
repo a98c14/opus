@@ -11,6 +11,7 @@ main(void)
     /* engine initialization */
     ThreadContext tctx;
     tctx_init_and_equip(&tctx);
+    os_thread_name_set(string("main_thread"));
 
     Arena*     persistent_arena = make_arena_reserve(mb(128));
     Arena*     frame_arena      = make_arena_reserve(mb(128));

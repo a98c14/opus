@@ -1,5 +1,7 @@
 #pragma once
 #include <base.h>
+#include <draw/draw_inc.h>
+#include <engine/input.h>
 #include <engine/time.h>
 #include <gfx.h>
 
@@ -59,6 +61,9 @@ typedef struct
 
     UI_LayoutNode* layout_stack;
 
+    /** input */
+    InputMouse input_mouse;
+
     /** animation */
     SpriteAtlas* sprite_atlas;
 
@@ -75,7 +80,7 @@ internal bool32 ui_key_same(UI_Key a, UI_Key b);
 
 internal void  ui_state_init(Arena* arena);
 internal void  ui_state_load_atlas(SpriteAtlas* atlas);
-internal void  ui_state_update(EngineTime time);
+internal void  ui_state_update(EngineTime time, InputMouse mouse);
 internal void  ui_set_key(UI_Key key);
 internal Rect  ui_rect();
 internal Rect* ui_rect_ref();
