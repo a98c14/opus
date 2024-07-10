@@ -21,9 +21,9 @@ sort_float32(float32* arr, uint32 count)
     {
         for (uint32 j = i; j > 0 && arr[j - 1] > arr[j]; j--)
         {
-            int32 temp = arr[j - 1];
-            arr[j - 1] = arr[j];
-            arr[j]     = temp;
+            float32 temp = arr[j - 1];
+            arr[j - 1]   = arr[j];
+            arr[j]       = temp;
         }
     }
 }

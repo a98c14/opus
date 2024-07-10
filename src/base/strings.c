@@ -12,7 +12,7 @@ string_new(Arena* arena, uint64 length)
 internal String
 string_null()
 {
-    return (String){.value = NULL, .length = -1};
+    return (String){.value = NULL, .length = 0};
 }
 
 internal String
