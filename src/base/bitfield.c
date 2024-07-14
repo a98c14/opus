@@ -3,7 +3,7 @@
 internal void
 bitfield_set(BitField64* field, uint8 index)
 {
-    *field = *field | (1 << index);
+    *field = *field | (1ull << index);
 }
 
 internal void
@@ -15,7 +15,7 @@ bitfield_clear(BitField64* field)
 internal bool32
 bitfield_is_set(BitField64 field, uint8 index)
 {
-    return (field & (1 << index)) > 0;
+    return (field & (1ull << index)) > 0;
 }
 
 internal bool32

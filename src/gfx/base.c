@@ -399,7 +399,7 @@ render_key_new_default(ViewType view_type, SortLayerIndex sort_layer, PassIndex 
 internal uint64
 render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count)
 {
-    return (key >> bit_start) & ((1 << bit_count) - 1);
+    return (key >> bit_start) & ((1ull << bit_count) - 1);
 }
 
 internal void
