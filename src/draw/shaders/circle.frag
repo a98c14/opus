@@ -30,13 +30,14 @@ layout (std140, binding = 2) buffer Custom
 };
 
 /* Vertex Data */
-in vec2 v_tex_coord;
-in vec4 v_color;
-in float v_thickness;
+in layout(location = 3) vec2 v_tex_coord;
+in layout(location = 4) vec4 v_color;
+in layout(location = 5) float v_thickness;
 
 out vec4 color;
 
-void main() {
+void main() 
+{
     vec2 uv = v_tex_coord;
     uv = uv * 2 - 1;
     float thickness = v_thickness; 
@@ -44,5 +45,5 @@ void main() {
     float d = distance(uv, vec2(0.0, 0.0));
     float a = 1 - smoothstep(1.0 - 0.05, 1.0, d);
     a -= 1 - smoothstep(1.0 - thickness - 0.05, 1 - thickness, d);
-    color = vec4(v_color.rgb,  a * v_color.a);
+    color = vec4(v_color.rgb, a * v_color.a);
 }

@@ -20,8 +20,9 @@ uniform mat4 u_model;
 uniform sampler2D u_main_texture;
 
 /* Vertex Data */
-in vec2 v_tex_coord;
-in vec4 v_color;
+in layout(location = 3) vec2 v_tex_coord;
+in layout(location = 4) vec4 v_color;
+
 out vec4 color;
 
 void main() {

@@ -31,8 +31,9 @@ main(void)
     d_context_init(persistent_arena, frame_arena, AssetPath);
 
     /** demo state */
-    ArenaTemp temp          = scratch_begin(0, 0);
-    String    ascii_charset = string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+    ArenaTemp temp = scratch_begin(0, 0);
+    // String    ascii_charset = string(" !\"#$%&\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+    String test_string = string("testing");
 
     const float32 trail_rate  = 0.05f;
     float32       trail_clock = 0;
@@ -50,10 +51,13 @@ main(void)
         mouse = input_mouse_get(window, g_renderer->camera, mouse);
         time  = engine_get_time(time);
 
-        d_circle(vec2(-800, 0), 128, 0.2, ColorRed500);
-        d_circle(vec2(800, 0), 128, 0.2, ColorRed500);
-        d_string_at(vec2(-800, -300), ascii_charset, 28, ColorWhite, AlignmentCenter);
-        d_line(vec2(-800, -300), vec2(800, -300), 2, ColorGreen400);
+        d_circle(vec2(-150, 0), 128, 0.2, ColorRed500);
+        d_circle(vec2(150, 0), 128, 0.2, ColorRed500);
+        d_circle(vec2(150, 150), 128, 0.2, ColorRed500);
+        d_circle(vec2(150, -150), 128, 0.2, ColorRed500);
+        d_string_at(vec2(0, 0), test_string, 28, ColorWhite, AlignmentCenter);
+        d_string_at(vec2(0, 50), test_string, 28, ColorWhite, AlignmentCenter);
+        d_line(vec2(0, 0), vec2(800, -300), 2, ColorGreen400);
         d_line(vec2(-800, 0), vec2(800, 0), 2, ColorGreen400);
         d_line(vec2(0, -500), vec2(0, 500), 2, ColorGreen400);
         d_string_at(mouse.world, string_pushf(frame_arena, "%.1f, %.1f", mouse.world.x, mouse.world.y), 15, ColorWhite, AlignmentCenter);

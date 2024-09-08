@@ -18,8 +18,8 @@ layout (std140, binding = 1) uniform Texture
 uniform mat4 u_model;
 
 /* Vertex Data */
-in vec2 v_tex_coord;
-in vec4 v_color;
+in layout(location = 3) vec2 v_tex_coord;
+in layout(location = 4) vec4 v_color;
 
 out vec4 color;
 

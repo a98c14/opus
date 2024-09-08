@@ -15,12 +15,11 @@ layout (std140, binding = 1) uniform Texture
     float texture_layer_count;
 };
 
-
 uniform mat4 u_model;
 
 /* Vertex Data */
-out vec2 v_tex_coord;
-out vec4 v_color;
+out layout(location = 3) vec2 v_tex_coord;
+out layout(location = 4) vec4 v_color;
 
 void main() 
 {

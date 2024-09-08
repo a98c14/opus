@@ -22,15 +22,15 @@ mesh_quad_create(Renderer* renderer)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(shape_indices_quad), shape_indices_quad, GL_STATIC_DRAW);
 
     // position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float32), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float32), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // color
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float32), (void*)(2 * sizeof(float32)));
+    // texcoord
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float32), (void*)(2 * sizeof(float32)));
     glEnableVertexAttribArray(1);
 
-    // texcoord
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float32), (void*)(4 * sizeof(float32)));
+    // color
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float32), (void*)(4 * sizeof(float32)));
     glEnableVertexAttribArray(2);
 
     return vao;
@@ -55,15 +55,15 @@ mesh_triangle_create(Renderer* renderer)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(shape_indices_triangle), shape_indices_triangle, GL_STATIC_DRAW);
 
     // pos
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float32), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float32), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // color
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float32), (void*)(2 * sizeof(float32)));
+    // texcoord
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float32), (void*)(2 * sizeof(float32)));
     glEnableVertexAttribArray(1);
 
-    // texcoord
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float32), (void*)(4 * sizeof(float32)));
+    // color
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float32), (void*)(4 * sizeof(float32)));
     glEnableVertexAttribArray(2);
 
     return vao;

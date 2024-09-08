@@ -23,21 +23,21 @@ layout (std140, binding = 1) uniform Texture
     vec2 texture_size;
     float texture_layer_count;
 };
-
+    
 layout (std140, binding = 2) buffer Custom
 {
     ShaderData data[];
 };
 
 /* Vertex Data */
-out vec2 v_tex_coord;
-out vec4 v_color;
-out float v_thickness;
+out layout(location = 3) vec2 v_tex_coord;
+out layout(location = 4) vec4 v_color;
+out layout(location = 5) float v_thickness;
 
 void main() 
 {
     v_tex_coord = a_tex_coord;
     v_color = data[gl_InstanceID].color;
     v_thickness = data[gl_InstanceID].thickness;
-    gl_Position =  g_projection * g_view * data[gl_InstanceID].model * vec4(a_pos, 0, 1);
+    gl_Position = g_projection * g_view * data[gl_InstanceID].model * vec4(a_pos, 0, 1);
 }

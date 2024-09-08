@@ -21,8 +21,8 @@ uniform sampler2D u_main_texture;
 uniform float u_softness;
 
 /* Vertex Data */
-out vec2 v_tex_coord;
-out vec4 v_color;
+out layout(location = 3) vec2 v_tex_coord;
+out layout(location = 4) vec4 v_color;
 
 void main() 
 {

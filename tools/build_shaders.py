@@ -1,6 +1,6 @@
 """
 Examples:
-python .\\build_shaders.py ---src "$HOME\source\github\opus\src\shaders" --out=".\\test_out.h"
+python .\\build_shaders.py ---src "$HOME\\source\\github\\opus\\src\\shaders" --out=".\\test_out.h"
 """
 import os
 import argparse

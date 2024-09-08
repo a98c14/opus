@@ -589,6 +589,12 @@ r_render(Renderer* renderer, float32 dt)
                     glBindBuffer(GL_SHADER_STORAGE_BUFFER, material->uniform_buffer_id);
                     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, material->uniform_data_size * batch.element_count, batch.uniform_buffer);
                     glDrawElementsInstanced(GL_TRIANGLES, batch.draw_instance_count, GL_UNSIGNED_INT, 0, batch.element_count);
+
+                    // TODO(selim): Use persistently mapped buffers instead of synchronizing manually like this.
+                    // reference:
+                    // https://www.khronos.org/opengl/wiki/Synchronization#Implicit_synchronization
+                    // https://www.youtube.com/watch?v=-bCeNzgiJ8I
+                    glFlush();
                     g_renderer->stat_draw_count++;
                     g_renderer->stat_object_count += batch.element_count;
                     break;

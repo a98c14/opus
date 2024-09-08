@@ -4,10 +4,10 @@
 
 global read_only const float32 shape_vertices_quad[] = {
     // positions   // texture coords  // colors          
-     0.5f,  0.5f,  1.0f, 1.0f,        1.0f, 0.0f, 0.0f,  // top right
-     0.5f, -0.5f,  1.0f, 0.0f,        0.0f, 1.0f, 0.0f,  // bottom right
-    -0.5f, -0.5f,  0.0f, 0.0f,        0.0f, 0.0f, 1.0f,  // bottom left
-    -0.5f,  0.5f,  0.0f, 1.0f,        0.0f, 0.0f, 1.0f,  // top left
+     0.5f,  0.5f,  1.0f, 1.0f,        1.0f, 0.0f, 0.0f, 1.0f,  // top right
+     0.5f, -0.5f,  1.0f, 0.0f,        0.0f, 1.0f, 0.0f, 1.0f,  // bottom right
+    -0.5f, -0.5f,  0.0f, 0.0f,        0.0f, 0.0f, 1.0f, 1.0f,  // bottom left
+    -0.5f,  0.5f,  0.0f, 1.0f,        0.0f, 0.0f, 1.0f, 1.0f,  // top left
 };
 
 global read_only const uint32 shape_indices_quad[] = {
@@ -17,9 +17,9 @@ global read_only const uint32 shape_indices_quad[] = {
 
 global read_only const float32 shape_vertices_triangle[] = {
     // positions,  // texture coords  // colors       
-    -0.5f, -0.5f,  0.0f, 0.0f,        1.f, 0.f, 0.f,  
-     0.5f, -0.5f,  1.0f, 0.0f,        0.f, 1.f, 0.f,  
-     0.0f,  0.5f,  0.5f, 1.0f,        0.f, 0.f, 1.f};
+    -0.5f, -0.5f,  0.0f, 0.0f,        1.f, 0.f, 0.f, 1.0f,   
+     0.5f, -0.5f,  1.0f, 0.0f,        0.f, 1.f, 0.f, 1.0f,   
+     0.0f,  0.5f,  0.5f, 1.0f,        0.f, 0.f, 1.f, 1.0f} ;
 
 global read_only const uint32 shape_indices_triangle[] = {0, 1, 2};
 
