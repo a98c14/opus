@@ -52,7 +52,7 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
 {
     g_renderer                = arena_push_struct_zero(arena, Renderer);
     g_renderer->arena         = arena;
-    g_renderer->frame_arena   = make_arena_reserve(mb(128));
+    g_renderer->frame_arena   = arena_new_reserve(mb(128));
     g_renderer->window_width  = configuration->window_width;
     g_renderer->window_height = configuration->window_height;
     g_renderer->frame_buffers = arena_push_array_zero(arena, FrameBuffer, LAYER_CAPACITY);

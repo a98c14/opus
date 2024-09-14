@@ -41,7 +41,7 @@ os_init()
         }
     }
 
-    w32_perm_arena = make_arena_reserve(mb(4));
+    w32_perm_arena = arena_new_reserve(mb(4));
 
     LARGE_INTEGER large_int_resolution;
     if (QueryPerformanceFrequency(&large_int_resolution))

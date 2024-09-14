@@ -2,7 +2,7 @@
 #include <base.h>
 #include <glad/gl.h>
 
-#include "math.h"
+#include "base_math.h"
 
 /* Constants */
 #define MATERIAL_CAPACITY      32

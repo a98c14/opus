@@ -1,0 +1,20 @@
+#pragma once
+
+#include "base_architecture.h"
+
+#include "base_defines.h"
+#include "base_bitfield.h"
+#include "base_asserts.h"
+#include "base_color.h"
+#include "base_datetime.h"
+#include "base_easing.h"
+#include "base_hash.h"
+#include "base_layout.h"
+#include "base_log.h"
+#include "base_math.h"
+#include "base_memory.h"
+#include "base_print.h"
+#include "base_random.h"
+#include "base_sort.h"
+#include "base_strings.h"
+#include "base_thread_context.h"

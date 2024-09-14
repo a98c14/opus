@@ -35,7 +35,7 @@ ui_state_init(Arena* arena)
 {
     ui_state                   = arena_push_struct_zero(arena, UI_State);
     ui_state->persistent_arena = arena;
-    ui_state->frame_arena      = make_arena_reserve(mb(32));
+    ui_state->frame_arena      = arena_new_reserve(mb(32));
 }
 
 internal void

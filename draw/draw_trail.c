@@ -57,7 +57,7 @@ d_mesh_generate_trail(VertexAtrribute_TexturedColored* vertex_buffer, uint64* ve
 
         float32 t           = clamp(0, point->t_remaining / trail->t_lifetime, 1);
         float32 width       = lerp_f32(trail->width_end, trail->width_start, t);
-        Color   color       = lerp_color(trail->color_end, trail->color_start, t);
+        Color   color       = color_lerp(trail->color_end, trail->color_start, t);
         Vec2    end_heading = heading_to_vec2(prev_point->position, point->position);
         Vec2    end_normal  = vec2(-end_heading.y, end_heading.x);
 
