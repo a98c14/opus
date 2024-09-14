@@ -1,2 +1,0 @@
-- move all globals to .c files
-- move operating system dependent code to `os` layer

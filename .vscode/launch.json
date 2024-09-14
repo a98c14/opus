@@ -2,23 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Debug",
-      "program": "${workspaceFolder}/dist/main",
-      "args": [],
-      "cwd": "${workspaceFolder}/dist",
-      "preLaunchTask": "build"
-    },
-    {
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/selim/source/github/opus/src/draw",
-      "program": "c:/Users/selim/source/github/opus/src/draw/build/Debug/outDebug",
+      "cwd": "c:/Users/selim/source/github/opus",
+      "program": "c:/Users/selim/source/github/opus/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

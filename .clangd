@@ -1,9 +1,0 @@
-If:
-  PathMatch: .*\.c
-CompileFlags:
-  Add: [-include=./src/inc.h]
----
-# If:
-#   PathMatch: ^src.*\.h
-# CompileFlags:
-#   Add: [-include=./src/inc.h]
