@@ -21,29 +21,6 @@
 #define clamp_top(a, x) min(a, x)
 #define clamp_bot(x, b) max(x, b)
 
-/* Constants */
-global float32 EPSILON_FLOAT32 = 1.1920929e-7f;
-global float32 PI_FLOAT32      = 3.14159265359f;
-global float32 TAU_FLOAT32     = 6.28318530718f;
-// TODO: Find the actual min/max float values
-global float32 FLOAT32_MIN = -1000000;
-global float32 FLOAT32_MAX = 1000000;
-
-global uint64 MAX_UINT64 = 0xffffffffffffffffull;
-global uint32 MAX_UINT32 = 0xffffffff;
-global uint16 MAX_UINT16 = 0xffff;
-global uint8  MAX_UINT8  = 0xff;
-
-global int64 MAX_INT64 = (int64)0x7fffffffffffffffull;
-global int32 MAX_INT32 = (int32)0x7fffffff;
-global int16 MAX_INT16 = (int16)0x7fff;
-global int8  MAX_INT8  = (int8)0x7f;
-
-global int64 MIN_INT64 = (int64)0xffffffffffffffffull;
-global int32 MIN_INT32 = (int32)0xffffffff;
-global int16 MIN_INT16 = (int16)0xffff;
-global int8  MIN_INT8  = (int8)0xff;
-
 /* Vectors */
 typedef struct
 {

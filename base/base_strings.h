@@ -33,23 +33,35 @@ typedef struct
 
 typedef struct
 {
-    char   value[4];
-    uint32 length;
-} String4;
-
-typedef struct
-{
-    char   value[8];
-    uint32 length;
-} String8;
+    uint16* value;
+    uint64  size;
+} String16;
 
 /* base */
-internal String string_new(Arena* arena, uint64 length);
-internal String string_create(char* buffer, uint32 size);
-internal String string_null();
-internal String string_pushfv(Arena* arena, const char* fmt, va_list args);
-internal String string_pushf(Arena* arena, const char* fmt, ...);
-internal String string_range(char* first, char* one_past_last);
+internal String   string_new(Arena* arena, uint64 length);
+internal String   string_create(uint8* buffer, uint32 size);
+internal String   string_null();
+internal String   string_pushfv(Arena* arena, const char* fmt, va_list args);
+internal String   string_pushf(Arena* arena, const char* fmt, ...);
+internal String   string_range(char* first, char* one_past_last);
+internal String16 string16(uint16* value, uint64 size);
+
+/** unicode */
+typedef struct
+{
+    uint32 inc;
+    uint32 codepoint;
+} UnicodeDecode;
+
+internal UnicodeDecode utf8_decode(uint8* str, uint64 max);
+internal UnicodeDecode utf16_decode(uint16* str, uint64 max);
+internal uint32        utf8_encode(uint8* str, int32 codepoint);
+internal uint32        utf16_encode(uint16* str, int32 codepoint);
+internal uint32        utf8_from_utf32_single(uint8* buffer, int32 character);
+
+/** string conversion */
+internal String16 str16_from_8(Arena* arena, String in);
+internal String   str8_from_16(Arena* arena, String16 in);
 
 /** slicing */
 internal String string_skip(String str, uint64 amount);

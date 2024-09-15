@@ -39,6 +39,13 @@ internal void      arena_end_temp(ArenaTemp temp);
 #define arena_push_struct(arena, type)            arena_push_array((arena), type, 1)
 #define arena_push_struct_zero(arena, type)       arena_push_array_zero((arena), type, 1)
 
+/** generic buffers */
+typedef struct
+{
+    void*  data;
+    uint64 size;
+} Buffer;
+
 /** ring buffers */
 typedef struct
 {

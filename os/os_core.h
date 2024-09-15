@@ -1,5 +1,5 @@
 #pragma once
-#include <base.h>
+#include <opus/base/base_inc.h>
 
 typedef void OS_ThreadFunctionType(void* ptr);
 
@@ -12,6 +12,9 @@ internal void      os_init();
 internal OS_Handle os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params);
 internal bool32    os_thread_wait(OS_Handle thread_handle, uint64 time_us);
 internal void      os_thread_name_set(String name);
+
+internal bool32    os_handle_match(OS_Handle a, OS_Handle b);
+internal OS_Handle os_handle_zero();
 
 /** mutexes */
 internal OS_Handle os_mutex_alloc(void);

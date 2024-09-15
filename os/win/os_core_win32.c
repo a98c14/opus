@@ -310,7 +310,7 @@ w32_alloc_entity(W32_EntityKind kind)
         result = arena_push_struct(w32_perm_arena, W32_Entity);
     }
     memory_zero_struct(result);
-    static_assert(result != 0);
+    xstatic_assert(result != 0);
     LeaveCriticalSection(&w32_mutex);
     memory_zero_struct(result);
     result->kind = kind;

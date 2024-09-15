@@ -3,6 +3,7 @@
 
 #if OS_WINDOWS
 #include "win/os_core_win32.h"
+#include "win/os_file_win32.h"
 #else
 #error no OS layer setup
 #endif

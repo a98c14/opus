@@ -1,3 +1,4 @@
+#include "base_defines.c"
 #include "base_bitfield.c"
 #include "base_color.c"
 #include "base_datetime.c"
