@@ -9,6 +9,7 @@ arena_new_reserve(uint64 reserve_size)
     result->cap        = reserve_size;
     result->commit_pos = reserve_size;
     result->pos        = sizeof(Arena);
+    // TODO(selim): poison memory
     return result;
 }
 
@@ -36,6 +37,7 @@ arena_push(Arena* arena, uint64 size)
         result     = ((uint8*)arena) + arena->pos;
         arena->pos += size;
     }
+    // TODO(selim): poison memory
     return result;
 }
 
@@ -51,6 +53,7 @@ internal void
 arena_pop(Arena* arena, uint64 size)
 {
     arena->pos -= size;
+    // TODO(selim): poison memory
 }
 
 // NOTE(selim): Never call this with pos=0, use `arena_reset` instead
@@ -63,12 +66,14 @@ arena_pop_to(Arena* arena, uint64 pos)
     {
         arena->pos = pos;
     }
+    // TODO(selim): poison memory
 }
 
 internal void
 arena_reset(Arena* arena)
 {
     arena->pos = sizeof(Arena);
+    // TODO(selim): poison memory
 }
 
 internal ArenaTemp

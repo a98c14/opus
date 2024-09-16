@@ -94,6 +94,36 @@
 #define xstatic_assert(condition)
 #endif
 
+/** Address Sanitizer */
+#if COMPILER_MSVC
+#if defined(__SANITIZE_ADDRESS__)
+#define ASAN_ENABLED 1
+#define NO_ASAN      __declspec(no_sanitize_address)
+#else
+#define NO_ASAN
+#endif
+#elif COMPILER_CLANG
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#define ASAN_ENABLED 1
+#endif
+#endif
+#define NO_ASAN __attribute__((no_sanitize("address")))
+#else
+#define NO_ASAN
+#endif
+
+#if ASAN_ENABLED
+#pragma comment(lib, "clang_rt.asan-x86_64.lib")
+C_LINKAGE void __asan_poison_memory_region(void const volatile* addr, size_t size);
+C_LINKAGE void __asan_unpoison_memory_region(void const volatile* addr, size_t size);
+#define asan_poison_memory_region(addr, size)   __asan_poison_memory_region((addr), (size))
+#define asan_unpoison_memory_region(addr, size) __asan_unpoison_memory_region((addr), (size))
+#else
+#define asan_poison_memory_region(addr, size)   ((void)(addr), (void)(size))
+#define asan_unpoison_memory_region(addr, size) ((void)(addr), (void)(size))
+#endif
+
 /* Primitive Types */
 typedef uint8_t   uint8;
 typedef uint16_t  uint16;
@@ -227,8 +257,8 @@ global int8  MAX_INT8  = (int8)0x7f;
 
 global int64 MIN_INT64 = (int64)0xffffffffffffffffull;
 global int32 MIN_INT32 = (int32)0xffffffff;
-global int16 MIN_INT16 = (int16)0xffff;
-global int8  MIN_INT8  = (int8)0xff;
+global int16 MIN_INT16 = (int16)0xff;
+global int8  MIN_INT8  = (int8)0xf;
 
 /** Bit Operations */
 internal uint32 saturate_uint32_from_uint64(uint64 value);
@@ -331,7 +361,7 @@ global const uint32 bit28 = (1 << 27);
 global const uint32 bit29 = (1 << 28);
 global const uint32 bit30 = (1 << 29);
 global const uint32 bit31 = (1 << 30);
-global const uint32 bit32 = (1 << 31);
+global const uint32 bit32 = (uint32)(1 << 31);
 
 global const uint64 bit33 = (1ull << 32);
 global const uint64 bit34 = (1ull << 33);
@@ -364,4 +394,4 @@ global const uint64 bit60 = (1ull << 59);
 global const uint64 bit61 = (1ull << 60);
 global const uint64 bit62 = (1ull << 61);
 global const uint64 bit63 = (1ull << 62);
-global const uint64 bit64 = (1ull << 63);
+global const uint64 bit64 = (uint64)(1ull << 63);

@@ -16,10 +16,10 @@ string_null()
 }
 
 internal String
-string_create(uint8* buffer, uint32 size)
+string_create(char* buffer, uint32 size)
 {
     String s = {0};
-    s.value  = (char*)buffer;
+    s.value  = buffer;
     s.length = size;
     return s;
 }
@@ -204,7 +204,7 @@ internal uint32
 utf16_encode(uint16* str, int32 codepoint)
 {
     uint32 inc = 1;
-    if (codepoint == MAX_UINT32)
+    if (codepoint == MAX_INT32)
     {
         str[0] = (uint16)'?';
     }
@@ -265,7 +265,7 @@ str8_from_16(Arena* arena, String16 in)
     }
     str[size] = 0;
     arena_pop(arena, (cap - size));
-    return string_create(str, size);
+    return string_create((char*)str, size);
 }
 
 /** char helpers */
