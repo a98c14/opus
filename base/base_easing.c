@@ -53,7 +53,7 @@ ease_out_elastic(float32 t)
 
     return t <= 0   ? 0
            : t >= 1 ? 1
-                    : powf(2, -10 * t) * sinf((t * 10 - 0.75) * c4) + 1;
+                    : powf(2, -10.0f * t) * sinf((t * 10.0f - 0.75f) * c4) + 1;
 }
 
 internal float32
@@ -65,5 +65,5 @@ ease_in_cubic(float32 t)
 internal float32
 ease_out_cubic(float32 t)
 {
-    return 1 - powf(1 - t, 3);
+    return 1 - powf(1 - t, 3.0f);
 }

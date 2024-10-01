@@ -14,5 +14,5 @@ internal String
 os_file_read_all_as_string(OS_Handle file, Arena* arena)
 {
     Buffer buffer = os_file_read_all(file, arena);
-    return string_create((uint8*)buffer.data, buffer.size);
+    return string_create(buffer.data, buffer.size);
 }

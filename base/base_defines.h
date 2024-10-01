@@ -34,7 +34,7 @@
 #define alignof(x)                               (usize) _Alignof(x)
 #define countof(a)                               (sizeof(a) / sizeof(*(a)))
 #define lengthof(s)                              (countof(s) - 1)
-#define align_pow2(number, alignment)            ((number + (alignment)-1) & ~((alignment)-1))
+#define align_pow2(number, alignment)            ((number + (alignment) - 1) & ~((alignment) - 1))
 #define align_down_pow2(number, alignment)       (((number) & ~(alignment - 1)))
 
 #define defer_loop(begin, end)         for (int _i_ = ((begin), 0); !_i_; _i_ += 1, (end))
@@ -71,9 +71,9 @@
 #define gb(x) ((x) << 30)
 #define tb(x) ((x) << 40)
 
-#define thousand(n) ((n)*1000)
-#define million(n)  ((n)*1000000)
-#define billion(n)  ((n)*1000000000LL)
+#define thousand(n) ((n) * 1000)
+#define million(n)  ((n) * 1000000)
+#define billion(n)  ((n) * 1000000000LL)
 
 #define to_kb(x) ((x) >> 10)
 #define to_mb(x) ((x) >> 20)
@@ -241,6 +241,10 @@ internal int32  safe_cast_int32(int64 x);
 global float32 EPSILON_FLOAT32 = 1.1920929e-7f;
 global float32 PI_FLOAT32      = 3.14159265359f;
 global float32 TAU_FLOAT32     = 6.28318530718f;
+
+global float32 ANGLE_TO_RAD_FLOAT32 = 3.14159265359f / 180.0f;
+global float32 RAD_TO_ANGLE_FLOAT32 = 180.0f / 3.14159265359f;
+
 // TODO: Find the actual min/max float values
 global float32 FLOAT32_MIN = -1000000;
 global float32 FLOAT32_MAX = 1000000;

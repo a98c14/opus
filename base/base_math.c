@@ -49,7 +49,7 @@ vec2_right()
 internal Vec2
 heading_vec2(float32 angle)
 {
-    float32 radian = angle * PI_FLOAT32 / 180.0;
+    float32 radian = angle * ANGLE_TO_RAD_FLOAT32;
     float32 cosx   = (float32)cosf(radian);
     float32 sinx   = (float32)sinf(radian);
 
@@ -161,8 +161,8 @@ internal Rect
 rect_from_bl_tr(Vec2 bl, Vec2 tr)
 {
     Rect    result;
-    float32 w = fabs(tr.x - bl.x);
-    float32 h = fabs(tr.y - bl.y);
+    float32 w = (float32)fabs(tr.x - bl.x);
+    float32 h = (float32)fabs(tr.y - bl.y);
     result.x  = min(bl.x, tr.x) + w / 2.0f;
     result.y  = min(bl.y, tr.y) + h / 2.0f;
     result.w  = w;
@@ -243,10 +243,10 @@ add_vec4(Vec4 a, Vec4 b)
 #ifdef OPUS_USE_SSE
     result.SSE = _mm_add_ps(a.SSE, b.SSE);
 #else
-    result.x       = a.x + b.x;
-    result.y       = a.y + b.y;
-    result.z       = a.z + b.z;
-    result.w       = a.w + b.w;
+    result.x = a.x + b.x;
+    result.y = a.y + b.y;
+    result.z = a.z + b.z;
+    result.w = a.w + b.w;
 #endif
     return result;
 }
@@ -277,10 +277,10 @@ sub_vec4(Vec4 a, Vec4 b)
 #ifdef OPUS_USE_SSE
     result.SSE = _mm_sub_ps(a.SSE, b.SSE);
 #else
-    result.x       = a.x - b.x;
-    result.y       = a.y - b.y;
-    result.z       = a.z - b.z;
-    result.w       = a.w - b.w;
+    result.x = a.x - b.x;
+    result.y = a.y - b.y;
+    result.z = a.z - b.z;
+    result.w = a.w - b.w;
 #endif
     return result;
 }
@@ -491,8 +491,8 @@ internal Vec2
 fabs_vec2(Vec2 a)
 {
     Vec2 result;
-    result.x = fabs(a.x);
-    result.y = fabs(a.y);
+    result.x = (float32)fabs(a.x);
+    result.y = (float32)fabs(a.y);
     return result;
 }
 
@@ -574,7 +574,7 @@ angle_vec2(Vec2 v)
     Vec2    right = vec2_right();
     float32 dot   = dot_vec2(right, v);
     float32 det   = right.x * v.y - right.y * v.x;
-    return (float32)atan2(det, dot) * 180.0 / PI_FLOAT32;
+    return (float32)atan2(det, dot) * RAD_TO_ANGLE_FLOAT32;
 }
 
 internal float32
@@ -583,7 +583,7 @@ angle_between_vec2(Vec2 a, Vec2 b)
     // do we need to normalize the vector?
     float32 dot   = dot_vec2(b, a);
     float32 det   = b.x * a.y - b.y * a.x;
-    float32 angle = (float32)atan2(det, dot) * 180.0 / PI_FLOAT32;
+    float32 angle = (float32)atan2(det, dot) * RAD_TO_ANGLE_FLOAT32;
     return angle;
 }
 
@@ -677,7 +677,7 @@ mat2_identity(void)
 internal Mat2
 mat2_rotation(float angle)
 {
-    float32 radian = angle * PI_FLOAT32 / 180.0;
+    float32 radian = angle * ANGLE_TO_RAD_FLOAT32;
     float32 cosx   = (float32)cos(radian);
     float32 sinx   = (float32)sin(radian);
 
@@ -741,7 +741,7 @@ mat3_identity(void)
 internal Mat3
 mat3_rotation(float angle)
 {
-    float32 radian = angle * PI_FLOAT32 / 180.0;
+    float32 radian = angle * ANGLE_TO_RAD_FLOAT32;
     float32 cosx   = (float32)cos(radian);
     float32 sinx   = (float32)sin(radian);
 
@@ -824,7 +824,7 @@ mat4_scale(Vec3 v)
 internal Mat4
 mat4_rotation(float32 angle)
 {
-    float32 radian = angle * PI_FLOAT32 / 180.0;
+    float32 radian = angle * ANGLE_TO_RAD_FLOAT32;
     float32 cosx   = (float32)cosf(radian);
     float32 sinx   = (float32)sinf(radian);
     Mat4    result = mat4_identity();
@@ -847,19 +847,19 @@ mat4_transform(Mat4 translation, Mat4 rotation, Mat4 scale)
 internal Mat4
 mat4_ortho(float32 width, float32 height, float32 near_plane, float32 far_plane)
 {
-    float32 right  = width / 2.0;
-    float32 left   = -width / 2.0;
-    float32 top    = height / 2.0;
-    float32 bottom = -height / 2.0;
+    float32 right  = width / 2.0f;
+    float32 left   = -width / 2.0f;
+    float32 top    = height / 2.0f;
+    float32 bottom = -height / 2.0f;
 
     Mat4 result    = {0};
-    result.m[0][0] = 2.0 / (right - left);
-    result.m[1][1] = 2.0 / (top - bottom);
-    result.m[2][2] = -2.0 / (far_plane - near_plane);
+    result.m[0][0] = 2.0f / (right - left);
+    result.m[1][1] = 2.0f / (top - bottom);
+    result.m[2][2] = -2.0f / (far_plane - near_plane);
     result.m[0][3] = -(right + left) / (right - left);
     result.m[1][3] = -(top + bottom) / (top - bottom);
     result.m[2][3] = -(far_plane + near_plane) / (far_plane - near_plane);
-    result.m[3][3] = 1.0;
+    result.m[3][3] = 1.0f;
     return result;
 }
 
@@ -873,10 +873,10 @@ linear_combine_v4_m4(Vec4 v, Mat4 m)
     result.SSE = _mm_add_ps(result.SSE, _mm_mul_ps(_mm_shuffle_ps(v.SSE, v.SSE, 0xaa), m.columns[2].SSE));
     result.SSE = _mm_add_ps(result.SSE, _mm_mul_ps(_mm_shuffle_ps(v.SSE, v.SSE, 0xff), m.columns[3].SSE));
 #else
-    result.x       = v.elements[0] * m.columns[0].x;
-    result.y       = v.elements[0] * m.columns[0].y;
-    result.z       = v.elements[0] * m.columns[0].z;
-    result.w       = v.elements[0] * m.columns[0].w;
+    result.x = v.elements[0] * m.columns[0].x;
+    result.y = v.elements[0] * m.columns[0].y;
+    result.z = v.elements[0] * m.columns[0].z;
+    result.w = v.elements[0] * m.columns[0].w;
 
     result.x += v.elements[1] * m.columns[1].x;
     result.y += v.elements[1] * m.columns[1].y;
@@ -1030,25 +1030,25 @@ bounds_tl(Bounds bounds)
 internal Vec2
 bounds_cl(Bounds bounds)
 {
-    return vec2(bounds.left, (bounds.bottom + bounds.top) / 2.0);
+    return vec2(bounds.left, (bounds.bottom + bounds.top) / 2.0f);
 }
 
 internal Vec2
 bounds_cr(Bounds bounds)
 {
-    return vec2(bounds.right, (bounds.bottom + bounds.top) / 2.0);
+    return vec2(bounds.right, (bounds.bottom + bounds.top) / 2.0f);
 }
 
 internal Vec2
 bounds_cb(Bounds bounds)
 {
-    return vec2((bounds.left + bounds.right) / 2.0, bounds.bottom);
+    return vec2((bounds.left + bounds.right) / 2.0f, bounds.bottom);
 }
 
 internal Vec2
 bounds_ct(Bounds bounds)
 {
-    return vec2((bounds.left + bounds.right) / 2.0, bounds.bottom);
+    return vec2((bounds.left + bounds.right) / 2.0f, bounds.bottom);
 }
 
 internal void
@@ -1061,8 +1061,8 @@ internal Vec2
 bounds_center(Bounds bounds)
 {
     Vec2 result;
-    result.x = (bounds.bl.x + bounds.tr.x) / 2;
-    result.y = (bounds.bl.y + bounds.tr.y) / 2;
+    result.x = (bounds.bl.x + bounds.tr.x) / 2.0f;
+    result.y = (bounds.bl.y + bounds.tr.y) / 2.0f;
     return result;
 }
 
@@ -1070,10 +1070,10 @@ internal Bounds
 bounds_shrink(Bounds bounds, Vec2 amount)
 {
     Bounds result = bounds;
-    result.bl.x += amount.x / 2.0;
-    result.bl.y += amount.y / 2.0;
-    result.tr.x -= amount.x / 2.0;
-    result.tr.y -= amount.y / 2.0;
+    result.bl.x += amount.x / 2.0f;
+    result.bl.y += amount.y / 2.0f;
+    result.tr.x -= amount.x / 2.0f;
+    result.tr.y -= amount.y / 2.0f;
     return result;
 }
 

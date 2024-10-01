@@ -1,5 +1,7 @@
 #include "base_random.h"
+#pragma warning(push, 0)
 #include <opus/third_party/pcg/pcg_basic.c>
+#pragma warning(pop)
 
 // TODO(selim): add non-global random functions
 internal void
@@ -12,26 +14,26 @@ internal float32
 random_between_f32(float32 min, float32 max)
 {
     const float32 resolution = 8192.0f;
-    return min + pcg32_boundedrand_r(&g_rng, resolution * (max - min)) / resolution;
+    return min + (float32)pcg32_boundedrand_r(&g_rng, (uint32)(resolution * (max - min))) / resolution;
 }
 
 internal int32
 random_between_i32(int32 min, int32 max)
 {
-    return min + pcg32_boundedrand_r(&g_rng, (max - min));
+    return min + pcg32_boundedrand_r(&g_rng, (uint32)(max - min));
 }
 
 internal uint32
 random_uint32()
 {
-    return pcg32_boundedrand_r(&g_rng, MAX_INT32);
+    return pcg32_boundedrand_r(&g_rng, MAX_UINT32);
 }
 
 internal float32
 random_f32(float32 max)
 {
     const float32 resolution = 8192.0f;
-    return pcg32_boundedrand_r(&g_rng, resolution * max) / resolution;
+    return pcg32_boundedrand_r(&g_rng, (uint32)(resolution * max)) / resolution;
 }
 
 internal Vec2

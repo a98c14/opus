@@ -63,6 +63,7 @@ os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params)
     entity->reference_mask = W32_PARENT_THREAD_MASK | W32_CHILD_THREAD_MASK;
     CreateThread(0, 0, w32_thread_base, data, 0, &entity->thread.id);
     OS_Handle handle = {int_from_ptr(entity)};
+
     return handle;
 }
 

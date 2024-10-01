@@ -16,7 +16,7 @@ string_null()
 }
 
 internal String
-string_create(char* buffer, uint32 size)
+string_create(char* buffer, uint64 size)
 {
     String s = {0};
     s.value  = buffer;
@@ -173,23 +173,23 @@ utf8_encode(uint8* str, int32 codepoint)
     }
     else if (codepoint <= 0x7FF)
     {
-        str[0] = (bitmask2 << 6) | ((codepoint >> 6) & bitmask5);
-        str[1] = bit8 | (codepoint & bitmask6);
+        str[0] = (uint8)((bitmask2 << 6) | ((codepoint >> 6) & bitmask5));
+        str[1] = (uint8)(bit8 | (codepoint & bitmask6));
         inc    = 2;
     }
     else if (codepoint <= 0xFFFF)
     {
-        str[0] = (bitmask3 << 5) | ((codepoint >> 12) & bitmask4);
-        str[1] = bit8 | ((codepoint >> 6) & bitmask6);
-        str[2] = bit8 | (codepoint & bitmask6);
+        str[0] = (uint8)((bitmask3 << 5) | ((codepoint >> 12) & bitmask4));
+        str[1] = (uint8)(bit8 | ((codepoint >> 6) & bitmask6));
+        str[2] = (uint8)(bit8 | (codepoint & bitmask6));
         inc    = 3;
     }
     else if (codepoint <= 0x10FFFF)
     {
-        str[0] = (bitmask4 << 4) | ((codepoint >> 18) & bitmask3);
-        str[1] = bit8 | ((codepoint >> 12) & bitmask6);
-        str[2] = bit8 | ((codepoint >> 6) & bitmask6);
-        str[3] = bit8 | (codepoint & bitmask6);
+        str[0] = (uint8)((bitmask4 << 4) | ((codepoint >> 18) & bitmask3));
+        str[1] = (uint8)(bit8 | ((codepoint >> 12) & bitmask6));
+        str[2] = (uint8)(bit8 | ((codepoint >> 6) & bitmask6));
+        str[3] = (uint8)(bit8 | (codepoint & bitmask6));
         inc    = 4;
     }
     else

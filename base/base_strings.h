@@ -12,9 +12,10 @@
         (char*)s, lengthof(s) \
     }
 
-#define string_comp(s)         \
-    {                          \
-        (char*)s, lengthof(s), \
+#define string_comp(s) \
+    {                  \
+        (char*)s,      \
+        lengthof(s),   \
     }
 
 typedef uint32 StringMatchFlags;
@@ -39,7 +40,7 @@ typedef struct
 
 /* base */
 internal String   string_new(Arena* arena, uint64 length);
-internal String   string_create(char* buffer, uint32 size);
+internal String   string_create(char* buffer, uint64 size);
 internal String   string_null();
 internal String   string_pushfv(Arena* arena, const char* fmt, va_list args);
 internal String   string_pushf(Arena* arena, const char* fmt, ...);
@@ -93,8 +94,8 @@ typedef struct
 {
     StringNode* first;
     StringNode* last;
-    uint32      count;
-    uint32      size;
+    uint64      count;
+    uint64      size;
 } StringList;
 
 typedef struct

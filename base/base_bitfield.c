@@ -24,8 +24,8 @@ bitfield_is_activated(BitField64 prev, BitField64 next, uint8 index)
     return !bitfield_is_set(prev, index) && bitfield_is_set(next, index);
 }
 
-internal int32
+internal uint64
 bitfield_bitcount(BitField64 v)
 {
-    return __popcnt(v);
+    return __popcnt64(v);
 }
