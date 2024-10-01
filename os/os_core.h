@@ -6,6 +6,8 @@ typedef void OS_ThreadFunctionType(void* ptr);
 typedef struct
 {
     uint64 v;
+    uint32 version;
+    uint32 owner;
 } OS_Handle;
 
 internal void      os_init();

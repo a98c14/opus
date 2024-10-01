@@ -36,6 +36,7 @@ struct W32_Entity
             DWORD                  id;
             OS_ThreadFunctionType* func;
             void*                  data;
+            void*                  params;
         } thread;
         CRITICAL_SECTION   mutex;
         SRWLOCK            rw_mutex;

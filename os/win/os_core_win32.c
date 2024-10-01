@@ -60,6 +60,7 @@ os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params)
     W32_Entity* entity     = w32_alloc_entity(W32_EntityKind_Thread);
     entity->thread.func    = func;
     entity->thread.data    = data;
+    entity->thread.params  = params;
     entity->reference_mask = W32_PARENT_THREAD_MASK | W32_CHILD_THREAD_MASK;
     CreateThread(0, 0, w32_thread_base, data, 0, &entity->thread.id);
     OS_Handle handle = {int_from_ptr(entity)};
@@ -70,6 +71,9 @@ os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params)
 internal bool32
 os_thread_wait(OS_Handle handle, uint64 time_us)
 {
+    (void)handle;
+    (void)time_us;
+    not_implemented();
 }
 
 internal void
