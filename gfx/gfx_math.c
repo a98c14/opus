@@ -1,4 +1,4 @@
-#include "base_math.h"
+#include "gfx_math.h"
 
 internal Mat4
 mat4_mvp(Mat4 model, Mat4 view, Mat4 projection)

@@ -28,6 +28,10 @@
 #define read_only
 #endif
 
+#if COMPILER_CL || (COMPILER_CLANG && OS_WINDOWS)
+#define bit_field __attribute__((packed))
+#endif
+
 /* Macros */
 #define array_count(a)                           (sizeof(a) / sizeof((a)[0]))
 #define array_count_from_type(type, array_field) array_count(field_pointer(type, array_field))
