@@ -1,11 +1,33 @@
 #pragma once
 #include <glad/gl.h>
 #include "../gfx_core.h"
+#include "../gfx_utils.h"
+#include "./gfx_primitives_opengl.h"
 
-#define BINDING_SLOT_GLOBAL      0
-#define BINDING_SLOT_TEXTURE     1
-#define BINDING_SLOT_UBO_CUSTOM  2
-#define BINDING_SLOT_SSBO_CUSTOM 2
+#define _GFX_OGL_MATERIAL_CAPACITY                         32
+#define _GFX_OGL_TEXTURE_CAPACITY                          32
+#define _GFX_OGL_GEOMETRY_CAPACITY                         32
+#define _GFX_OGL_LAYER_CAPACITY                            16
+#define _GFX_OGL_PASS_CAPACITY                             16
+#define _GFX_OGL_SORTING_LAYER_CAPACITY                    16
+#define _GFX_OGL_MATERIAL_DRAW_BUFFER_CAPACITY_PER_SETTING (16)
+#define _GFX_OGL_MATERIAL_DRAW_BUFFER_CAPACITY             (1024)
+#define _GFX_OGL_MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY     (8192 * 2)
+#define _GFX_OGL_GFX_TRAIL_MAX_VERTEX_CAPACITY             (256 * 3)
+
+#define _GFX_OGL_BINDING_SLOT_GLOBAL      0
+#define _GFX_OGL_BINDING_SLOT_TEXTURE     1
+#define _GFX_OGL_BINDING_SLOT_UBO_CUSTOM  2
+#define _GFX_OGL_BINDING_SLOT_SSBO_CUSTOM 2
+
+#define _GFX_OGL_TEXTURE_INDEX_NULL         0
+#define _GFX_OGL_FRAME_BUFFER_INDEX_DEFAULT 0
+#define _GFX_OGL_DEFAULT_FONT_SIZE          16.0f
+
+typedef enum GFX_OGL_EntityKind
+{
+    GFX_OGL_EntityKind_Null,
+} GFX_OGL_EntityKind;
 
 typedef struct
 {
@@ -26,7 +48,7 @@ typedef struct
     Vec4       clear_color;
     uint32     width;
     uint32     height;
-    uint32     buffer_id;
+    uint32     gl_buffer_id;
     GFX_Handle texture_handle;
 
     uint32 blend_src_rgb;
@@ -69,8 +91,8 @@ enum GFX_OGL_ShaderProgramType
 
 typedef struct
 {
-    float32 window_width;
-    float32 window_height;
+    uint32  window_width;
+    uint32  window_height;
     float32 world_width;
     float32 world_height;
 
@@ -80,16 +102,15 @@ typedef struct
     float32 aspect;
 
     /* draw state */
-    Camera     camera;
-    RenderKey  active_render_key;
+    RenderKey  active_key;
+    GFX_Camera camera[8];
+
     uint8      pass_count;
     GFX_Pass*  passes;
     GFX_Batch* previous_batch;
     GFX_Batch* active_batch;
 
     /* resources */
-    uint32               global_uniform_buffer_id;
-    uint32               texture_uniform_buffer_id;
     uint8                frame_buffer_count;
     GFX_OGL_FrameBuffer* frame_buffers;
     uint8                texture_count;
@@ -97,6 +118,8 @@ typedef struct
     uint8                material_count;
     GFX_OGL_Material*    materials;
 
+    uint32 global_uniform_buffer_id;
+    uint32 texture_uniform_buffer_id;
     uint32 vao_quad;
     uint32 vao_triangle;
     uint32 vao_dynamic;
@@ -116,5 +139,4 @@ internal void _gfx_attribute_info_add(GFX_VertexAttributeInfo* info, usize compo
 internal void _gfx_ogl_frame_buffer_begin(GFX_OGL_FrameBuffer* frame_buffer);
 
 /** Material Update */
-internal void _gfx_ogl_shader_set_texture(const GFX_OGL_Texture* texture);
-;
+internal void _gfx_ogl_shader_set_texture(GFX_OGL_Texture* texture);

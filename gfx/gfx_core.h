@@ -2,25 +2,10 @@
 #include <opus/base/base_inc.h>
 #include "gfx_math.h"
 
-/* Constants */
-#define MATERIAL_CAPACITY      32
-#define TEXTURE_CAPACITY       32
-#define GEOMETRY_CAPACITY      32
-#define LAYER_CAPACITY         16
-#define PASS_CAPACITY          16
-#define SORTING_LAYER_CAPACITY 16
-
-#define MATERIAL_DRAW_BUFFER_CAPACITY_PER_SETTING (16)
-#define MATERIAL_DRAW_BUFFER_CAPACITY             (1024)
-#define MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY     (8192 * 2)
-#define GFX_TRAIL_MAX_VERTEX_CAPACITY             (256 * 3)
-#define DEFAULT_FONT_SIZE                         18
-
-global float32 _pixel_per_unit = 1;
-
 typedef struct
 {
-    uint64 v;
+    uint64 index;
+    uint64 generation;
 } GFX_Handle;
 
 typedef uint8 GFX_ViewType;
@@ -47,39 +32,25 @@ typedef enum
     GFX_DrawTypePackedBuffer = 2,
 } GFX_DrawType;
 
-typedef struct bit_field
-{
-    uint32 MaterialIndex : 8;
-    uint32 PassIndex     : 4;
-    uint32 MeshType      : 3;
-    uint32 TextureIndex  : 4;
-    uint32 ViewType      : 2;
-    uint32 SortLayer     : 4;
-} GFX_DrawParameters;
+typedef uint64 RenderKey;
+#define RenderKeyMaterialIndexBitCount  8
+#define RenderKeyMeshTypeBitCount       3
+#define RenderKeyTextureIndexBitCount   4
+#define RenderKeyViewTypeBitCount       2
+#define RenderKeyPassIndexBitCount      4
+#define RenderKeySortLayerIndexBitCount 4
+#define RenderKeyMaterialIndexBitStart  0
+#define RenderKeyMeshTypeBitStart       (RenderKeyMaterialIndexBitStart + RenderKeyMaterialIndexBitCount)
+#define RenderKeyTextureIndexBitStart   (RenderKeyMeshTypeBitStart + RenderKeyMeshTypeBitCount)
+#define RenderKeyViewTypeBitStart       (RenderKeyTextureIndexBitStart + RenderKeyTextureIndexBitCount)
+#define RenderKeyPassIndexBitStart      (RenderKeyViewTypeBitStart + RenderKeyViewTypeBitCount)
+#define RenderKeySortLayerIndexBitStart (RenderKeyPassIndexBitStart + RenderKeyPassIndexBitCount)
 
-// typedef int64 RenderKey;
-// #define RenderKeyMaterialIndexBitCount  8
-// #define RenderKeyMeshTypeBitCount       3
-// #define RenderKeyTextureIndexBitCount   4
-// #define RenderKeyViewTypeBitCount       2
-// #define RenderKeyPassIndexBitCount      4
-// #define RenderKeySortLayerIndexBitCount 4
-// #define RenderKeyMaterialIndexBitStart  0
-// #define RenderKeyMeshTypeBitStart       (RenderKeyMaterialIndexBitStart + RenderKeyMaterialIndexBitCount)
-// #define RenderKeyTextureIndexBitStart   (RenderKeyMeshTypeBitStart + RenderKeyMeshTypeBitCount)
-// #define RenderKeyViewTypeBitStart       (RenderKeyTextureIndexBitStart + RenderKeyTextureIndexBitCount)
-// #define RenderKeyPassIndexBitStart      (RenderKeyViewTypeBitStart + RenderKeyViewTypeBitCount)
-// #define RenderKeySortLayerIndexBitStart (RenderKeyPassIndexBitStart + RenderKeyPassIndexBitCount)
-
-// typedef int8 FrameBufferIndex;
-// typedef int8 PassIndex;
-// typedef int8 TextureIndex;
-// typedef int8 MaterialIndex;
-// /** Objects are rendered with descending order (highest first) */
-// typedef uint8 SortLayerIndex;
-
-// #define TEXTURE_INDEX_NULL             0
-// #define FRAME_BUFFER_INDEX_DEFAULT     0
+typedef int32 FrameBufferIndex;
+typedef int32 PassIndex;
+typedef int32 TextureIndex;
+typedef int32 MaterialIndex;
+typedef int32 SortLayerIndex; // Objects are rendered with descending order (highest first)
 
 #define MATERIAL_DRAW_BUFFER_EMPTY_KEY -1
 #define MATERIAL_DRAW_BUFFER_MAX_PROBE 32
@@ -95,7 +66,7 @@ typedef struct
 
     float32 world_height;
     float32 world_width;
-} Camera;
+} GFX_Camera;
 
 typedef struct
 {
@@ -104,7 +75,7 @@ typedef struct
 
 typedef struct
 {
-    GFX_DrawParameters params;
+    RenderKey params;
 
     uint32 element_count;
     void*  uniform_buffer;
@@ -161,7 +132,7 @@ typedef struct
 {
     uint32 component_count;
     uint32 index;
-    uint64 size;
+    uint32 size;
     uint32 type;
 } GFX_VertexAttributeElement;
 
@@ -193,16 +164,13 @@ typedef struct
     Color   clear_color;
 } GFX_Configuration;
 
+/** Handle Stuff (Generic) */
+internal GFX_Handle gfx_handle_zero();
+
 /** Core (Per Impl) */
 internal void gfx_init(GFX_Configuration* configuration);
-internal void gfx_render(float32 dt);
-
-/** Draw Management (Generic) */
 internal void gfx_batch_commit(GFX_Batch batch);
-internal void gfx_draw_single(GFX_DrawParameters params, Mat4 model, void* uniform_data);
-internal void gfx_draw_many(GFX_DrawParameters params, uint64 count, Mat4* models, void* uniform_data);
-internal void gfx_draw_many_no_copy(GFX_DrawParameters params, uint64 count, Mat4* models, void* uniform_data);
-internal void gfx_draw_pass(GFX_Handle source_pass, GFX_Handle target_pass, uint8 sort_layer, GFX_Handle material, void* uniform_data);
+internal void gfx_render(float32 dt);
 
 /** Renderer Configuration */
 internal void gfx_config_set_screen_size(GFX_Configuration* configuration, float32 width, float32 height);
@@ -232,7 +200,7 @@ internal void       gfx_frame_buffer_set_blend(GFX_Handle frame_buffer, uint32 b
 internal GFX_Handle gfx_frame_buffer_texture(GFX_Handle frame_buffer);
 
 /** Camera Controls */
-internal GFX_Handle gfx_camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, float32 window_width, float32 window_height);
-internal void       gfx_camera_move(GFX_Handle camera_handle, Vec2 position);
-internal Vec3       gfx_camera_position(GFX_Handle camera_handle);
-internal Rect       gfx_camera_world_bounds(GFX_Handle camera_handle);
+internal GFX_Camera gfx_camera_new(Arena* arena, float32 width, float32 height, float32 near_plane, float32 far_plane, uint32 window_width, uint32 window_height);
+internal void       gfx_camera_move(GFX_Camera* camera, Vec2 position);
+internal Vec3       gfx_camera_position(GFX_Camera camera);
+internal Rect       gfx_camera_world_bounds(GFX_Camera camera);
