@@ -14,7 +14,7 @@ arena_new_reserve(uint64 reserve_size)
 }
 
 internal Arena*
-arena_new()
+arena_new(void)
 {
     Arena* result = arena_new_reserve(DEFAULT_RESERVE_SIZE);
     return result;

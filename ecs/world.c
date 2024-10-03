@@ -1,7 +1,7 @@
 #include "world.h"
 
 internal Entity
-entity_null()
+entity_null(void)
 {
     Entity result;
     result.index   = 0;
@@ -10,7 +10,7 @@ entity_null()
 }
 
 internal EntityAddress
-entity_address_null()
+entity_address_null(void)
 {
     EntityAddress result;
     result.chunk_index          = -1;
@@ -262,7 +262,7 @@ chunk_copy_data(EntityAddress src, EntityAddress dst)
 }
 
 internal uint32
-entity_reserve_free()
+entity_reserve_free(void)
 {
     World* world = g_entity_manager->world;
     uint32 result;
@@ -291,7 +291,7 @@ entity_free(Entity e)
 }
 
 internal EntityNode*
-entity_node_alloc()
+entity_node_alloc(void)
 {
     World* world = g_entity_manager->world;
 
@@ -314,7 +314,7 @@ entity_node_free(EntityNode* node)
 }
 
 internal Entity
-entity_create()
+entity_create(void)
 {
     ArenaTemp temp  = scratch_begin(0, 0);
     World*    world = g_entity_manager->world;
@@ -690,7 +690,7 @@ component_copy(Entity src, Entity dst, ComponentType component_type)
 
 /** Entity Query */
 internal EntityQuery
-entity_query_default()
+entity_query_default(void)
 {
     EntityQuery result = {0};
     component_type_field_set(&result.none, CTT_PrefabComponent);

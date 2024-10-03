@@ -7,7 +7,7 @@ os_handle_match(OS_Handle a, OS_Handle b)
 }
 
 internal OS_Handle
-os_handle_zero()
+os_handle_zero(void)
 {
     OS_Handle handle = {0};
     return handle;

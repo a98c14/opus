@@ -1,7 +1,7 @@
 #include "gfx_primitives_opengl.h"
 
 internal uint32
-_gfx_ogl_mesh_quad_create()
+_gfx_ogl_mesh_quad_create(void)
 {
     uint32 vao;
     uint32 vbo;
@@ -37,7 +37,7 @@ _gfx_ogl_mesh_quad_create()
 }
 
 internal uint32
-_gfx_ogl_mesh_triangle_create()
+_gfx_ogl_mesh_triangle_create(void)
 {
     uint32 vao;
     uint32 ebo;

@@ -12,7 +12,7 @@ oe_audio_init(Arena* arena)
 }
 
 internal void
-oe_audio_shutdown()
+oe_audio_shutdown(void)
 {
     Soloud_destroy(g_oe_audio_system->_backend);
 }

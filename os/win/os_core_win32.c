@@ -27,7 +27,7 @@ global W32_SetThreadDescription_Type* w32_set_thread_description_func = 0;
 
 /** implementations */
 internal void
-os_init()
+os_init(void)
 {
     // map special functions
     {
@@ -247,7 +247,7 @@ os_condition_variable_broadcast(OS_Handle cv)
 
 /** timers */
 internal uint64
-os_now_ms()
+os_now_ms(void)
 {
     uint64        result;
     LARGE_INTEGER counter;
@@ -259,7 +259,7 @@ os_now_ms()
 }
 
 internal uint64
-os_now_us()
+os_now_us(void)
 {
     uint64        result;
     LARGE_INTEGER counter;
@@ -271,7 +271,7 @@ os_now_us()
 }
 
 internal uint64
-os_now_ns()
+os_now_ns(void)
 {
     uint64        result;
     LARGE_INTEGER counter;

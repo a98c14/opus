@@ -70,7 +70,7 @@ pcg32_random_r(pcg32_random_t* rng)
 }
 
 uint32_t
-pcg32_random()
+pcg32_random(void)
 {
     return pcg32_random_r(&pcg32_global);
 }

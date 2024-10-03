@@ -140,3 +140,6 @@ internal void _gfx_ogl_frame_buffer_begin(GFX_OGL_FrameBuffer* frame_buffer);
 
 /** Material Update */
 internal void _gfx_ogl_shader_set_texture(GFX_OGL_Texture* texture);
+
+/** Vertex Attribute */
+internal void _gfx_ogl_attribute_info_add(GFX_VertexAttributeInfo* info, uint32 component_size, uint32 component_count, GLenum type);

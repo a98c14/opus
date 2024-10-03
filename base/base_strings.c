@@ -10,7 +10,7 @@ string_new(Arena* arena, uint64 length)
 }
 
 internal String
-string_null()
+string_null(void)
 {
     return (String){.value = NULL, .length = 0};
 }
@@ -426,7 +426,7 @@ string_find(String string, String substr, uint64 start_pos, StringMatchFlags fla
 
 /* string list */
 internal StringList
-string_list()
+string_list(void)
 {
     StringList result = {0};
     return result;

@@ -61,8 +61,8 @@ typedef struct
     Mat4 view;
     Mat4 inverse_view;
 
-    float32 window_width;
-    float32 window_height;
+    uint32 window_width;
+    uint32 window_height;
 
     float32 world_height;
     float32 world_width;
@@ -181,7 +181,7 @@ internal void gfx_config_set_clear_color(GFX_Configuration* configuration, Color
 internal void       gfx_pipeline_init(GFX_Pipeline* pipeline);
 internal GFX_Handle gfx_pipeline_add_pass(GFX_Pipeline* pipeline, GFX_Handle frame_buffer);
 
-/** Vertex Attribute Configuration */
+/** Vertex Attribute Configuration (Per Impl) */
 internal GFX_VertexAttributeInfo* gfx_attribute_info_new(Arena* arena);
 internal void                     gfx_attribute_info_add_vec2(GFX_VertexAttributeInfo* info);
 internal void                     gfx_attribute_info_add_vec4(GFX_VertexAttributeInfo* info);
@@ -200,7 +200,7 @@ internal void       gfx_frame_buffer_set_blend(GFX_Handle frame_buffer, uint32 b
 internal GFX_Handle gfx_frame_buffer_texture(GFX_Handle frame_buffer);
 
 /** Camera Controls */
-internal GFX_Camera gfx_camera_new(Arena* arena, float32 width, float32 height, float32 near_plane, float32 far_plane, uint32 window_width, uint32 window_height);
+internal GFX_Camera gfx_camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, uint32 window_width, uint32 window_height);
 internal void       gfx_camera_move(GFX_Camera* camera, Vec2 position);
 internal Vec3       gfx_camera_position(GFX_Camera camera);
 internal Rect       gfx_camera_world_bounds(GFX_Camera camera);

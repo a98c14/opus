@@ -36,7 +36,7 @@ gfx_init(GFX_Configuration* configuration)
     _gfx_ogl_ctx->ppu          = 1.0f / (_gfx_ogl_ctx->window_width / world_width);
 
     /** Create Default Camera */
-    GFX_Camera camera       = gfx_camera_new(_gfx_ogl_perm_arena, world_width, world_height, 100, -100, _gfx_ogl_ctx->window_width, _gfx_ogl_ctx->window_height);
+    GFX_Camera camera       = gfx_camera_new(world_width, world_height, 100, -100, _gfx_ogl_ctx->window_width, _gfx_ogl_ctx->window_height);
     _gfx_ogl_ctx->camera[0] = camera;
 
     glEnable(GL_BLEND);
@@ -90,19 +90,49 @@ gfx_init(GFX_Configuration* configuration)
 }
 
 /** Vertex Attribute Configuration */
+internal void
+_gfx_ogl_attribute_info_add(GFX_VertexAttributeInfo* info, uint32 component_size, uint32 component_count, GLenum type)
+{
+    GFX_VertexAttributeElementNode* n = arena_push_struct_zero(info->arena, GFX_VertexAttributeElementNode);
+    n->v.component_count              = component_count;
+    n->v.size                         = component_count * component_size;
+    n->v.index                        = info->attribute_count;
+    n->v.type                         = type;
+    dll_push_back(info->first, info->last, n);
+    info->attribute_count++;
+}
+
 internal GFX_VertexAttributeInfo*
 gfx_attribute_info_new(Arena* arena)
 {
+    GFX_VertexAttributeInfo* result = arena_push_struct_zero(arena, GFX_VertexAttributeInfo);
+    result->arena                   = arena;
+    return result;
 }
 
 internal void
 gfx_attribute_info_add_vec2(GFX_VertexAttributeInfo* info)
 {
+    _gfx_ogl_attribute_info_add(info, sizeof(float32), 2, GL_FLOAT);
 }
 
-internal void gfx_attribute_info_add_vec4(GFX_VertexAttributeInfo* info);
-internal void gfx_attribute_info_add_int(GFX_VertexAttributeInfo* info);
-internal void gfx_attribute_info_add_uint(GFX_VertexAttributeInfo* info);
+internal void
+gfx_attribute_info_add_vec4(GFX_VertexAttributeInfo* info)
+{
+    _gfx_ogl_attribute_info_add(info, sizeof(float32), 4, GL_FLOAT);
+}
+
+internal void
+gfx_attribute_info_add_int(GFX_VertexAttributeInfo* info)
+{
+    _gfx_ogl_attribute_info_add(info, sizeof(float32), 1, GL_INT);
+}
+
+internal void
+gfx_attribute_info_add_uint(GFX_VertexAttributeInfo* info)
+{
+    _gfx_ogl_attribute_info_add(info, sizeof(float32), 1, GL_UNSIGNED_INT);
+}
 
 /** helpers */
 internal float32
@@ -118,43 +148,43 @@ em(float32 v)
 }
 
 internal float32
-screen_top()
+screen_top(void)
 {
     return _gfx_ogl_ctx->camera[0].world_height / 2.0f;
 }
 
 internal float32
-screen_left()
+screen_left(void)
 {
     return -_gfx_ogl_ctx->camera[0].world_width / 2.0f;
 }
 
 internal float32
-screen_right()
+screen_right(void)
 {
     return _gfx_ogl_ctx->camera[0].world_width / 2.0f;
 }
 
 internal float32
-screen_bottom()
+screen_bottom(void)
 {
     return -_gfx_ogl_ctx->camera[0].world_height / 2.0f;
 }
 
 internal float32
-screen_height()
+screen_height(void)
 {
     return _gfx_ogl_ctx->camera[0].world_height;
 }
 
 internal float32
-screen_width()
+screen_width(void)
 {
     return _gfx_ogl_ctx->camera[0].world_width;
 }
 
 internal Rect
-screen_rect()
+screen_rect(void)
 {
     return rect_from_xy_wh(0, 0, screen_width(), screen_height());
 }

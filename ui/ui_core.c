@@ -82,14 +82,14 @@ ui_set_key(UI_Key key)
 }
 
 internal Rect
-ui_rect()
+ui_rect(void)
 {
     xassert(ui_state->layout_stack, "there is no active layout!");
     return ui_state->layout_stack->v.r;
 }
 
 internal Rect*
-ui_rect_ref()
+ui_rect_ref(void)
 {
     xassert(ui_state->layout_stack, "there is no active layout!");
     return &ui_state->layout_stack->v.r;
@@ -145,7 +145,7 @@ ui_push_cut(UI_Key key, CutSide cut_side, float32 size)
 }
 
 internal void
-ui_pop_layout()
+ui_pop_layout(void)
 {
     stack_pop(ui_state->layout_stack);
 }
@@ -175,7 +175,7 @@ ui_expand(float32 w, float32 h)
 }
 
 internal void
-ui_debug()
+ui_debug(void)
 {
     // draw_debug_rect(ui_rect());
 }
