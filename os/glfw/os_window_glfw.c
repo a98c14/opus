@@ -1,9 +1,9 @@
 #include "./os_window_glfw.h"
 
 /** Globals */
-global Arena*          _os_glfw_perm_arena      = 0;
-global const uint64    _os_glfw_perm_arena_size = mb(4);
-global const OS_Handle _os_glfw_main_window     = {0};
+global Arena*       _os_glfw_perm_arena      = 0;
+global OS_Handle    _os_glfw_main_window     = {0};
+global const uint64 _os_glfw_perm_arena_size = mb(4);
 
 internal OS_Handle
 os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_callback)
@@ -17,7 +17,7 @@ os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_c
     bool32 init_successfull = glfwInit();
     if (!init_successfull)
     {
-        log_error("could not initialize GLFW");
+        log_error("Could not initialize GLFW.");
         return os_handle_zero();
     }
 
@@ -28,7 +28,7 @@ os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_c
     GLFWwindow* glfw_window = glfwCreateWindow(width, height, name.value, NULL, NULL);
     if (!glfw_window)
     {
-        log_error("could not create window");
+        log_error("Could not create window.");
         return os_handle_zero();
     }
 
@@ -36,7 +36,7 @@ os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_c
     glfwMakeContextCurrent(glfw_window);
     gladLoadGL(glfwGetProcAddress);
     glfwSwapInterval(0);
-    log_debug("window created successfully");
+    log_debug("Window created successfully.");
 
     _OS_GLFW_Window* window = arena_push_struct_zero(_os_glfw_perm_arena, _OS_GLFW_Window);
     window->glfw_window     = glfw_window;
@@ -44,6 +44,10 @@ os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_c
     window->width           = width;
     window->height          = height;
     OS_Handle result        = {int_from_ptr(window)};
+    if (os_handle_is_zero(_os_glfw_main_window))
+    {
+        _os_glfw_main_window = result;
+    }
     return result;
 }
 
@@ -70,10 +74,16 @@ os_window_should_close(OS_Handle window_handle)
     return glfwWindowShouldClose(window->glfw_window);
 }
 
+internal bool32
+os_window_is_ready(void)
+{
+    return !os_handle_is_zero(_os_glfw_main_window);
+}
+
 internal void
 _os_window_glfw_error_callback(int error, const char* description)
 {
-    log_error("Window Error, Code: %d, Desc: %s ", error, description);
+    log_error("Window Error, Code: %d, Desc: %s.", error, description);
 }
 
 internal void

@@ -282,6 +282,16 @@ os_now_ns(void)
     return result;
 }
 
+/** utility */
+internal IVec2
+os_screen_resolution()
+{
+    IVec2 result = {0};
+    result.x     = GetSystemMetrics(SM_CXSCREEN);
+    result.y     = GetSystemMetrics(SM_CYSCREEN);
+    return result;
+}
+
 /** w32 unique */
 internal DWORD
 w32_thread_base(void* ptr)

@@ -24,11 +24,11 @@ log_output(LogLevel level, const char* message, ...)
 internal void
 log_assertion_failure(const char* message, const char* function, const char* file, int32 line)
 {
-    log_output(LogLevelFatal, "assertion failure, message: '%s', in function %s, in file %s, line: %d\n", message, function, file, line);
+    log_output(LogLevelFatal, "Assertion failure, message: '%s', in function %s, in file %s, line: %d\n", message, function, file, line);
 }
 
 internal void
 log_assertion_failure_expr(const char* expr, const char* message, const char* function, const char* file, int32 line)
 {
-    log_output(LogLevelFatal, "assertion failure: %s, message: '%s', in function %s, in file %s, line: %d\n", expr, message, function, file, line);
+    log_output(LogLevelFatal, "Assertion failure: %s, message: '%s', in function %s, in file %s, line: %d\n", expr, message, function, file, line);
 }

@@ -45,11 +45,11 @@ typedef struct
 
 typedef struct
 {
-    Vec4       clear_color;
-    uint32     width;
-    uint32     height;
-    uint32     gl_buffer_id;
-    GFX_Handle texture_handle;
+    Vec4         clear_color;
+    uint32       width;
+    uint32       height;
+    uint32       gl_buffer_id;
+    TextureIndex texture_index;
 
     uint32 blend_src_rgb;
     uint32 blend_dst_rgb;
@@ -105,7 +105,7 @@ typedef struct
     RenderKey  active_key;
     GFX_Camera camera[8];
 
-    uint8      pass_count;
+    uint32     pass_count;
     GFX_Pass*  passes;
     GFX_Batch* previous_batch;
     GFX_Batch* active_batch;
@@ -138,8 +138,9 @@ internal void _gfx_attribute_info_add(GFX_VertexAttributeInfo* info, usize compo
 /** Frame Buffer Controls */
 internal void _gfx_ogl_frame_buffer_begin(GFX_OGL_FrameBuffer* frame_buffer);
 
-/** Material Update */
-internal void _gfx_ogl_shader_set_texture(GFX_OGL_Texture* texture);
+/** Shader */
+internal uint32 _gfx_ogl_shader_load(String vertex_shader_str, String fragment_shader_str);
+internal void   _gfx_ogl_shader_set_texture(GFX_OGL_Texture* texture);
 
 /** Vertex Attribute */
 internal void _gfx_ogl_attribute_info_add(GFX_VertexAttributeInfo* info, uint32 component_size, uint32 component_count, GLenum type);

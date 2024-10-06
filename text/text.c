@@ -191,7 +191,7 @@ font_cache_init(Arena* arena)
     int32 error  = FT_Init_FreeType(&g_font_cache->library);
     if (error)
     {
-        log_error("could not initialize freetype");
+        log_error("Could not initialize freetype.");
         return;
     }
     g_font_cache->arena           = arena;
@@ -209,11 +209,11 @@ font_load(String font_name, String font_path, GlyphAtlasType atlas_type)
     int32    error = FT_New_Face(g_font_cache->library, font_path.value, 0, &face.freetype_face);
     if (error == FT_Err_Unknown_File_Format)
     {
-        log_error("could not load font face, unknown format");
+        log_error("Could not load font face, unknown format.");
     }
     else if (error)
     {
-        log_error("could not load font face");
+        log_error("Could not load font face.");
     }
 
     // TODO(selim): Check if font face is already loaded

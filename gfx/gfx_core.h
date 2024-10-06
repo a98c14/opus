@@ -1,5 +1,6 @@
 #pragma once
-#include <opus/base/base_inc.h>
+#include "../base/base_inc.h"
+#include "../os/os_inc.h"
 #include "gfx_math.h"
 
 typedef struct
@@ -75,7 +76,7 @@ typedef struct
 
 typedef struct
 {
-    RenderKey params;
+    RenderKey key;
 
     uint32 element_count;
     void*  uniform_buffer;
@@ -102,24 +103,10 @@ typedef struct
 
 typedef struct
 {
-    GFX_BatchGroup* batch_groups;
-    GFX_Handle      frame_buffer_handle;
-    bool32          is_empty;
+    GFX_BatchGroup*  batch_groups; // one batch_group per sorting layer (length -> sorting layer capacity)
+    FrameBufferIndex frame_buffer;
+    bool32           is_empty;
 } GFX_Pass;
-
-typedef struct GFX_PipelinePass GFX_PipelinePass;
-struct GFX_PipelinePass
-{
-    GFX_Handle        frame_buffer_handle;
-    GFX_PipelinePass* next;
-};
-
-typedef struct
-{
-    uint32            pass_count;
-    GFX_PipelinePass* first_pass;
-    GFX_PipelinePass* last_pass;
-} GFX_Pipeline;
 
 typedef struct
 {
@@ -168,7 +155,7 @@ typedef struct
 internal GFX_Handle gfx_handle_zero();
 
 /** Core (Per Impl) */
-internal void gfx_init(GFX_Configuration* configuration);
+internal void gfx_init(GFX_Configuration configuration);
 internal void gfx_batch_commit(GFX_Batch batch);
 internal void gfx_render(float32 dt);
 
@@ -177,9 +164,13 @@ internal void gfx_config_set_screen_size(GFX_Configuration* configuration, float
 internal void gfx_config_set_world_size(GFX_Configuration* configuration, float32 width, float32 height);
 internal void gfx_config_set_clear_color(GFX_Configuration* configuration, Color color);
 
+/** Render Key */
+internal RenderKey gfx_render_key_new(GFX_ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GFX_MeshType mesh_type, MaterialIndex material_index);
+internal RenderKey gfx_render_key_new_default(GFX_ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, MaterialIndex material_index);
+internal uint64    gfx_render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count);
+
 /** Pipeline Configuration */
-internal void       gfx_pipeline_init(GFX_Pipeline* pipeline);
-internal GFX_Handle gfx_pipeline_add_pass(GFX_Pipeline* pipeline, GFX_Handle frame_buffer);
+internal PassIndex gfx_pipeline_add_pass(FrameBufferIndex frame_buffer);
 
 /** Vertex Attribute Configuration (Per Impl) */
 internal GFX_VertexAttributeInfo* gfx_attribute_info_new(Arena* arena);
@@ -189,15 +180,15 @@ internal void                     gfx_attribute_info_add_int(GFX_VertexAttribute
 internal void                     gfx_attribute_info_add_uint(GFX_VertexAttributeInfo* info);
 
 /** Material Configuration */
-internal GFX_Handle gfx_material_new(String vertex_shader_text, String fragment_shader_text, usize uniform_data_size, GFX_DrawType draw_type);
-internal GFX_Handle gfx_texture_new(uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
-internal GFX_Handle gfx_texture_array_new(uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
-internal uint32     gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
+internal MaterialIndex gfx_material_new(String vertex_shader_text, String fragment_shader_text, uint32 uniform_data_size, GFX_DrawType draw_type);
+internal TextureIndex  gfx_texture_new(uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
+internal TextureIndex  gfx_texture_array_new(uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
+internal uint32        gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
 
 /** FrameBuffer Controls */
-internal GFX_Handle gfx_frame_buffer_new(uint32 width, uint32 height, uint32 filter, Color clear_color);
-internal void       gfx_frame_buffer_set_blend(GFX_Handle frame_buffer, uint32 blend_src_rgb, uint32 blend_dst_rgb, uint32 blend_src_alpha, uint32 blend_dst_alpha);
-internal GFX_Handle gfx_frame_buffer_texture(GFX_Handle frame_buffer);
+internal FrameBufferIndex gfx_frame_buffer_new(uint32 width, uint32 height, uint32 filter, Color clear_color);
+internal void             gfx_frame_buffer_set_blend(GFX_Handle frame_buffer, uint32 blend_src_rgb, uint32 blend_dst_rgb, uint32 blend_src_alpha, uint32 blend_dst_alpha);
+internal GFX_Handle       gfx_frame_buffer_texture(GFX_Handle frame_buffer);
 
 /** Camera Controls */
 internal GFX_Camera gfx_camera_new(float32 width, float32 height, float32 near_plane, float32 far_plane, uint32 window_width, uint32 window_height);

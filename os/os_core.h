@@ -8,13 +8,14 @@ typedef struct
     uint64 v;
 } OS_Handle;
 
-internal void      os_init();
+internal void      os_init(void);
 internal OS_Handle os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params);
 internal bool32    os_thread_wait(OS_Handle thread_handle, uint64 time_us);
 internal void      os_thread_name_set(String name);
 
 internal bool32    os_handle_match(OS_Handle a, OS_Handle b);
-internal OS_Handle os_handle_zero();
+internal OS_Handle os_handle_zero(void);
+internal bool32    os_handle_is_zero(OS_Handle h);
 
 /** mutexes */
 internal OS_Handle os_mutex_alloc(void);
@@ -46,3 +47,6 @@ internal void      os_condition_variable_broadcast(OS_Handle cv);
 internal uint64 os_now_ms();
 internal uint64 os_now_us();
 internal uint64 os_now_ns();
+
+/** utility */
+internal IVec2 os_screen_resolution();
