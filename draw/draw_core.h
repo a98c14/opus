@@ -1,9 +1,10 @@
 #pragma once
-#include <base.h>
-#include <gfx.h>
-#include <text/text_inc.h>
+#include "../base/base_inc.h"
+#include "../gfx/gfx_inc.h"
+#include "../text/text_inc.h"
 
 #include "draw_shaders.h"
+#include "draw_sprite.h"
 
 /** material uniform data */
 typedef struct
@@ -29,7 +30,7 @@ typedef struct
     PassIndex      active_pass;
     SortLayerIndex active_layer;
     FontFaceIndex  active_font;
-    ViewType       active_view;
+    GFX_ViewType   active_view;
 
     /** materials */
     MaterialIndex material_basic;
@@ -56,19 +57,19 @@ typedef struct
     Vec2              scale;
     float32           rotation;
     D_DrawFlagsSprite flags;
-    SpriteIndex       sprite;
+    D_SpriteIndex     sprite;
     Color             color;
 } D_DrawDataSprite;
 
 internal void d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path);
 
 /** batch functions */
-internal void d_mesh_push_vertex(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
-internal void d_mesh_push_rect(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Rect rect, Bounds tex_coord, Color color);
-internal void d_mesh_push_glyph(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Glyph glyph, Vec2 pos, float32 size, Color color);
-internal void d_mesh_push_string(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, GlyphAtlas* atlas, String str, Vec2 pos, float32 size, Color c);
-internal void d_mesh_push_triangle_strip(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
-internal void d_mesh_push_line(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Vec2 start, Vec2 end, float32 thickness, Color c);
+internal void d_mesh_push_vertex(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
+internal void d_mesh_push_rect(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Rect rect, Bounds tex_coord, Color color);
+internal void d_mesh_push_glyph(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Glyph glyph, Vec2 pos, float32 size, Color color);
+internal void d_mesh_push_string(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, GlyphAtlas* atlas, String str, Vec2 pos, float32 size, Color c);
+internal void d_mesh_push_triangle_strip(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
+internal void d_mesh_push_line(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 start, Vec2 end, float32 thickness, Color c);
 
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);
@@ -78,9 +79,9 @@ internal void d_quad(Quad q, float32 thickness, Color c);
 internal void d_circle_scaled(Vec2 pos, float32 radius, Vec2 scale, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal void d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment);
-internal void d_sprite_many(SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
-internal Rect d_sprite(SpriteAtlas atlas, SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
-internal void d_sprite_at(SpriteAtlas atlas, SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);
+internal void d_sprite_many(D_SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
+internal Rect d_sprite(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
+internal void d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);
 
 /** debug draw functions */
 internal void d_debug_line(Vec2 start, Vec2 end);

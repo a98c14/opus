@@ -47,11 +47,11 @@ typedef uint64 RenderKey;
 #define RenderKeyPassIndexBitStart      (RenderKeyViewTypeBitStart + RenderKeyViewTypeBitCount)
 #define RenderKeySortLayerIndexBitStart (RenderKeyPassIndexBitStart + RenderKeyPassIndexBitCount)
 
-typedef int32 FrameBufferIndex;
-typedef int32 PassIndex;
-typedef int32 TextureIndex;
-typedef int32 MaterialIndex;
-typedef int32 SortLayerIndex; // Objects are rendered with descending order (highest first)
+typedef uint64 FrameBufferIndex;
+typedef uint64 PassIndex;
+typedef uint64 TextureIndex;
+typedef uint64 MaterialIndex;
+typedef uint64 SortLayerIndex; // Objects are rendered with descending order (highest first)
 
 #define MATERIAL_DRAW_BUFFER_EMPTY_KEY -1
 #define MATERIAL_DRAW_BUFFER_MAX_PROBE 32
@@ -179,10 +179,11 @@ internal void                     gfx_attribute_info_add_vec4(GFX_VertexAttribut
 internal void                     gfx_attribute_info_add_int(GFX_VertexAttributeInfo* info);
 internal void                     gfx_attribute_info_add_uint(GFX_VertexAttributeInfo* info);
 
-/** Material Configuration */
+/** Resources */
 internal MaterialIndex gfx_material_new(String vertex_shader_text, String fragment_shader_text, uint32 uniform_data_size, GFX_DrawType draw_type);
 internal TextureIndex  gfx_texture_new(uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
 internal TextureIndex  gfx_texture_array_new(uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
+internal IVec2         gfx_texture_dims(TextureIndex texture);
 internal uint32        gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
 
 /** FrameBuffer Controls */

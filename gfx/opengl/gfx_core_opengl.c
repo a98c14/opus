@@ -116,6 +116,23 @@ gfx_init(GFX_Configuration configuration)
     log_debug("Renderer created.");
 }
 
+internal void
+gfx_batch_commit(GFX_Batch batch)
+{
+    GFX_BatchNode* node = arena_push_struct_zero(_gfx_ogl_frame_arena, GFX_BatchNode);
+    node->v             = batch;
+
+    RenderKey       key              = node->v.key;
+    PassIndex       pass_index       = gfx_render_key_mask(key, RenderKeyPassIndexBitStart, RenderKeyPassIndexBitCount);
+    SortLayerIndex  sort_layer_index = gfx_render_key_mask(key, RenderKeySortLayerIndexBitStart, RenderKeySortLayerIndexBitCount);
+    GFX_Pass*       pass             = &_gfx_ogl_ctx->passes[pass_index];
+    GFX_BatchGroup* batch_group      = &pass->batch_groups[sort_layer_index];
+    batch_group->batch_count++;
+    queue_push(batch_group->first, batch_group->last, node);
+
+    pass->is_empty = false;
+}
+
 /** Vertex Attribute Configuration */
 internal void
 _gfx_ogl_attribute_info_add(GFX_VertexAttributeInfo* info, uint32 component_size, uint32 component_count, GLenum type)
@@ -289,6 +306,15 @@ gfx_texture_new(uint32 width, uint32 height, uint32 channels, uint32 filter, voi
     }
     glTexImage2D(GL_TEXTURE_2D, 0, texture->format, width, height, 0, texture->format, GL_UNSIGNED_BYTE, data);
     return texture_index;
+}
+
+internal IVec2
+gfx_texture_dims(TextureIndex texture)
+{
+    IVec2 result = {0};
+    result.x     = _gfx_ogl_ctx->textures[texture].width;
+    result.y     = _gfx_ogl_ctx->textures[texture].height;
+    return result;
 }
 
 internal TextureIndex gfx_texture_array_new(uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);

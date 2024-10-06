@@ -1,7 +1,7 @@
 #pragma once
-#include <base.h>
-#include <gfx.h>
-#include <text/text_inc.h>
+#include "../base/base_inc.h"
+#include "../gfx/gfx_inc.h"
+#include "../text/text_inc.h"
 
 #include "draw_trail.h"
 
@@ -12,7 +12,7 @@ d_trail_new(Arena* arena)
     Trail*       result             = arena_push_struct_zero(arena, Trail);
     result->capacity                = max_trail_capacity;
     result->buffer                  = arena_push_array_zero(arena, TrailPoint, max_trail_capacity);
-    result->t_lifetime              = 0.4;
+    result->t_lifetime              = 0.4f;
     result->width_start             = 2;
     result->width_end               = 2;
     result->color_start             = ColorWhite;
@@ -43,12 +43,12 @@ d_trail_push_empty(Trail* trail)
 }
 
 internal void
-d_mesh_generate_trail(VertexAtrribute_TexturedColored* vertex_buffer, uint64* vertex_count, Trail* trail)
+d_mesh_generate_trail(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Trail* trail)
 {
     if (trail->end - trail->start < 1)
         return;
 
-    for (uint32 i = trail->start; i < trail->end; i++)
+    for (uint64 i = trail->start; i < trail->end; i++)
     {
         TrailPoint* point      = &trail->buffer[i % trail->capacity];
         TrailPoint* prev_point = &trail->buffer[(i - 1) % trail->capacity];
@@ -101,18 +101,18 @@ internal void
 d_trail_draw(Trail* trail)
 {
     // TODO(selim): is the capacity correct?
-    VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, VertexAtrribute_TexturedColored, (trail->end - trail->start) * 6);
-    uint64                           vertex_count = 0;
+    GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, (trail->end - trail->start) * 6);
+    uint32                               vertex_count = 0;
     d_mesh_generate_trail(vertices, &vertex_count, trail);
 
-    R_Batch batch;
-    batch.key                 = render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, TEXTURE_INDEX_NULL, MeshTypeDynamic, d_context->material_basic);
+    GFX_Batch batch;
+    batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeDynamic, d_context->material_basic);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
     batch.vertex_buffer       = vertices;
-    batch.vertex_buffer_size  = sizeof(VertexAtrribute_TexturedColored) * vertex_count;
+    batch.vertex_buffer_size  = sizeof(GFX_VertexAtrribute_TexturedColored) * vertex_count;
     batch.uniform_buffer      = 0;
-    r_batch_commit(batch);
+    gfx_batch_commit(batch);
 }
 
 internal void
@@ -130,7 +130,7 @@ d_trail_set_width(Trail* trail, float32 start, float32 end)
 }
 
 internal bool32
-d_trail_is_segment_endpoint(Trail* trail, uint32 index)
+d_trail_is_segment_endpoint(Trail* trail, uint64 index)
 {
     return index == trail->start ||
            index == trail->end - 1 ||

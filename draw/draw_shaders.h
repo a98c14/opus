@@ -1,6 +1,6 @@
 // clang-format off
 #pragma once
-#include "base.h"
+#include "../base/base_inc.h"
 
 /** basic shader */
 read_only global String d_shader_opengl_basic_frag = string_comp(
