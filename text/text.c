@@ -193,9 +193,10 @@ font_cache_init(Arena* arena)
         log_error("Could not initialize freetype.");
         return;
     }
-    g_font_cache->arena           = arena;
-    g_font_cache->font_face_count = 64;
-    g_font_cache->font_faces      = arena_push_array_zero(arena, FontFace, g_font_cache->font_face_count);
+    g_font_cache->arena              = arena;
+    g_font_cache->font_face_count    = 1; // reserve first slot for null font face
+    g_font_cache->font_face_capacity = 64;
+    g_font_cache->font_faces         = arena_push_array_zero(arena, FontFace, g_font_cache->font_face_capacity);
 
     g_font_cache->rasterized_font_cache_capacity = 128;
     g_font_cache->rasterized_font_cache          = arena_push_array_zero(arena, FontCacheList, g_font_cache->rasterized_font_cache_capacity);
@@ -204,6 +205,12 @@ font_cache_init(Arena* arena)
 internal FontFaceIndex
 font_load(String font_name, String font_path, GlyphAtlasType atlas_type)
 {
+    if (g_font_cache == 0)
+    {
+        log_error("Font cache hasn't been initialized, skipping font load. Font Name: %s", font_name.value);
+        return 0;
+    }
+
     FontFace face  = {0};
     int32    error = FT_New_Face(g_font_cache->library, font_path.value, 0, &face.freetype_face);
     if (error == FT_Err_Unknown_File_Format)

@@ -1,10 +1,13 @@
 #include "draw_core.h"
 
 internal void
-d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
+d_context_init(String asset_path)
 {
-    d_context              = arena_push_struct_zero(persistent_arena, D_Context);
-    d_context->frame_arena = frame_arena;
+    Arena* persistent_arena = arena_new_reserve(mb(16));
+    Arena* frame_arena      = arena_new_reserve(mb(4));
+    d_context               = arena_push_struct_zero(persistent_arena, D_Context);
+    d_context->perm_arena   = persistent_arena;
+    d_context->frame_arena  = frame_arena;
 
     ArenaTemp temp             = scratch_begin(&persistent_arena, 1);
     d_context->material_text   = gfx_material_new(d_shader_opengl_font_vert, d_shader_opengl_font_frag, 0, GFX_DrawTypePackedBuffer);
@@ -20,7 +23,6 @@ d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
     string_list_pushf(temp.arena, &path, "\\IBMPlexMono-Bold.ttf");
     String font_path       = string_list_join(temp.arena, &path, 0);
     d_context->active_font = font_load(string("ibx_mono"), font_path, GlyphAtlasTypeFreeType);
-
     scratch_end(temp);
 }
 
