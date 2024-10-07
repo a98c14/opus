@@ -51,6 +51,18 @@ os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_c
     return result;
 }
 
+internal IVec2
+os_window_size()
+{
+    IVec2 result = {0};
+    if (!os_window_is_ready())
+        return result;
+
+    _OS_GLFW_Window* window = (_OS_GLFW_Window*)ptr_from_int(_os_glfw_main_window.v);
+    glfwGetWindowSize(window->glfw_window, &result.x, &result.y);
+    return result;
+}
+
 internal void
 os_window_update(OS_Handle window_handle)
 {

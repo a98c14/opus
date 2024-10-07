@@ -62,7 +62,7 @@ typedef struct
     Color             color;
 } D_DrawDataSprite;
 
-internal void d_context_init(String asset_path);
+internal void d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path);
 
 /** batch functions */
 internal void d_mesh_push_vertex(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);

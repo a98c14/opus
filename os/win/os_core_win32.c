@@ -292,6 +292,20 @@ os_screen_resolution()
     return result;
 }
 
+// TODO(selim):
+// internal IVec2
+// os_window_size()
+// {
+//     IVec2 result = {0};
+//     RECT  rect;
+//     if (GetWindowRect(hwnd, &rect))
+//     {
+//         int width  = rect.right - rect.left;
+//         int height = rect.bottom - rect.top;
+//     }
+//     return result;
+// }
+
 /** w32 unique */
 internal DWORD
 w32_thread_base(void* ptr)

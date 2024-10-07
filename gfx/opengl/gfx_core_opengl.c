@@ -13,17 +13,17 @@ gfx_init(GFX_Configuration configuration)
         return;
     }
 
-    IVec2 screen_resolution = os_screen_resolution();
+    IVec2 window_size = os_window_size();
     if (configuration.world_width == 0 && configuration.world_height == 0)
     {
-        configuration.world_width  = (float32)screen_resolution.x;
-        configuration.world_height = (float32)screen_resolution.y;
+        configuration.world_width  = (float32)window_size.x;
+        configuration.world_height = (float32)window_size.y;
     }
 
     if (configuration.window_width == 0 && configuration.window_height == 0)
     {
-        configuration.window_width  = screen_resolution.x;
-        configuration.window_height = screen_resolution.y;
+        configuration.window_width  = window_size.x;
+        configuration.window_height = window_size.y;
     }
 
     _gfx_ogl_perm_arena  = arena_new_reserve(mb(64));
