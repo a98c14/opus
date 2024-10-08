@@ -240,8 +240,8 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
     FontFace* font_face = &g_font_cache->font_faces[font_face_index];
     xassert(font_face, "could not find given font face");
 
-    uint16         font_size   = (uint16)px(ceilf(pixel_size));
-    uint16         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? font_size : 32;
+    uint32         font_size   = (uint32)px_inverse(ceilf(pixel_size));
+    uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? font_size : 32;
     uint64         params[]    = {font_face_index, size};
     uint64         hash        = hash_array_uint64(params, array_count(params));
     FontCacheList* font_bucket = &g_font_cache->rasterized_font_cache[hash % g_font_cache->rasterized_font_cache_capacity];
@@ -268,7 +268,6 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
     }
 
     FT_Int32 calc_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_DEFAULT : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
-
     // TODO(selim): Load non-ASCII characters as well
     for (int i = 32; i < 128; ++i)
     {

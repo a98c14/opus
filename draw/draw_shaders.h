@@ -204,7 +204,7 @@ read_only global String d_shader_opengl_font_frag = string_comp(
 	"float aaf = fwidth(d);\n"
 	"float alpha = smoothstep(0.5 - aaf, 0.5 + aaf, d);\n"
 	"\n"
-	"color = vec4(v_color.rgb, v_color.a * d);\n"
+	"color = vec4(v_color.rgb, alpha);\n"
 	"#if DEBUG == 1\n"
 	"color = mix(vec4(1, 0, 0, 1), color, color.a);\n"
 	"#endif\n"

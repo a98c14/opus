@@ -253,7 +253,7 @@ d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
     d_mesh_push_string(vertices, &vertex_count, atlas, str, add_vec2(pos, base_offset), size, c);
 
     GFX_Batch batch;
-    batch.key                 = gfx_render_key_new(GFX_ViewTypeWorld, d_context->active_layer, d_context->active_pass, atlas->texture, GFX_MeshTypeDynamic, d_context->material_text);
+    batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, GFX_MeshTypeDynamic, d_context->material_text);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
     batch.vertex_buffer       = vertices;

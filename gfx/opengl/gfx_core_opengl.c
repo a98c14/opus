@@ -95,8 +95,9 @@ gfx_init(GFX_Configuration configuration)
     frame_buffer->blend_src_alpha     = GL_ONE;
     frame_buffer->blend_dst_alpha     = GL_ONE;
 
-    _gfx_ogl_ctx->pass_count = 1;
-    _gfx_ogl_ctx->passes     = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_Pass, _GFX_OGL_SORTING_LAYER_CAPACITY);
+    _gfx_ogl_ctx->material_count = 1;
+    _gfx_ogl_ctx->pass_count     = 1;
+    _gfx_ogl_ctx->passes         = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_Pass, _GFX_OGL_SORTING_LAYER_CAPACITY);
 
     // default frame index
     _gfx_ogl_ctx->passes[0].batch_groups = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_BatchGroup, _GFX_OGL_SORTING_LAYER_CAPACITY);
@@ -183,6 +184,12 @@ internal float32
 px(float32 u)
 {
     return _gfx_ogl_ctx->ppu * u;
+}
+
+internal float32
+px_inverse(float32 u)
+{
+    return u / _gfx_ogl_ctx->ppu;
 }
 
 internal float32
