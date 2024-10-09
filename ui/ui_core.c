@@ -31,7 +31,7 @@ ui_key_same(UI_Key a, UI_Key b)
 }
 
 internal void
-ui_state_init(Arena* arena)
+ui_init(Arena* arena)
 {
     ui_state                   = arena_push_struct_zero(arena, UI_State);
     ui_state->persistent_arena = arena;
@@ -39,17 +39,16 @@ ui_state_init(Arena* arena)
 }
 
 internal void
-ui_state_load_atlas(SpriteAtlas* atlas)
+ui_state_load_atlas(D_SpriteAtlas* atlas)
 {
     ui_state->sprite_atlas = atlas;
 }
 
 internal void
-ui_state_update(EngineTime time)
+ui_state_update(float32 dt)
 {
-    EngineTime last_update_time = ui_state->time;
     ui_state->frame++;
-    ui_state->time = time;
+    ui_state->update_t += dt;
     arena_reset(ui_state->frame_arena);
 
     for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)
@@ -57,18 +56,18 @@ ui_state_update(EngineTime time)
         UI_SpriteAnimator* animator = &ui_state->active_animations[i];
 
         /** if widget hasn't updated the animation last frame, take control and play exit animation */
-        if (animator->owner.value > 0 && animator->exit_animation > 0 && animator->updated_at < last_update_time.current_frame_time)
+        if (animator->owner.value > 0 && animator->exit_animation > 0 && animator->updated_at < ui_state->update_t)
         {
-            Animation animation             = ui_state->sprite_atlas->animations[animator->exit_animation];
-            uint16    exit_animation_length = animation_length(animation);
+            D_Animation animation             = ui_state->sprite_atlas->animations[animator->exit_animation];
+            uint32      exit_animation_length = animation_length(animation);
 
-            uint32 current_frame = (ui_state->time.current_frame_time - animator->started_at) / UI_ANIMATION_UPDATE_RATE;
+            uint32 current_frame = (uint32)((ui_state->update_t - animator->started_at) / UI_ANIMATION_UPDATE_RATE);
             if (current_frame == exit_animation_length)
                 memory_zero_struct(animator);
 
             // draw_sprite_rect(animator->last_rect, animation.sprite_start_index + current_frame, ANCHOR_C_C);
         }
-        else if (animator->owner.value > 0 && animator->updated_at < last_update_time.current_frame_time)
+        else if (animator->owner.value > 0 && animator->updated_at < ui_state->update_t)
         {
             memory_zero_struct(animator);
         }
@@ -181,23 +180,23 @@ ui_debug(void)
 }
 
 internal Rect
-ui_sprite_rect(SpriteIndex sprite)
+ui_sprite_rect(D_SpriteIndex sprite)
 {
-    const Sprite* s = &ui_state->sprite_atlas->sprites[sprite];
+    const D_Sprite* s = &ui_state->sprite_atlas->sprites[sprite];
     // NOTE(selim): -2 is removed because by default all our sprites have 1 px padding on each side
     return rect_from_wh(s->size.w - 2, s->size.h - 2);
 }
 
 internal Rect
-ui_animation_rect(AnimationIndex animation)
+ui_animation_rect(D_AnimationIndex animation)
 {
-    const Animation* a        = &ui_state->sprite_atlas->animations[animation];
-    Rect             max_rect = {0};
+    const D_Animation* a        = &ui_state->sprite_atlas->animations[animation];
+    Rect               max_rect = {0};
     for (uint64 i = a->sprite_start_index; i < a->sprite_end_index; i++)
     {
-        const Sprite* s = &ui_state->sprite_atlas->sprites[i];
-        max_rect.w      = max(max_rect.w, s->size.w - 2);
-        max_rect.h      = max(max_rect.h, s->size.h - 2);
+        const D_Sprite* s = &ui_state->sprite_atlas->sprites[i];
+        max_rect.w        = max(max_rect.w, s->size.w - 2);
+        max_rect.h        = max(max_rect.h, s->size.h - 2);
     }
     return max_rect;
 }

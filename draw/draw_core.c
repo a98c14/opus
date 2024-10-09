@@ -308,9 +308,9 @@ d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scal
 }
 
 internal Rect
-d_sprite(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c)
+d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c)
 {
-    const D_Sprite* sprite = &atlas.sprites[sprite_index];
+    const D_Sprite* sprite = &atlas->sprites[sprite_index];
 
     Rect sprite_bounds = rect_from_wh(sprite->size.w * scale.x, sprite->size.h * scale.y);
     Rect final         = rect_anchor(sprite_bounds, rect, anchor);
@@ -321,7 +321,7 @@ d_sprite(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale,
     uniform_data[0].model            = transform_quad_aligned(final.center, final.size);
 
     GFX_Batch batch;
-    batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas.texture, GFX_MeshTypeQuad, d_context->material_sprite);
+    batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, GFX_MeshTypeQuad, d_context->material_sprite);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
     gfx_batch_commit(batch);

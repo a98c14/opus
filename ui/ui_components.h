@@ -1,6 +1,4 @@
 #pragma once
-
 #include "ui_core.h"
 
-internal void
-ui_widget_animated_label(UI_Key key, String text, AnimationIndex animation, bool32 loop);
+internal void ui_label_animated(UI_Key key, String text, D_AnimationIndex animation, bool32 loop);
