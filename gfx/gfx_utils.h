@@ -3,7 +3,7 @@
 
 /* converts the unit value to actual screen pixel*/
 internal float32 px(float32 u);
-internal float32 px_inverse(float32 u);
+internal float32 unit(float32 u);
 internal float32 em(float32 v);
 
 /** helpers */

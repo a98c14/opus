@@ -187,7 +187,7 @@ px(float32 u)
 }
 
 internal float32
-px_inverse(float32 u)
+unit(float32 u)
 {
     return u / _gfx_ogl_ctx->ppu;
 }

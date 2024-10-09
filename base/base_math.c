@@ -1097,6 +1097,20 @@ bounds_from_rect(Rect r)
     return result;
 }
 
+internal Bounds
+quad_bounds(Quad a)
+{
+    Bounds result = (Bounds){.bl = vec2(FLOAT32_MAX, FLOAT32_MAX), .tr = vec2(FLOAT32_MIN, FLOAT32_MIN)};
+    for (uint32 i = 0; i < QuadVertexIndexCOUNT; i++)
+    {
+        result.bl.x = min(result.bl.x, a.vertices[i].x);
+        result.bl.y = min(result.bl.y, a.vertices[i].y);
+        result.tr.x = max(result.tr.x, a.vertices[i].x);
+        result.tr.y = max(result.tr.y, a.vertices[i].y);
+    }
+    return result;
+}
+
 /** Rounding */
 internal float32
 floor_to(float32 v, float32 floor_to)

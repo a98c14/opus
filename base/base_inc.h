@@ -18,3 +18,4 @@
 #include "base_sort.h"
 #include "base_strings.h"
 #include "base_thread_context.h"
+#include "base_intersection.h"

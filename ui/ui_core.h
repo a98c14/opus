@@ -4,6 +4,9 @@
 
 #define UI_MAX_ANIMATION_COUNT   16
 #define UI_ANIMATION_UPDATE_RATE 24.0f
+#define UI_INPUT_BUFFER_SIZE     32
+
+global read_only String _ui_id_separator = string_comp("###");
 
 typedef struct
 {
@@ -45,9 +48,26 @@ typedef struct
 
 typedef struct
 {
+    Vec2 mouse_pos;
+} UI_Input;
+
+typedef struct UI_Entity UI_Entity;
+struct UI_Entity
+{
+    UI_Entity* next;
+    UI_Entity* prev;
+
+    Vec2 handle_initial_position;
+    Vec2 handle_current_position;
+};
+
+typedef struct
+{
     Arena* persistent_arena;
     Arena* frame_arena;
     uint64 frame;
+
+    UI_Input* input_buffer[UI_INPUT_BUFFER_SIZE];
 
     UI_Key hot;
     UI_Key active;
@@ -56,6 +76,8 @@ typedef struct
     float32 hot_t;
     float32 active_t;
 
+    Vec2 hot_initial_pos;
+
     UI_LayoutNode* layout_stack;
 
     /** animation */
@@ -63,21 +85,26 @@ typedef struct
 
     /** animation_ring_buffer */
     UI_SpriteAnimator active_animations[UI_MAX_ANIMATION_COUNT];
-} UI_State;
+} UI_Context;
 
-global UI_State* ui_state;
+global UI_Context* ui_ctx;
 
 internal UI_Key ui_key_str(String str);
 internal UI_Key ui_key_cstr(char* str);
+internal UI_Key ui_key_from_label(String label);
 internal UI_Key ui_key(uint64 v);
 internal bool32 ui_key_same(UI_Key a, UI_Key b);
 
-internal void  ui_init(Arena* arena);
-internal void  ui_state_load_atlas(D_SpriteAtlas* atlas);
-internal void  ui_state_update(float32 dt);
-internal void  ui_set_key(UI_Key key);
+internal void ui_init(Arena* arena);
+internal void ui_update(float32 dt);
+internal void ui_input_push(UI_Input input);
+
+internal void ui_state_load_atlas(D_SpriteAtlas* atlas);
+internal void ui_set_key(UI_Key key);
+
 internal Rect  ui_rect();
 internal Rect* ui_rect_ref();
+internal void  ui_rect_set(Rect r);
 internal Rect  ui_cut_dynamic(CutSide cut_side, float32 size);
 internal Rect  ui_cut_left(float32 size);
 internal Rect  ui_cut_right(float32 size);
@@ -107,3 +134,8 @@ internal Rect ui_animation_rect(D_AnimationIndex animation);
 internal UI_SpriteAnimator* ui_animator_find(UI_Key key);
 internal UI_SpriteAnimator* ui_animator_reserve(UI_Key key);
 internal UI_SpriteAnimator* ui_animator_get(UI_Key key);
+
+/** common widgets */
+internal void ui_pad(float32 x);
+internal void ui_fill(Color c);
+internal Rect ui_slider(String label, float32 min, float32 max, float32* value);

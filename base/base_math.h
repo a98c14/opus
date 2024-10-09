@@ -360,6 +360,8 @@ internal Bounds bounds_shrink(Bounds bounds, Vec2 amount);
 internal Bounds bounds_from_circle(Circle c);
 internal Bounds bounds_from_rect(Rect r);
 
+internal Bounds quad_bounds(Quad a);
+
 internal void b32_flip(bool32* b);
 
 /** Rounding */

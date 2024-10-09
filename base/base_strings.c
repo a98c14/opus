@@ -516,6 +516,46 @@ string_list_join(Arena* arena, StringList* list, StringJoin* optional_params)
     return (result);
 }
 
+internal StringList
+string_split(Arena* arena, String str, String separator)
+{
+    StringList list         = {0};
+    bool32     keep_empties = true; // TODO(selim): this should be a parameter?
+    char*      ptr          = str.value;
+    char*      opl          = str.value + str.length;
+    for (; ptr < opl;)
+    {
+        char* first = ptr;
+        for (; ptr < opl; ptr += 1)
+        {
+            char   c        = *ptr;
+            bool32 is_split = 0;
+            for (uint64 i = 0; i < separator.length; i += 1)
+            {
+                if (separator.value[i] == c)
+                {
+                    is_split = 1;
+                    break;
+                }
+            }
+
+            if (is_split)
+            {
+                break;
+            }
+        }
+
+        String string = string_range(first, ptr);
+        if (keep_empties || string.length > 0)
+        {
+            string_list_push(arena, &list, string);
+        }
+        ptr += 1;
+    }
+
+    return (list);
+}
+
 /** string storage */
 internal void
 string_storage_init(Arena* arena, uint64 capacity)

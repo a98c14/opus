@@ -111,6 +111,7 @@ internal StringNode* string_list_pushf(Arena* arena, StringList* list, char* fmt
 internal StringNode* string_list_push_front(Arena* arena, StringList* list, String str);
 internal StringNode* string_list_push_frontf(Arena* arena, StringList* list, char* fmt, ...);
 internal String      string_list_join(Arena* arena, StringList* list, StringJoin* optional_params);
+internal StringList  string_split(Arena* arena, String str, String separator);
 
 /** string storage */
 typedef uint64 StaticStringIndex;
