@@ -10,7 +10,7 @@ string_new(Arena* arena, uint64 length)
 }
 
 internal String
-string_null()
+string_null(void)
 {
     return (String){.value = NULL, .length = 0};
 }
@@ -426,7 +426,7 @@ string_find(String string, String substr, uint64 start_pos, StringMatchFlags fla
 
 /* string list */
 internal StringList
-string_list()
+string_list(void)
 {
     StringList result = {0};
     return result;
@@ -514,6 +514,46 @@ string_list_join(Arena* arena, StringList* list, StringJoin* optional_params)
 
     *ptr = 0;
     return (result);
+}
+
+internal StringList
+string_split(Arena* arena, String str, String separator)
+{
+    StringList list         = {0};
+    bool32     keep_empties = true; // TODO(selim): this should be a parameter?
+    char*      ptr          = str.value;
+    char*      opl          = str.value + str.length;
+    for (; ptr < opl;)
+    {
+        char* first = ptr;
+        for (; ptr < opl; ptr += 1)
+        {
+            char   c        = *ptr;
+            bool32 is_split = 0;
+            for (uint64 i = 0; i < separator.length; i += 1)
+            {
+                if (separator.value[i] == c)
+                {
+                    is_split = 1;
+                    break;
+                }
+            }
+
+            if (is_split)
+            {
+                break;
+            }
+        }
+
+        String string = string_range(first, ptr);
+        if (keep_empties || string.length > 0)
+        {
+            string_list_push(arena, &list, string);
+        }
+        ptr += 1;
+    }
+
+    return (list);
 }
 
 /** string storage */

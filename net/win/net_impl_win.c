@@ -8,7 +8,7 @@
 
 // NOTE(selim): make sure to link against ws2_32.lib for winsock 2
 internal void
-net_init()
+net_init(void)
 {
     WSADATA wsa_data;
 
@@ -27,7 +27,7 @@ net_init()
 }
 
 internal void
-net_socket_close()
+net_socket_close(void)
 {
 
     // closesocket(SOCKET s)

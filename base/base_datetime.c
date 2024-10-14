@@ -1,7 +1,7 @@
 #include "base_datetime.h"
 
 internal DateTime
-date_now()
+date_now(void)
 {
     DateTime  result = {0};
     struct tm new_time;

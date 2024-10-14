@@ -5,10 +5,10 @@
 #include "ft2build.h"
 #include FT_FREETYPE_H
 #define internal static
-
-#include <base.h>
-#include <gfx.h>
 #include <string.h>
+
+#include "../base/base_inc.h"
+#include "../gfx/gfx_inc.h"
 
 #define DEBUG_TEXT 0
 
@@ -35,9 +35,9 @@ typedef struct
 
 typedef struct
 {
-    uint16  width;
-    uint16  height;
-    uint16  size;
+    uint32  width;
+    uint32  height;
+    uint32  size;
     uint16  distance_range;
     float32 line_height;
     float32 ascender;
@@ -88,8 +88,8 @@ internal void          text_line_add(Arena* frame_arena, TextLineList* lines, St
 internal TextLineList* text_lines_from_string(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, float32 max_width);
 
 internal Rect text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, String str, float32 size);
-internal Rect text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, R_Batch* batch);
-internal Rect text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, R_Batch* batch);
+internal Rect text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, GFX_Batch* batch);
+internal Rect text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, GFX_Batch* batch);
 
 /** freetype */
 typedef uint32 FontFaceIndex;
@@ -129,8 +129,8 @@ typedef struct
     Arena*     arena;
     FT_Library library;
 
-    uint64    font_face_capacity;
-    uint64    font_face_count;
+    uint32    font_face_capacity;
+    uint32    font_face_count;
     FontFace* font_faces;
 
     uint64         rasterized_font_cache_capacity;

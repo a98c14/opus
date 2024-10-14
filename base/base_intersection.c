@@ -1,4 +1,4 @@
-#include "intersection.h"
+#include "base_intersection.h"
 
 internal Ray2
 ray(Vec2 start, Vec2 direction)
@@ -6,20 +6,6 @@ ray(Vec2 start, Vec2 direction)
     Ray2 result;
     result.start     = start;
     result.direction = direction;
-    return result;
-}
-
-internal Bounds
-p_quad_get_bounds(Quad a)
-{
-    Bounds result = (Bounds){.bl = vec2(FLOAT32_MAX, FLOAT32_MAX), .tr = vec2(FLOAT32_MIN, FLOAT32_MIN)};
-    for (uint32 i = 0; i < QuadVertexIndexCOUNT; i++)
-    {
-        result.bl.x = min(result.bl.x, a.vertices[i].x);
-        result.bl.y = min(result.bl.y, a.vertices[i].y);
-        result.tr.x = max(result.tr.x, a.vertices[i].x);
-        result.tr.y = max(result.tr.y, a.vertices[i].y);
-    }
     return result;
 }
 
@@ -126,7 +112,7 @@ intersects_rect(Rect a, Rect b)
 }
 
 internal Intersection
-intersects_polygon(P_Polygon a, P_Polygon b)
+intersects_polygon(BPolygon a, BPolygon b)
 {
     Intersection result = {0};
 
@@ -149,7 +135,7 @@ intersects_polygon(P_Polygon a, P_Polygon b)
 
         float32 overlap_amount = projection_overlap_amount(p1, p2);
 
-        float32 sign = (p1.max < p2.max ? -1 : 1);
+        float32 sign = (p1.max < p2.max ? -1.f : 1.f);
 
         bool32 contains = (projection_contains(p1, p2) || projection_contains(p2, p1));
         if (contains && fabs(p1.min - p2.min) > fabs(p1.max - p2.max))
@@ -188,13 +174,13 @@ intersects_polygon(P_Polygon a, P_Polygon b)
 internal Intersection
 intersects_quad(Quad a, Quad b)
 {
-    P_Polygon ap;
+    BPolygon ap;
     ap.vertices     = a.vertices;
     ap.vertex_count = 4;
     ap.normals      = a.normals;
     ap.normal_count = 2;
 
-    P_Polygon bp;
+    BPolygon bp;
     bp.vertices     = b.vertices;
     bp.vertex_count = 4;
     bp.normals      = b.normals;
@@ -306,7 +292,7 @@ project_quad(Quad q, Vec2 line)
 }
 
 internal Projection
-project_polygon(P_Polygon a, Vec2 line)
+project_polygon(BPolygon a, Vec2 line)
 {
     Projection result;
     float32    min = FLOAT32_MAX;
@@ -409,15 +395,15 @@ minimum_translation_vector(Vec2 normal, Projection p0, Projection p1, Vec2 cente
 {
     float32 overlap_0 = p0.max - p1.min;
     float32 overlap_1 = p0.min - p1.max;
-    float32 m         = min(fabs(overlap_0), fabs(overlap_1));
+    float32 m         = (float32)min(fabs(overlap_0), fabs(overlap_1));
     Vec2    v         = sub_vec2(center_1, center_0);
     float32 d         = dot_vec2(v, normal);
-    float32 sign      = d > 0 ? 1 : -1;
+    float32 sign      = d > 0 ? 1.f : -1.f;
     return mul_vec2_f32(mul_vec2_f32(normal, sign), m);
 }
 
 internal Vec2
-p_polygon_tr(P_Polygon p)
+BPolygon_tr(BPolygon p)
 {
     Vec2 max = vec2(FLOAT32_MIN, FLOAT32_MIN);
     for (int32 i = 0; i < p.vertex_count; i++)

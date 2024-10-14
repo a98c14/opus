@@ -1,7 +1,7 @@
-#include "primitives.h"
+#include "gfx_primitives_opengl.h"
 
 internal uint32
-mesh_quad_create(Renderer* renderer)
+_gfx_ogl_mesh_quad_create(void)
 {
     uint32 vao;
     uint32 vbo;
@@ -37,7 +37,7 @@ mesh_quad_create(Renderer* renderer)
 }
 
 internal uint32
-mesh_triangle_create(Renderer* renderer)
+_gfx_ogl_mesh_triangle_create(void)
 {
     uint32 vao;
     uint32 ebo;
@@ -70,7 +70,7 @@ mesh_triangle_create(Renderer* renderer)
 }
 
 internal uint32
-mesh_buffer_create(Renderer* renderer, VertexAttributeInfo* attributes, uint32 vertex_count)
+_gfx_ogl_mesh_buffer_create(GFX_VertexAttributeInfo* attributes)
 {
     uint32 vao;
     uint32 vbo;
@@ -84,8 +84,8 @@ mesh_buffer_create(Renderer* renderer, VertexAttributeInfo* attributes, uint32 v
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float32) * 8192, 0, GL_DYNAMIC_DRAW);
 
-    uint64                      size_per_vertex = 0;
-    VertexAttributeElementNode* n;
+    uint32                          size_per_vertex = 0;
+    GFX_VertexAttributeElementNode* n;
     for_each(n, attributes->first)
     {
         size_per_vertex += n->v.size;

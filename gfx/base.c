@@ -341,7 +341,7 @@ texture_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, ui
 internal TextureIndex
 texture_array_new(Renderer* renderer, uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data)
 {
-    log_trace("loading texture array");
+    log_trace("Loading texture array.");
     TextureIndex texture_index = renderer->texture_count;
     Texture*     texture       = &renderer->textures[renderer->texture_count];
 
@@ -374,32 +374,6 @@ texture_update(Renderer* renderer, TextureIndex texture, void* data)
     Texture* texture_data = &renderer->textures[texture];
     glBindTexture(GL_TEXTURE_2D, texture_data->gl_texture_id);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture_data->width, texture_data->height, texture_data->format, GL_UNSIGNED_BYTE, data);
-}
-
-internal RenderKey
-render_key_new(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, MeshType mesh_type, MaterialIndex material_index)
-{
-    xassert(view_type < 4, "invalid view_type value provided");
-    log_trace("render key new, sort: %2d, pass: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", sort_layer, pass, view_type, texture, geometry, material_index);
-    RenderKey result = ((uint64)sort_layer << RenderKeySortLayerIndexBitStart) +
-                       ((uint64)pass << RenderKeyPassIndexBitStart) +
-                       ((uint64)view_type << RenderKeyViewTypeBitStart) +
-                       ((uint64)texture << RenderKeyTextureIndexBitStart) +
-                       ((uint64)material_index << RenderKeyMaterialIndexBitStart) +
-                       ((uint64)mesh_type << RenderKeyMeshTypeBitStart);
-    return result;
-}
-
-internal RenderKey
-render_key_new_default(ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, MaterialIndex material_index)
-{
-    return render_key_new(view_type, sort_layer, pass, texture, material_index, 0);
-}
-
-internal uint64
-render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count)
-{
-    return (key >> bit_start) & ((1ull << bit_count) - 1);
 }
 
 internal void
@@ -719,59 +693,4 @@ camera_world_bounds(Camera camera)
 {
     Vec2 camera_position = camera.inverse_view.columns[3].xy;
     return rect_from_xy_wh(camera_position.x, camera_position.y, camera.world_width, camera.world_height);
-}
-
-internal float32
-px(float32 u)
-{
-    return _pixel_per_unit * u;
-}
-
-internal float32
-em(float32 v)
-{
-    return px(v) * DEFAULT_FONT_SIZE;
-}
-
-/** helpers */
-internal float32
-screen_top()
-{
-    return g_renderer->camera.world_height / 2.0f;
-}
-
-internal float32
-screen_left()
-{
-    return -g_renderer->camera.world_width / 2.0f;
-}
-
-internal float32
-screen_right()
-{
-    return g_renderer->camera.world_width / 2.0f;
-}
-
-internal float32
-screen_bottom()
-{
-    return -g_renderer->camera.world_height / 2.0f;
-}
-
-internal float32
-screen_height()
-{
-    return g_renderer->camera.world_height;
-}
-
-internal float32
-screen_width()
-{
-    return g_renderer->camera.world_width;
-}
-
-internal Rect
-screen_rect()
-{
-    return rect_from_xy_wh(0, 0, screen_width(), screen_height());
 }

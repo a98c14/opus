@@ -10,10 +10,21 @@
 #define LOG_TO_CONSOLE         1
 #define LOG_MESSAGE_SIZE_LIMIT 32000
 
-#define LOG_WARN_ENABLED  1
-#define LOG_INFO_ENABLED  1
+#ifndef LOG_WARN_ENABLED
+#define LOG_WARN_ENABLED 1
+#endif
+
+#ifndef LOG_INFO_ENABLED
+#define LOG_INFO_ENABLED 1
+#endif
+
+#ifndef LOG_DEBUG_ENABLED
 #define LOG_DEBUG_ENABLED 1
+#endif
+
+#ifndef LOG_TRACE_ENABLED
 #define LOG_TRACE_ENABLED 0 // Warning: Emits a lot of logs, best to enable while debugging
+#endif
 
 typedef enum
 {

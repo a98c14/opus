@@ -11,7 +11,7 @@ vec2(float32 x, float32 y)
 }
 
 internal Vec2
-vec2_zero()
+vec2_zero(void)
 {
     Vec2 result;
     result.x = 0;
@@ -20,7 +20,7 @@ vec2_zero()
 }
 
 internal Vec2
-vec2_one()
+vec2_one(void)
 {
     Vec2 result;
     result.x = 1;
@@ -29,7 +29,7 @@ vec2_one()
 }
 
 internal Vec2
-vec2_up()
+vec2_up(void)
 {
     Vec2 result;
     result.x = 0;
@@ -38,7 +38,7 @@ vec2_up()
 }
 
 internal Vec2
-vec2_right()
+vec2_right(void)
 {
     Vec2 result;
     result.x = 1;
@@ -88,7 +88,7 @@ vec3(float32 x, float32 y, float32 z)
 }
 
 internal Vec3
-vec3_zero()
+vec3_zero(void)
 {
     Vec3 result;
     result.x = 0;
@@ -98,7 +98,7 @@ vec3_zero()
 }
 
 internal Vec3
-vec3_one()
+vec3_one(void)
 {
     Vec3 result;
     result.x = 1;
@@ -776,7 +776,7 @@ mat3_transpose(Mat3 m)
 }
 
 internal Mat4
-mat4_identity()
+mat4_identity(void)
 {
     Mat4 result    = {0};
     result.m[0][0] = 1;
@@ -1094,6 +1094,20 @@ bounds_from_rect(Rect r)
     Bounds result;
     result.bl = rect_bl(r);
     result.tr = rect_tr(r);
+    return result;
+}
+
+internal Bounds
+quad_bounds(Quad a)
+{
+    Bounds result = (Bounds){.bl = vec2(FLOAT32_MAX, FLOAT32_MAX), .tr = vec2(FLOAT32_MIN, FLOAT32_MIN)};
+    for (uint32 i = 0; i < QuadVertexIndexCOUNT; i++)
+    {
+        result.bl.x = min(result.bl.x, a.vertices[i].x);
+        result.bl.y = min(result.bl.y, a.vertices[i].y);
+        result.tr.x = max(result.tr.x, a.vertices[i].x);
+        result.tr.y = max(result.tr.y, a.vertices[i].y);
+    }
     return result;
 }
 

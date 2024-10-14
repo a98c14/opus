@@ -24,7 +24,7 @@ random_between_i32(int32 min, int32 max)
 }
 
 internal uint32
-random_uint32()
+random_uint32(void)
 {
     return pcg32_boundedrand_r(&g_rng, MAX_UINT32);
 }
@@ -54,7 +54,7 @@ random_direction(float32 radius)
 }
 
 internal Vec2
-random_heading()
+random_heading(void)
 {
     float32 angle = random_between_f32(-180, 180);
     return direction_vec2(angle, 1);

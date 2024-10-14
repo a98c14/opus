@@ -1,22 +1,21 @@
 #pragma once
-#include <opus/base/base_inc.h>
+#include "../base/base_inc.h"
 
 typedef void OS_ThreadFunctionType(void* ptr);
 
 typedef struct
 {
     uint64 v;
-    uint32 version;
-    uint32 owner;
 } OS_Handle;
 
-internal void      os_init();
+internal void      os_init(void);
 internal OS_Handle os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params);
 internal bool32    os_thread_wait(OS_Handle thread_handle, uint64 time_us);
 internal void      os_thread_name_set(String name);
 
 internal bool32    os_handle_match(OS_Handle a, OS_Handle b);
-internal OS_Handle os_handle_zero();
+internal OS_Handle os_handle_zero(void);
+internal bool32    os_handle_is_zero(OS_Handle h);
 
 /** mutexes */
 internal OS_Handle os_mutex_alloc(void);
@@ -48,3 +47,30 @@ internal void      os_condition_variable_broadcast(OS_Handle cv);
 internal uint64 os_now_ms();
 internal uint64 os_now_us();
 internal uint64 os_now_ns();
+
+/** utility */
+internal IVec2 os_screen_resolution();
+
+/** input */
+typedef enum
+{
+    OS_KeyCode_Null = 0,
+    // Mouse
+    OS_KeyCode_MouseLeft,
+    OS_KeyCode_MouseRight,
+    OS_KeyCode_MouseMiddle,
+    // Keys
+    OS_KeyCode_BracketRight,
+    OS_KeyCode_COUNT,
+} OS_KeyCode;
+
+typedef enum
+{
+    OS_KeyState_Null = 0,
+    OS_KeyState_Pressed,
+    OS_KeyState_Released,
+} OS_KeyState;
+
+// Returns window position. Bottom Left = (0,0), Top Left = (Window Width, Window Height);
+internal Vec2        os_input_mouse_pos();
+internal OS_KeyState os_input_key_state(OS_KeyCode code);

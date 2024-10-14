@@ -17,6 +17,19 @@ ui_key_cstr(char* str)
 }
 
 internal UI_Key
+ui_key_from_label(String label)
+{
+    ArenaTemp  temp  = scratch_begin(0, 0);
+    StringList parts = string_split(temp.arena, label, _ui_id_separator);
+    UI_Key     key   = {0};
+
+    key = parts.count > 1
+              ? ui_key_str(parts.first->next->value)
+              : ui_key_str(parts.first->value);
+    return key;
+}
+
+internal UI_Key
 ui_key(uint64 v)
 {
     UI_Key result;
@@ -31,173 +44,192 @@ ui_key_same(UI_Key a, UI_Key b)
 }
 
 internal void
-ui_state_init(Arena* arena)
+ui_init(Arena* arena)
 {
-    ui_state                   = arena_push_struct_zero(arena, UI_State);
-    ui_state->persistent_arena = arena;
-    ui_state->frame_arena      = arena_new_reserve(mb(32));
+    ui_ctx                   = arena_push_struct_zero(arena, UI_Context);
+    ui_ctx->persistent_arena = arena;
+    ui_ctx->frame_arena      = arena_new_reserve(mb(32));
 }
 
 internal void
-ui_state_load_atlas(SpriteAtlas* atlas)
+ui_state_load_atlas(D_SpriteAtlas* atlas)
 {
-    ui_state->sprite_atlas = atlas;
+    ui_ctx->sprite_atlas = atlas;
 }
 
 internal void
-ui_state_update(EngineTime time)
+ui_update(float32 dt)
 {
-    EngineTime last_update_time = ui_state->time;
-    ui_state->frame++;
-    ui_state->time = time;
-    arena_reset(ui_state->frame_arena);
+    ui_ctx->frame++;
+    ui_ctx->update_t += dt;
+    arena_reset(ui_ctx->frame_arena);
+    ui_create_fixed(screen_rect());
 
-    for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)
-    {
-        UI_SpriteAnimator* animator = &ui_state->active_animations[i];
+    // for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)
+    // {
+    //     UI_SpriteAnimator* animator = &ui_ctx->active_animations[i];
 
-        /** if widget hasn't updated the animation last frame, take control and play exit animation */
-        if (animator->owner.value > 0 && animator->exit_animation > 0 && animator->updated_at < last_update_time.current_frame_time)
-        {
-            Animation animation             = ui_state->sprite_atlas->animations[animator->exit_animation];
-            uint16    exit_animation_length = animation_length(animation);
+    //     /** if widget hasn't updated the animation last frame, take control and play exit animation */
+    //     if (animator->owner.value > 0 && animator->exit_animation > 0 && animator->updated_at < ui_ctx->update_t)
+    //     {
+    //         D_Animation animation             = ui_ctx->sprite_atlas->animations[animator->exit_animation];
+    //         uint32      exit_animation_length = animation_length(animation);
 
-            uint32 current_frame = (ui_state->time.current_frame_time - animator->started_at) / UI_ANIMATION_UPDATE_RATE;
-            if (current_frame == exit_animation_length)
-                memory_zero_struct(animator);
+    //         uint32 current_frame = (uint32)((ui_ctx->update_t - animator->started_at) / UI_ANIMATION_UPDATE_RATE);
+    //         if (current_frame == exit_animation_length)
+    //             memory_zero_struct(animator);
 
-            // draw_sprite_rect(animator->last_rect, animation.sprite_start_index + current_frame, ANCHOR_C_C);
-        }
-        else if (animator->owner.value > 0 && animator->updated_at < last_update_time.current_frame_time)
-        {
-            memory_zero_struct(animator);
-        }
-    }
+    //         // draw_sprite_rect(animator->last_rect, animation.sprite_start_index + current_frame, ANCHOR_C_C);
+    //     }
+    //     else if (animator->owner.value > 0 && animator->updated_at < ui_ctx->update_t)
+    //     {
+    //         memory_zero_struct(animator);
+    //     }
+    // }
+}
+
+internal bool32
+ui_is_hot(UI_Key key)
+{
+    return ui_key_same(key, ui_ctx->hot);
+}
+
+internal bool32
+ui_is_active(UI_Key key)
+{
+    return ui_key_same(key, ui_ctx->active);
 }
 
 internal void
 ui_set_key(UI_Key key)
 {
-    ui_state->layout_stack->v.key = key;
+    ui_ctx->layout_stack->v.key = key;
 }
 
 internal Rect
-ui_rect()
+ui_rect(void)
 {
-    xassert(ui_state->layout_stack, "there is no active layout!");
-    return ui_state->layout_stack->v.r;
+    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    return ui_ctx->layout_stack->v.r;
 }
 
 internal Rect*
-ui_rect_ref()
+ui_rect_ref(void)
 {
-    xassert(ui_state->layout_stack, "there is no active layout!");
-    return &ui_state->layout_stack->v.r;
+    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    return &ui_ctx->layout_stack->v.r;
+}
+internal void
+ui_rect_set(Rect r)
+{
+    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    ui_ctx->layout_stack->v.r = r;
 }
 
 internal Rect
 ui_cut_dynamic(CutSide cut_side, float32 size)
 {
-    xassert(ui_state->layout_stack, "there are no active layouts!");
-    return rect_cut(&ui_state->layout_stack->v.r, size, cut_side);
+    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    return rect_cut(&ui_ctx->layout_stack->v.r, size, cut_side);
 }
 
 internal Rect
 ui_cut_left(float32 size)
 {
-    return rect_cut_left(&ui_state->layout_stack->v.r, size);
+    return rect_cut_left(&ui_ctx->layout_stack->v.r, size);
 }
 
 internal Rect
 ui_cut_right(float32 size)
 {
-    return rect_cut_right(&ui_state->layout_stack->v.r, size);
+    return rect_cut_right(&ui_ctx->layout_stack->v.r, size);
 }
 
 internal Rect
 ui_cut_top(float32 size)
 {
-    return rect_cut_top(&ui_state->layout_stack->v.r, size);
+    return rect_cut_top(&ui_ctx->layout_stack->v.r, size);
 }
 
 internal Rect
 ui_cut_bottom(float32 size)
 {
-    return rect_cut_bottom(&ui_state->layout_stack->v.r, size);
+    return rect_cut_bottom(&ui_ctx->layout_stack->v.r, size);
 }
 
 internal void
 ui_push_rect(UI_Key key, Rect r)
 {
-    UI_LayoutNode* node = arena_push_struct_zero(ui_state->frame_arena, UI_LayoutNode);
+    UI_LayoutNode* node = arena_push_struct_zero(ui_ctx->frame_arena, UI_LayoutNode);
     node->v.r           = r;
     node->v.key         = key;
-    stack_push(ui_state->layout_stack, node);
+    stack_push(ui_ctx->layout_stack, node);
 }
 
 internal void
 ui_push_cut(UI_Key key, CutSide cut_side, float32 size)
 {
-    UI_LayoutNode* node = arena_push_struct_zero(ui_state->frame_arena, UI_LayoutNode);
+    UI_LayoutNode* node = arena_push_struct_zero(ui_ctx->frame_arena, UI_LayoutNode);
     node->v.r           = ui_cut_dynamic(cut_side, size);
     node->v.key         = key;
-    stack_push(ui_state->layout_stack, node);
+    stack_push(ui_ctx->layout_stack, node);
 }
 
 internal void
-ui_pop_layout()
+ui_pop_layout(void)
 {
-    stack_pop(ui_state->layout_stack);
+    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    stack_pop(ui_ctx->layout_stack);
 }
 
 internal void
 ui_resize_width(float32 w)
 {
-    ui_state->layout_stack->v.r.w = w;
+    ui_ctx->layout_stack->v.r.w = w;
 }
 
 internal void
 ui_resize_height(float32 h)
 {
-    ui_state->layout_stack->v.r.h = h;
+    ui_ctx->layout_stack->v.r.h = h;
 }
 
 internal void
 ui_shrink(float32 w, float32 h)
 {
-    ui_state->layout_stack->v.r = rect_shrink(ui_rect(), vec2(w, h));
+    ui_ctx->layout_stack->v.r = rect_shrink(ui_rect(), vec2(w, h));
 }
 
 internal void
 ui_expand(float32 w, float32 h)
 {
-    ui_state->layout_stack->v.r = rect_shrink(ui_rect(), vec2(w, h));
+    ui_ctx->layout_stack->v.r = rect_shrink(ui_rect(), vec2(w, h));
 }
 
 internal void
-ui_debug()
+ui_debug(void)
 {
     // draw_debug_rect(ui_rect());
 }
 
 internal Rect
-ui_sprite_rect(SpriteIndex sprite)
+ui_sprite_rect(D_SpriteIndex sprite)
 {
-    const Sprite* s = &ui_state->sprite_atlas->sprites[sprite];
+    const D_Sprite* s = &ui_ctx->sprite_atlas->sprites[sprite];
     // NOTE(selim): -2 is removed because by default all our sprites have 1 px padding on each side
     return rect_from_wh(s->size.w - 2, s->size.h - 2);
 }
 
 internal Rect
-ui_animation_rect(AnimationIndex animation)
+ui_animation_rect(D_AnimationIndex animation)
 {
-    const Animation* a        = &ui_state->sprite_atlas->animations[animation];
-    Rect             max_rect = {0};
+    const D_Animation* a        = &ui_ctx->sprite_atlas->animations[animation];
+    Rect               max_rect = {0};
     for (uint64 i = a->sprite_start_index; i < a->sprite_end_index; i++)
     {
-        const Sprite* s = &ui_state->sprite_atlas->sprites[i];
-        max_rect.w      = max(max_rect.w, s->size.w - 2);
-        max_rect.h      = max(max_rect.h, s->size.h - 2);
+        const D_Sprite* s = &ui_ctx->sprite_atlas->sprites[i];
+        max_rect.w        = max(max_rect.w, s->size.w - 2);
+        max_rect.h        = max(max_rect.h, s->size.h - 2);
     }
     return max_rect;
 }
@@ -208,8 +240,8 @@ ui_animator_find(UI_Key key)
 {
     for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)
     {
-        if (ui_state->active_animations[i].owner.value == key.value)
-            return &ui_state->active_animations[i];
+        if (ui_ctx->active_animations[i].owner.value == key.value)
+            return &ui_ctx->active_animations[i];
     }
 
     return 0;
@@ -220,9 +252,9 @@ ui_animator_reserve(UI_Key key)
 {
     for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)
     {
-        if (ui_state->active_animations[i].owner.value == ui_key_null.value)
+        if (ui_ctx->active_animations[i].owner.value == ui_key_null.value)
         {
-            UI_SpriteAnimator* animator = &ui_state->active_animations[i];
+            UI_SpriteAnimator* animator = &ui_ctx->active_animations[i];
             animator->owner             = key;
             return animator;
         }
@@ -242,4 +274,66 @@ ui_animator_get(UI_Key key)
     }
 
     return animator;
+}
+
+/** common widgets */
+internal void
+ui_pad(float32 x)
+{
+    Rect r = ui_rect();
+    ui_rect_set(rect_shrink(r, vec2(x, x)));
+}
+
+internal void
+ui_fill(Color c)
+{
+    Rect r = ui_rect();
+    d_rect(r, 0, c);
+}
+
+internal UI_Signal
+ui_slider(String label, float32 min, float32 max, float32* value)
+{
+    Color  slider_handle_color = ColorSlate100;
+    UI_Key key                 = ui_key_from_label(label);
+
+    // layout
+    const float32 height = 16; // TODO(selim): What should this be?
+    ui_push_cut(key, CutSideTop, height);
+    Rect   root_container = ui_rect();
+    Rect   outer_bar      = rect_shrink(root_container, vec2(16, 2));
+    Rect   inner_bar      = rect_shrink(outer_bar, vec2(4, 4));
+    Circle handle         = circle(rect_cl(inner_bar), height);
+    ui_pop_layout();
+
+    // controls
+    Input_MouseInfo mouse               = input_mouse_info();
+    UI_Signal       result              = {0};
+    Intersection    handle_intersection = intersects_circle_point(handle, mouse.screen);
+    if (handle_intersection.intersects)
+    {
+        ui_ctx->hot = key;
+    }
+    else
+    {
+        ui_ctx->hot = ui_key_null;
+    }
+
+    if (ui_is_hot(key))
+    {
+        slider_handle_color = ColorSlate400;
+    }
+
+    if (ui_is_hot(key) && input_is_pressed(ui_input_select))
+    {
+        log_info("clicked slider handle");
+    }
+    *value = clamp(min, 0, max);
+
+    // draw
+    d_rect(outer_bar, 0, ColorSlate300);
+    d_rect(inner_bar, 0, ColorSlate500);
+    d_circle(handle.center, handle.radius, 1, slider_handle_color);
+
+    return result;
 }

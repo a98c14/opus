@@ -1,7 +1,7 @@
 #include "time.h"
 
 internal EngineTime
-engine_time_new()
+engine_time_new(void)
 {
     EngineTime result         = {0};
     result.current_frame_time = (float32)glfwGetTime();

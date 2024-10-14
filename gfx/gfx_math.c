@@ -1,4 +1,4 @@
-#include "base_math.h"
+#include "gfx_math.h"
 
 internal Mat4
 mat4_mvp(Mat4 model, Mat4 view, Mat4 projection)
@@ -74,7 +74,7 @@ transform_line_rotated(Vec2 position, float32 length, float32 angle, float32 thi
 {
     // TODO: these values are also calculated in `mat4_rotation`, check if
     // they are optimized away or not.
-    float32 radian = angle * PI_FLOAT32 / 180.0;
+    float32 radian = angle * ANGLE_TO_RAD_FLOAT32;
     float32 cosx   = (float32)cosf(radian) * (length / 2.0f);
     float32 sinx   = (float32)sinf(radian) * (length / 2.0f);
     position.x += cosx;

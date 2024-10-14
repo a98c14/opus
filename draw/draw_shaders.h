@@ -1,6 +1,6 @@
 // clang-format off
 #pragma once
-#include "base.h"
+#include "../base/base_inc.h"
 
 /** basic shader */
 read_only global String d_shader_opengl_basic_frag = string_comp(
@@ -113,10 +113,10 @@ read_only global String d_shader_opengl_circle_frag = string_comp(
 	"vec2 uv = v_tex_coord;\n"
 	"uv = uv * 2 - 1;\n"
 	"float thickness = v_thickness;\n"
-	"\n"
+	"const float smoothness = 0.25;\n"
 	"float d = distance(uv, vec2(0.0, 0.0));\n"
-	"float a = 1 - smoothstep(1.0 - 0.05, 1.0, d);\n"
-	"a -= 1 - smoothstep(1.0 - thickness - 0.05, 1 - thickness, d);\n"
+	"float a = 1 - smoothstep(1.0 - smoothness, 1.0, d);\n"
+	"a -= 1 - smoothstep(1.0 - thickness - smoothness, 1 - thickness, d);\n"
 	"color = vec4(v_color.rgb, a * v_color.a);\n"
 	"}\n"
 	"\n"

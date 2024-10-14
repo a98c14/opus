@@ -1,7 +1,7 @@
 #pragma once
-#include <base/asserts.h>
-#include <base/math.h>
-#include <base/memory.h>
+#include <opus/base/base_asserts.h>
+#include <opus/base/base_math.h>
+#include <opus/base/base_memory.h>
 
 typedef union
 {
