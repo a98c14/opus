@@ -1,7 +1,7 @@
 #pragma once
 #include "os_core.h"
 
-typedef void WindowKeyCallback(OS_Handle window_handle, int32 key, int32 scancode, int32 action, int32 mods);
+typedef void WindowKeyCallback(OS_KeyCode key_code, OS_KeyState state);
 
 /** Per OS Specific */
 internal OS_Handle os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_callback);

@@ -1,6 +1,9 @@
 #pragma once
 #include "../base/base_inc.h"
 #include "../draw/draw_inc.h"
+#include "../input/input_inc.h"
+
+#include "ui_inputs.h"
 
 #define UI_MAX_ANIMATION_COUNT   16
 #define UI_ANIMATION_UPDATE_RATE 24.0f
@@ -46,11 +49,6 @@ typedef struct
     D_AnimationIndex exit_animation;
 } UI_SpriteAnimator;
 
-typedef struct
-{
-    Vec2 mouse_pos;
-} UI_Input;
-
 typedef struct UI_Entity UI_Entity;
 struct UI_Entity
 {
@@ -66,8 +64,6 @@ typedef struct
     Arena* persistent_arena;
     Arena* frame_arena;
     uint64 frame;
-
-    UI_Input* input_buffer[UI_INPUT_BUFFER_SIZE];
 
     UI_Key hot;
     UI_Key active;
@@ -95,9 +91,9 @@ internal UI_Key ui_key_from_label(String label);
 internal UI_Key ui_key(uint64 v);
 internal bool32 ui_key_same(UI_Key a, UI_Key b);
 
-internal void ui_init(Arena* arena);
-internal void ui_update(float32 dt);
-internal void ui_input_push(UI_Input input);
+internal void   ui_init(Arena* arena);
+internal void   ui_update(float32 dt);
+internal bool32 ui_is_hot(UI_Key key);
 
 internal void ui_state_load_atlas(D_SpriteAtlas* atlas);
 internal void ui_set_key(UI_Key key);
@@ -136,6 +132,6 @@ internal UI_SpriteAnimator* ui_animator_reserve(UI_Key key);
 internal UI_SpriteAnimator* ui_animator_get(UI_Key key);
 
 /** common widgets */
-internal void ui_pad(float32 x);
-internal void ui_fill(Color c);
-internal Rect ui_slider(String label, float32 min, float32 max, float32* value);
+internal void      ui_pad(float32 x);
+internal void      ui_fill(Color c);
+internal UI_Signal ui_slider(String label, float32 min, float32 max, float32* value);

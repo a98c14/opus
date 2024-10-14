@@ -88,6 +88,18 @@ ui_update(float32 dt)
     // }
 }
 
+internal bool32
+ui_is_hot(UI_Key key)
+{
+    return ui_key_same(key, ui_ctx->hot);
+}
+
+internal bool32
+ui_is_active(UI_Key key)
+{
+    return ui_key_same(key, ui_ctx->active);
+}
+
 internal void
 ui_set_key(UI_Key key)
 {
@@ -279,28 +291,49 @@ ui_fill(Color c)
     d_rect(r, 0, c);
 }
 
-internal Rect
+internal UI_Signal
 ui_slider(String label, float32 min, float32 max, float32* value)
 {
+    Color  slider_handle_color = ColorSlate100;
+    UI_Key key                 = ui_key_from_label(label);
+
+    // layout
     const float32 height = 16; // TODO(selim): What should this be?
-    UI_Key        key    = ui_key_from_label(label);
-
-    // draw
     ui_push_cut(key, CutSideTop, height);
-    Rect root_container = ui_rect();
-    Rect outer_bar      = rect_shrink(root_container, vec2(16, 2));
-    d_rect(outer_bar, 0, ColorSlate300);
-
-    Rect inner_bar = rect_shrink(outer_bar, vec2(4, 4));
-    d_rect(inner_bar, 0, ColorSlate500);
-
-    Circle handle = circle(rect_cl(inner_bar), height);
-    d_circle(handle.center, handle.radius, 1, ColorSlate100);
+    Rect   root_container = ui_rect();
+    Rect   outer_bar      = rect_shrink(root_container, vec2(16, 2));
+    Rect   inner_bar      = rect_shrink(outer_bar, vec2(4, 4));
+    Circle handle         = circle(rect_cl(inner_bar), height);
     ui_pop_layout();
 
-    // intersects_circle_point(handle, ui_ctx.)
     // controls
+    Input_MouseInfo mouse               = input_mouse_info();
+    UI_Signal       result              = {0};
+    Intersection    handle_intersection = intersects_circle_point(handle, mouse.screen);
+    if (handle_intersection.intersects)
+    {
+        ui_ctx->hot = key;
+    }
+    else
+    {
+        ui_ctx->hot = ui_key_null;
+    }
+
+    if (ui_is_hot(key))
+    {
+        slider_handle_color = ColorSlate400;
+    }
+
+    if (ui_is_hot(key) && input_is_pressed(ui_input_select))
+    {
+        log_info("clicked slider handle");
+    }
     *value = clamp(min, 0, max);
 
-    return root_container;
+    // draw
+    d_rect(outer_bar, 0, ColorSlate300);
+    d_rect(inner_bar, 0, ColorSlate500);
+    d_circle(handle.center, handle.radius, 1, slider_handle_color);
+
+    return result;
 }

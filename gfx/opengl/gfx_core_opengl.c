@@ -580,3 +580,38 @@ gfx_pipeline_add_pass(FrameBufferIndex frame_buffer)
     _gfx_ogl_ctx->passes[pass_index].batch_groups = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_BatchGroup, _GFX_OGL_SORTING_LAYER_CAPACITY);
     _gfx_ogl_ctx->pass_count++;
 }
+
+/** Utility */
+internal Vec2
+gfx_window_to_screen_position(Vec2 p)
+{
+    Vec2    result = {0};
+    float32 x      = (p.x / _gfx_ogl_ctx->window_width) - 0.5f;
+    float32 y      = (p.y / _gfx_ogl_ctx->window_height) - 0.5f;
+    x *= _gfx_ogl_ctx->world_width;
+    y *= _gfx_ogl_ctx->world_height;
+
+    Vec4 world_pos = vec4(x, y, 0, 0);
+    result.x       = world_pos.x;
+    result.y       = world_pos.y;
+    return result;
+}
+
+internal Vec2
+gfx_window_to_world_position(Vec2 p)
+{
+    Vec2    result = {0};
+    float32 x      = (p.x / _gfx_ogl_ctx->window_width) * 2 - 1;
+    float32 y      = (p.y / _gfx_ogl_ctx->window_height) * 2 - 1;
+    x *= _gfx_ogl_ctx->world_width;
+    y *= _gfx_ogl_ctx->world_height;
+
+    GFX_Camera camera     = _gfx_ogl_ctx->camera[0];
+    Mat4       world_view = mat4_mvp(mat4_identity(), camera.view, camera.projection);
+    Vec4       world_pos  = vec4(x, y, 0, 0);
+    world_pos             = mul_mat4_vec4(world_view, world_pos);
+
+    result.x = world_pos.x;
+    result.y = world_pos.y;
+    return result;
+}

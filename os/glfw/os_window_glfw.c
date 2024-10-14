@@ -33,6 +33,7 @@ os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_c
     }
 
     glfwSetKeyCallback(glfw_window, _os_window_glfw_key_callback_wrapper);
+    glfwSetMouseButtonCallback(glfw_window, _os_window_glfw_mouse_callback_wrapper);
     glfwMakeContextCurrent(glfw_window);
     gladLoadGL(glfwGetProcAddress);
     glfwSwapInterval(0);
@@ -48,7 +49,22 @@ os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_c
     {
         _os_glfw_main_window = result;
     }
+
+    /** Key Code Conversion */
+    _os_set_key_conversion(GLFW_KEY_RIGHT_BRACKET, OS_KeyCode_BracketRight);
+    // _os_set_key_conversion(GLFW_MOUSE_BUTTON_RIGHT, OS_KeyCode_MouseRight);
+    // _os_set_key_conversion(GLFW_MOUSE_BUTTON_MIDDLE, OS_KeyCode_MouseMiddle);
+    _glfw_mouse_conversion_table[GLFW_MOUSE_BUTTON_LEFT]   = OS_KeyCode_MouseLeft;
+    _glfw_mouse_conversion_table[GLFW_MOUSE_BUTTON_RIGHT]  = OS_KeyCode_MouseRight;
+    _glfw_mouse_conversion_table[GLFW_MOUSE_BUTTON_MIDDLE] = OS_KeyCode_MouseMiddle;
     return result;
+}
+
+internal void
+_os_set_key_conversion(uint32 glfw_keycode, OS_KeyCode os_keycode)
+{
+    _glfw_key_conversion_table[glfw_keycode] = os_keycode;
+    _os_key_conversion_table[os_keycode]     = glfw_keycode;
 }
 
 internal IVec2
@@ -102,6 +118,44 @@ internal void
 _os_window_glfw_key_callback_wrapper(GLFWwindow* glfw_window, int key, int scancode, int action, int mods)
 {
     (void)glfw_window;
+    (void)scancode;
+    (void)mods;
     _OS_GLFW_Window* window = (_OS_GLFW_Window*)ptr_from_int(_os_glfw_main_window.v);
-    window->key_callback(_os_glfw_main_window, key, scancode, action, mods);
+    window->key_callback(_glfw_key_conversion_table[key], _glfw_action_conversion_table[action]);
+}
+
+internal void
+_os_window_glfw_mouse_callback_wrapper(GLFWwindow* glfw_window, int button, int action, int mods)
+{
+    (void)glfw_window;
+    (void)mods;
+    _OS_GLFW_Window* window = (_OS_GLFW_Window*)ptr_from_int(_os_glfw_main_window.v);
+    window->key_callback(_glfw_mouse_conversion_table[button], _glfw_action_conversion_table[action]);
+}
+
+/** Input */
+internal Vec2
+os_input_mouse_pos()
+{
+    _OS_GLFW_Window* window = (_OS_GLFW_Window*)ptr_from_int(_os_glfw_main_window.v);
+    Vec2             result = {0};
+    float64          x, y;
+    glfwGetCursorPos(window->glfw_window, &x, &y);
+    result.x = (float32)x;
+    result.y = window->height - (float32)y;
+    return result;
+}
+
+internal OS_KeyState
+os_input_key_state(OS_KeyCode code)
+{
+    _OS_GLFW_Window* window    = (_OS_GLFW_Window*)ptr_from_int(_os_glfw_main_window.v);
+    uint32           glfw_code = _os_key_conversion_table[code];
+    OS_KeyState      result    = 0;
+    uint32           state     = glfwGetMouseButton(window->glfw_window, glfw_code);
+    if (state == GLFW_PRESS)
+        flag_set(result, OS_KeyState_Pressed);
+    if (state == GLFW_RELEASE)
+        flag_set(result, OS_KeyState_Released);
+    return result;
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include <opus/base/base_inc.h>
+#include "../base/base_inc.h"
 
 typedef void OS_ThreadFunctionType(void* ptr);
 
@@ -50,3 +50,27 @@ internal uint64 os_now_ns();
 
 /** utility */
 internal IVec2 os_screen_resolution();
+
+/** input */
+typedef enum
+{
+    OS_KeyCode_Null = 0,
+    // Mouse
+    OS_KeyCode_MouseLeft,
+    OS_KeyCode_MouseRight,
+    OS_KeyCode_MouseMiddle,
+    // Keys
+    OS_KeyCode_BracketRight,
+    OS_KeyCode_COUNT,
+} OS_KeyCode;
+
+typedef enum
+{
+    OS_KeyState_Null = 0,
+    OS_KeyState_Pressed,
+    OS_KeyState_Released,
+} OS_KeyState;
+
+// Returns window position. Bottom Left = (0,0), Top Left = (Window Width, Window Height);
+internal Vec2        os_input_mouse_pos();
+internal OS_KeyState os_input_key_state(OS_KeyCode code);

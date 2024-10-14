@@ -196,3 +196,7 @@ internal GFX_Camera gfx_camera_new(float32 width, float32 height, float32 near_p
 internal void       gfx_camera_move(GFX_Camera* camera, Vec2 position);
 internal Vec3       gfx_camera_position(GFX_Camera camera);
 internal Rect       gfx_camera_world_bounds(GFX_Camera camera);
+
+/** Utility */
+internal Vec2 gfx_window_to_screen_position(Vec2 p);
+internal Vec2 gfx_window_to_world_position(Vec2 p);
