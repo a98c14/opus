@@ -370,6 +370,12 @@ gfx_frame_buffer_new(uint32 width, uint32 height, uint32 filter, Color clear_col
     return layer_index;
 }
 
+internal uint64
+gfx_material_uniform_data_size(MaterialIndex material)
+{
+    return _gfx_ogl_ctx->materials[material].uniform_data_size;
+}
+
 internal void
 _gfx_ogl_frame_buffer_begin(GFX_OGL_FrameBuffer* frame_buffer)
 {

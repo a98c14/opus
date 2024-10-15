@@ -61,6 +61,19 @@ transform_quad_aligned_at_pivot(Vec2 position, Vec2 scale, Vec2 pivot)
 }
 
 internal Mat4
+transform_from_rect(Rect r)
+{
+    Mat4 result    = mat4_identity();
+    result.m[0][0] = r.w;
+    result.m[1][1] = r.h;
+    result.m[2][2] = 1;
+    result.m[3][0] = r.x;
+    result.m[3][1] = r.y;
+    result.m[3][2] = 0;
+    return result;
+}
+
+internal Mat4
 transform_line(Vec2 start, Vec2 end, float32 thickness)
 {
     Vec2    center = lerp_vec2(start, end, 0.5f);

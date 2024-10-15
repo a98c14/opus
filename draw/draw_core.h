@@ -77,6 +77,7 @@ internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);
 internal void d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thickness, Color c);
 internal Rect d_rect(Rect r, float32 thickness, Color c);
 internal void d_quad(Quad q, float32 thickness, Color c);
+internal void d_material_raw(MaterialIndex material, void* shader_data);
 internal void d_circle_scaled(Vec2 pos, float32 radius, Vec2 scale, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal Rect d_string(Rect r, String str, float32 size, Color c, Anchor anchor);

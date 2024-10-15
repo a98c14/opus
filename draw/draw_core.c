@@ -184,6 +184,23 @@ d_rect(Rect r, float32 thickness, Color c)
 }
 
 internal void
+d_material_raw(MaterialIndex material, void* shader_data)
+{
+    uint64 size         = gfx_material_uniform_data_size(material);
+    void*  uniform_data = arena_push_zero(d_context->frame_arena, size);
+    if (shader_data)
+    {
+        memory_copy(uniform_data, shader_data, size);
+    }
+
+    GFX_Batch batch;
+    batch.key            = gfx_render_key_new(GFX_ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeQuad, material);
+    batch.element_count  = 1;
+    batch.uniform_buffer = uniform_data;
+    gfx_batch_commit(batch);
+}
+
+internal void
 d_quad(Quad q, float32 thickness, Color c)
 {
     xassert(thickness >= 0, "quad thickness can't be lower than zero, use zero for filled rects.");

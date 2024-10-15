@@ -186,6 +186,8 @@ internal TextureIndex  gfx_texture_array_new(uint32 width, uint32 height, uint32
 internal IVec2         gfx_texture_dims(TextureIndex texture);
 internal uint32        gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
 
+internal uint64 gfx_material_uniform_data_size(MaterialIndex material);
+
 /** FrameBuffer Controls */
 internal FrameBufferIndex gfx_frame_buffer_new(uint32 width, uint32 height, uint32 filter, Color clear_color);
 internal void             gfx_frame_buffer_set_blend(GFX_Handle frame_buffer, uint32 blend_src_rgb, uint32 blend_dst_rgb, uint32 blend_src_alpha, uint32 blend_dst_alpha);
