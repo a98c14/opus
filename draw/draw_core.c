@@ -215,7 +215,7 @@ d_quad(Quad q, float32 thickness, Color c)
     gfx_batch_commit(batch);
 }
 
-internal void
+internal Rect
 d_string(Rect r, String str, float32 size, Color c, Anchor anchor)
 {
     GlyphAtlas* atlas         = font_get_atlas(d_context->active_font, size);
@@ -237,9 +237,10 @@ d_string(Rect r, String str, float32 size, Color c, Anchor anchor)
     batch.vertex_buffer_size  = sizeof(GFX_VertexAtrribute_TexturedColored) * vertex_count;
     batch.uniform_buffer      = 0;
     gfx_batch_commit(batch);
+    return string_bounds;
 }
 
-internal void
+internal Rect
 d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
 {
     GlyphAtlas* atlas         = font_get_atlas(d_context->active_font, size);
@@ -260,6 +261,7 @@ d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
     batch.vertex_buffer_size  = sizeof(GFX_VertexAtrribute_TexturedColored) * vertex_count;
     batch.uniform_buffer      = 0;
     gfx_batch_commit(batch);
+    return string_bounds;
 }
 
 internal void

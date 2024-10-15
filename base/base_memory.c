@@ -9,7 +9,7 @@ arena_new_reserve(uint64 reserve_size)
     result->cap        = reserve_size;
     result->commit_pos = reserve_size;
     result->pos        = sizeof(Arena);
-    // TODO(selim): poison memory
+    asan_poison_memory_region(result, result->commit_pos);
     return result;
 }
 
@@ -37,6 +37,8 @@ arena_push(Arena* arena, uint64 size)
         result     = ((uint8*)arena) + arena->pos;
         arena->pos += size;
     }
+
+    // asan_poison_memory_region(arena, arena->pos);
     // TODO(selim): poison memory
     return result;
 }

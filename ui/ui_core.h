@@ -112,12 +112,12 @@ internal Rect  ui_cut_bottom(float32 size);
 /** stack management */
 internal void ui_push_rect(UI_Key key, Rect r);
 internal void ui_push_cut(UI_Key key, CutSide cut_side, float32 size);
-internal void ui_pop_layout();
+internal void ui_pop();
 
-#define ui_create_fixed(rect)                     defer_loop(ui_push_rect(ui_key_null, rect), ui_pop_layout())
-#define ui_create(cut_side, size)                 defer_loop(ui_push_cut(ui_key_null, cut_side, size), ui_pop_layout())
-#define ui_create_with_key(key, cut_side, size)   defer_loop(ui_push_cut(key, cut_side, size), ui_pop_layout())
-#define ui_create_with_name(name, cut_side, size) defer_loop(ui_push_cut(ui_key_cstr(name), cut_side, size), ui_pop_layout())
+#define ui_create_fixed(rect)                     defer_loop(ui_push_rect(ui_key_null, rect), ui_pop())
+#define ui_create(cut_side, size)                 defer_loop(ui_push_cut(ui_key_null, cut_side, size), ui_pop())
+#define ui_create_with_key(key, cut_side, size)   defer_loop(ui_push_cut(key, cut_side, size), ui_pop())
+#define ui_create_with_name(name, cut_side, size) defer_loop(ui_push_cut(ui_key_cstr(name), cut_side, size), ui_pop())
 
 /** helpers */
 internal void ui_resize_width(float32 w);

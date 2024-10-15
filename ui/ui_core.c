@@ -177,7 +177,7 @@ ui_push_cut(UI_Key key, CutSide cut_side, float32 size)
 }
 
 internal void
-ui_pop_layout(void)
+ui_pop(void)
 {
     xassert(ui_ctx->layout_stack, "there is no active layout!");
     stack_pop(ui_ctx->layout_stack);
@@ -295,22 +295,29 @@ ui_fill(Color c)
 internal UI_Signal
 ui_slider(String label, float32 min_value, float32 max_value, float32* value)
 {
+    // make sure value is always inside the bounds
+    *value = clamp(min_value, *value, max_value);
 
-    Color  slider_handle_color = ColorSlate100;
-    UI_Key key                 = ui_key_from_label(label);
+    ArenaTemp temp                = scratch_begin(0, 0);
+    Color     slider_handle_color = ColorSlate100;
+    UI_Key    key                 = ui_key_from_label(label);
 
     // layout
     ui_push_cut(key, CutSideTop, ui_line_height);
     Rect root_container = ui_rect();
-    Rect outer_bar      = rect_shrink(root_container, vec2(16, 2));
-    Rect inner_bar      = rect_shrink(outer_bar, vec2(4, 4));
 
-    *value                  = clamp(min_value, *value, max_value);
+    Rect label_container = d_string(root_container, label, ui_line_height, ColorWhite, ANCHOR_L_L);
+    rect_cut_left(&root_container, label_container.w);
+    Rect value_container = d_string(root_container, string_pushf(temp.arena, "%.2f", *value), ui_line_height, ColorWhite, ANCHOR_L_L);
+    rect_cut_left(&root_container, value_container.w);
+    Rect outer_bar = rect_shrink(root_container, vec2(16, 2));
+    Rect inner_bar = rect_shrink(outer_bar, vec2(4, 4));
+
     float32 bar_x           = remap_f32(min_value, max_value, rect_left(inner_bar), rect_right(inner_bar), *value);
     Vec2    handle_position = vec2(bar_x, inner_bar.y);
 
     Circle handle = circle(handle_position, ui_line_height);
-    ui_pop_layout();
+    ui_pop();
 
     // controls
     Input_MouseInfo mouse               = input_mouse_info();
@@ -353,5 +360,6 @@ ui_slider(String label, float32 min_value, float32 max_value, float32* value)
     d_rect(inner_bar, 0, ColorSlate500);
     d_circle(handle.center, handle.radius, 1, slider_handle_color);
 
+    scratch_end(temp);
     return result;
 }
