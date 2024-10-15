@@ -49,6 +49,7 @@ ui_init(Arena* arena)
     ui_ctx                   = arena_push_struct_zero(arena, UI_Context);
     ui_ctx->persistent_arena = arena;
     ui_ctx->frame_arena      = arena_new_reserve(mb(32));
+    ui_line_height           = em(1);
 }
 
 internal void
@@ -292,18 +293,23 @@ ui_fill(Color c)
 }
 
 internal UI_Signal
-ui_slider(String label, float32 min, float32 max, float32* value)
+ui_slider(String label, float32 min_value, float32 max_value, float32* value)
 {
+
     Color  slider_handle_color = ColorSlate100;
     UI_Key key                 = ui_key_from_label(label);
 
     // layout
-    const float32 height = 16; // TODO(selim): What should this be?
-    ui_push_cut(key, CutSideTop, height);
-    Rect   root_container = ui_rect();
-    Rect   outer_bar      = rect_shrink(root_container, vec2(16, 2));
-    Rect   inner_bar      = rect_shrink(outer_bar, vec2(4, 4));
-    Circle handle         = circle(rect_cl(inner_bar), height);
+    ui_push_cut(key, CutSideTop, ui_line_height);
+    Rect root_container = ui_rect();
+    Rect outer_bar      = rect_shrink(root_container, vec2(16, 2));
+    Rect inner_bar      = rect_shrink(outer_bar, vec2(4, 4));
+
+    *value                  = clamp(min_value, *value, max_value);
+    float32 bar_x           = remap_f32(min_value, max_value, rect_left(inner_bar), rect_right(inner_bar), *value);
+    Vec2    handle_position = vec2(bar_x, inner_bar.y);
+
+    Circle handle = circle(handle_position, ui_line_height);
     ui_pop_layout();
 
     // controls
@@ -326,9 +332,21 @@ ui_slider(String label, float32 min, float32 max, float32* value)
 
     if (ui_is_hot(key) && input_is_pressed(ui_input_select))
     {
-        log_info("clicked slider handle");
+        ui_ctx->active_offset      = sub_vec2(mouse.screen, handle.center);
+        ui_ctx->active_initial_pos = handle.center;
+        ui_ctx->active             = key;
     }
-    *value = clamp(min, 0, max);
+
+    if (ui_is_active(key))
+    {
+        *value = remap_f32(rect_left(inner_bar), rect_right(inner_bar), min_value, max_value, mouse.screen.x);
+        *value = clamp(min_value, *value, max_value);
+    }
+
+    if (ui_is_active(key) && !input_is_held(ui_input_select))
+    {
+        ui_ctx->active = ui_key_null;
+    }
 
     // draw
     d_rect(outer_bar, 0, ColorSlate300);

@@ -72,7 +72,8 @@ typedef struct
     float32 hot_t;
     float32 active_t;
 
-    Vec2 hot_initial_pos;
+    Vec2 active_initial_pos;
+    Vec2 active_offset;
 
     UI_LayoutNode* layout_stack;
 
@@ -84,6 +85,7 @@ typedef struct
 } UI_Context;
 
 global UI_Context* ui_ctx;
+global float32     ui_line_height;
 
 internal UI_Key ui_key_str(String str);
 internal UI_Key ui_key_cstr(char* str);

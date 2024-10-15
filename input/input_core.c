@@ -109,6 +109,17 @@ input_is_pressed(String action_name)
 }
 
 internal bool32
+input_is_held(String action_name)
+{
+    Input_Key* key = _input_key_from_action(action_name);
+    if (!key)
+        return false;
+
+    bool32 is_held = flag_is_set(key->state, Input_KeyStatePressed);
+    return is_held;
+}
+
+internal bool32
 input_is_released(String action_name)
 {
     Input_Key* key = _input_key_from_action(action_name);

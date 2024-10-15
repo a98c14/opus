@@ -260,6 +260,12 @@ internal Vec3    lerp_vec3(Vec3 a, Vec3 b, float32 t);
 internal Vec4    lerp_vec4(Vec4 a, Vec4 b, float32 t);
 internal Rect    lerp_rect(Rect a, Rect b, float32 t);
 
+internal float32 inverse_lerp_f32(float32 a, float32 b, float32 value);
+internal Vec2    inverse_lerp_vec2(Vec2 a, Vec2 b, Vec2 value);
+
+internal float32 remap_f32(float32 imin, float32 imax, float32 omin, float32 omax, float32 v);
+internal Vec2    remap_vec2(Vec2 imin, Vec2 imax, Vec2 omin, Vec2 omax, Vec2 v);
+
 // NOTE(selim): These can be used as a frame rate independent
 // alternative to lerp smoothing. [Reference](https://youtu.be/LSNQuFEDOyQ)
 const float32    _default_decay = 16;

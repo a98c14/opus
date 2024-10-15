@@ -87,6 +87,7 @@ internal void input_register_key(String action_name, OS_KeyCode code);
 
 internal Input_MouseInfo input_mouse_info(void);
 internal bool32          input_is_pressed(String action_name);
+internal bool32          input_is_held(String action_name);
 
 /** Private Functions */
 internal Input_Key* _input_key_from_action(String action_name);

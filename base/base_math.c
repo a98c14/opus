@@ -426,6 +426,39 @@ lerp_rect(Rect a, Rect b, float32 t)
 }
 
 internal float32
+inverse_lerp_f32(float32 a, float32 b, float32 value)
+{
+    return (value - a) / (b - a);
+}
+
+internal Vec2
+inverse_lerp_vec2(Vec2 a, Vec2 b, Vec2 value)
+{
+    Vec2 result;
+    result.x = inverse_lerp_f32(a.x, b.x, value.x);
+    result.y = inverse_lerp_f32(a.y, b.y, value.y);
+    return result;
+}
+
+internal float32
+remap_f32(float32 imin, float32 imax, float32 omin, float32 omax, float32 v)
+{
+    float32 t = inverse_lerp_f32(imin, imax, v);
+    return lerp_f32(omin, omax, t);
+}
+
+internal Vec2
+remap_vec2(Vec2 imin, Vec2 imax, Vec2 omin, Vec2 omax, Vec2 v)
+{
+    Vec2 t = inverse_lerp_vec2(imin, imax, v);
+
+    Vec2 result;
+    result.x = lerp_f32(omin.x, omax.y, t.x);
+    result.y = lerp_f32(omin.y, omax.y, t.y);
+    return result;
+}
+
+internal float32
 exp_decay_f32_(float32 a, float32 b, float32 decay, float32 dt)
 {
     return b + (a - b) * expf(-decay * dt);
