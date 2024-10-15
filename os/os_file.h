@@ -25,3 +25,4 @@ internal String os_file_get_working_directory(Arena* arena);
 /** Generic */
 internal Buffer os_file_read_all(OS_Handle file, Arena* arena);
 internal String os_file_read_all_as_string(OS_Handle file, Arena* arena);
+internal String os_path_read_all_as_string(String path, Arena* arena);

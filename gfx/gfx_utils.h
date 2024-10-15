@@ -14,3 +14,6 @@ internal float32 screen_bottom();
 internal float32 screen_height();
 internal float32 screen_width();
 internal Rect    screen_rect();
+
+/** resource load utility */
+internal MaterialIndex gfx_material_from_path(String vertex_shader_path, String frag_shader_path, uint32 uniform_data_size, GFX_DrawType draw_type);

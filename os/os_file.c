@@ -16,3 +16,12 @@ os_file_read_all_as_string(OS_Handle file, Arena* arena)
     Buffer buffer = os_file_read_all(file, arena);
     return string_create(buffer.data, buffer.size);
 }
+
+internal String
+os_path_read_all_as_string(String path, Arena* arena)
+{
+    OS_Handle handle = os_file_open(path, OS_AccessFlag_Read);
+    String    result = os_file_read_all_as_string(handle, arena);
+    os_file_close(handle);
+    return result;
+}
