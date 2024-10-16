@@ -82,6 +82,7 @@ internal void d_circle_scaled(Vec2 pos, float32 radius, Vec2 scale, float32 thic
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal Rect d_string(Rect r, String str, float32 size, Color c, Anchor anchor);
 internal Rect d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment);
+internal Rect d_string_raw(Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material);
 internal void d_sprite_many(D_SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
 internal Rect d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
 internal void d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);

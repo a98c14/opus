@@ -308,7 +308,7 @@ ui_slider(String label, float32 min_value, float32 max_value, float32* value)
 
     Rect label_container = d_string(root_container, label, ui_line_height, ColorWhite, ANCHOR_L_L);
     rect_cut_left(&root_container, label_container.w);
-    Rect value_container = d_string(root_container, string_pushf(temp.arena, "%.2f", *value), ui_line_height, ColorWhite, ANCHOR_L_L);
+    Rect value_container = d_string(root_container, string_pushf(temp.arena, "%6.2f", *value), ui_line_height, ColorWhite, ANCHOR_L_L);
     rect_cut_left(&root_container, value_container.w);
     Rect outer_bar = rect_shrink(root_container, vec2(16, 2));
     Rect inner_bar = rect_shrink(outer_bar, vec2(4, 4));

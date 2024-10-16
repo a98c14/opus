@@ -4,12 +4,11 @@
 #include "../gfx_utils.h"
 #include "./gfx_primitives_opengl.h"
 
-#define _GFX_OGL_MATERIAL_CAPACITY                         32
-#define _GFX_OGL_TEXTURE_CAPACITY                          32
-#define _GFX_OGL_GEOMETRY_CAPACITY                         32
-#define _GFX_OGL_LAYER_CAPACITY                            16
-#define _GFX_OGL_PASS_CAPACITY                             16
-#define _GFX_OGL_SORTING_LAYER_CAPACITY                    16
+#define _GFX_OGL_MATERIAL_CAPACITY                         (2 << (RenderKeyMaterialIndexBitCount - 1))
+#define _GFX_OGL_TEXTURE_CAPACITY                          (2 << (RenderKeyTextureIndexBitCount - 1))
+#define _GFX_OGL_GEOMETRY_CAPACITY                         (2 << (RenderKeyMeshTypeBitCount - 1))
+#define _GFX_OGL_PASS_CAPACITY                             (2 << (RenderKeyPassIndexBitCount - 1))
+#define _GFX_OGL_SORTING_LAYER_CAPACITY                    (2 << (RenderKeySortLayerIndexBitCount - 1))
 #define _GFX_OGL_MATERIAL_DRAW_BUFFER_CAPACITY_PER_SETTING (16)
 #define _GFX_OGL_MATERIAL_DRAW_BUFFER_CAPACITY             (1024)
 #define _GFX_OGL_MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY     (8192 * 2)
@@ -144,3 +143,6 @@ internal void   _gfx_ogl_shader_set_texture(GFX_OGL_Texture* texture);
 
 /** Vertex Attribute */
 internal void _gfx_ogl_attribute_info_add(GFX_VertexAttributeInfo* info, uint32 component_size, uint32 component_count, GLenum type);
+
+/** Debug */
+internal void _gfx_ogl_debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);

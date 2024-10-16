@@ -240,7 +240,7 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
     FontFace* font_face = &g_font_cache->font_faces[font_face_index];
     xassert(font_face, "could not find given font face");
 
-    uint32         font_size   = (uint32)unit(ceilf(pixel_size));
+    uint32         font_size   = (uint32)(pixel_size);
     uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? font_size : 32;
     uint64         params[]    = {font_face_index, size};
     uint64         hash        = hash_array_uint64(params, array_count(params));
@@ -267,6 +267,8 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
         return 0;
     }
 
+    uint32 x_padding = 4;
+
     FT_Int32 calc_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_DEFAULT : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
     // TODO(selim): Load non-ASCII characters as well
     for (int i = 32; i < 128; ++i)
@@ -277,13 +279,12 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
             exit(1);
         }
 
-        atlas->atlas_info.width += font_face->freetype_face->glyph->bitmap.width + 2;
-        if (atlas->atlas_info.height < font_face->freetype_face->glyph->bitmap.rows)
-        {
-            atlas->atlas_info.height = font_face->freetype_face->glyph->bitmap.rows;
-        }
+        atlas->atlas_info.width += font_face->freetype_face->glyph->bitmap.width + x_padding;
+        atlas->atlas_info.height = max(atlas->atlas_info.height, font_face->freetype_face->glyph->bitmap.rows);
     }
 
+    atlas->atlas_info.width += 8;
+    atlas->atlas_info.height += 8;
     atlas->texture      = gfx_texture_new(atlas->atlas_info.width, atlas->atlas_info.height, 1, GL_LINEAR, NULL);
     FT_Int32 load_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_RENDER : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
 
@@ -311,13 +312,14 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
         atlas->glyphs[i - 32].plane_bounds.right  = (glyph->bitmap_left + (int32)glyph->bitmap.width) / (float32)size;
         atlas->glyphs[i - 32].plane_bounds.top    = (glyph->bitmap_top) / (float32)size;
 
+        int32 y_padding                           = 2;
         atlas->glyphs[i - 32].atlas_bounds.left   = x / (float32)atlas->atlas_info.width;
-        atlas->glyphs[i - 32].atlas_bounds.bottom = (glyph->bitmap.rows) / (float32)atlas->atlas_info.height;
+        atlas->glyphs[i - 32].atlas_bounds.bottom = (y_padding + glyph->bitmap.rows) / (float32)atlas->atlas_info.height;
         atlas->glyphs[i - 32].atlas_bounds.right  = (x + glyph->bitmap.width) / (float32)atlas->atlas_info.width;
-        atlas->glyphs[i - 32].atlas_bounds.top    = 0;
+        atlas->glyphs[i - 32].atlas_bounds.top    = y_padding / (float32)atlas->atlas_info.height;
 
-        glTexSubImage2D(GL_TEXTURE_2D, 0, x, 0, glyph->bitmap.width, glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
-        x += glyph->bitmap.width + 2;
+        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y_padding, glyph->bitmap.width, glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
+        x += glyph->bitmap.width + x_padding;
     }
 
     node                    = arena_push_struct_zero(g_font_cache->arena, FontCacheNode);

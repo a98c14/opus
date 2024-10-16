@@ -13,6 +13,9 @@ gfx_init(GFX_Configuration configuration)
         return;
     }
 
+    log_info("Material Capacity: %d\n\tTexture Capacity: %d\n\tGeometry Capacity: %d\n\tPass Capacity: %d\n\tSorting Layer Capacity: %d", _GFX_OGL_MATERIAL_CAPACITY, _GFX_OGL_TEXTURE_CAPACITY, _GFX_OGL_GEOMETRY_CAPACITY, _GFX_OGL_PASS_CAPACITY, _GFX_OGL_SORTING_LAYER_CAPACITY);
+    log_info("Render Key Total Bit Count: (%d/64)", RenderKeyTotalBitCount);
+
     IVec2 window_size = os_window_size();
     if (configuration.world_width == 0 && configuration.world_height == 0)
     {
@@ -38,7 +41,7 @@ gfx_init(GFX_Configuration configuration)
 
     _gfx_ogl_ctx->window_width  = configuration.window_width;
     _gfx_ogl_ctx->window_height = configuration.window_height;
-    _gfx_ogl_ctx->frame_buffers = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_OGL_FrameBuffer, _GFX_OGL_LAYER_CAPACITY);
+    _gfx_ogl_ctx->frame_buffers = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_OGL_FrameBuffer, _GFX_OGL_PASS_CAPACITY);
     _gfx_ogl_ctx->materials     = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_OGL_Material, _GFX_OGL_MATERIAL_CAPACITY);
     _gfx_ogl_ctx->textures      = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_OGL_Texture, _GFX_OGL_TEXTURE_CAPACITY);
 
@@ -276,6 +279,7 @@ gfx_texture_new(uint32 width, uint32 height, uint32 channels, uint32 filter, voi
     GFX_OGL_Context* ctx           = _gfx_ogl_ctx;
     TextureIndex     texture_index = ctx->texture_count;
     ctx->texture_count++;
+    log_info("Texture Count: %d", texture_index);
     GFX_OGL_Texture* texture = &ctx->textures[texture_index];
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &texture->gl_texture_id);
@@ -620,4 +624,95 @@ gfx_window_to_world_position(Vec2 p)
     result.x = world_pos.x;
     result.y = world_pos.y;
     return result;
+}
+
+/** Debug */
+internal void
+gfx_enable_debug(void)
+{
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(_gfx_ogl_debug_message_callback, 0);
+}
+
+internal void
+_gfx_ogl_debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+{
+    (void)id;
+    (void)length;
+    (void)user_param;
+    char* source_str;
+    switch (source)
+    {
+    case GL_DEBUG_SOURCE_API:
+        source_str = "API";
+        break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        source_str = "WINDOW SYSTEM";
+        break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        source_str = "SHADER COMPILER";
+        break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        source_str = "THIRD PARTY";
+        break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        source_str = "APPLICATION";
+        break;
+    case GL_DEBUG_SOURCE_OTHER:
+        source_str = "OTHER";
+        break;
+    default:
+        source_str = "NO_SOURCE";
+        break;
+    }
+
+    char* type_str;
+    switch (type)
+    {
+    case GL_DEBUG_TYPE_ERROR:
+        type_str = "ERROR";
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        type_str = "DEPRECATED_BEHAVIOR";
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        type_str = "UNDEFINED_BEHAVIOR";
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        type_str = "PORTABILITY";
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        type_str = "PERFORMANCE";
+        break;
+    case GL_DEBUG_TYPE_MARKER:
+        type_str = "MARKER";
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        type_str = "OTHER";
+        break;
+    default:
+        type_str = "NO_TYPE";
+        break;
+    }
+
+    char* severity_str;
+    switch (severity)
+    {
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        return; // severity_str = "NOTIFICATION"; break;
+    case GL_DEBUG_SEVERITY_LOW:
+        severity_str = "LOW";
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        severity_str = "MEDIUM";
+        break;
+    case GL_DEBUG_SEVERITY_HIGH:
+        severity_str = "HIGH";
+        break;
+    default:
+        severity_str = "NO_SEVERITY";
+        break;
+    }
+
+    printf("[GL_%s][%s|%s] %s\n", severity_str, source_str, type_str, message);
 }

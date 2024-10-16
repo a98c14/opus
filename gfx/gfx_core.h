@@ -36,7 +36,7 @@ typedef enum
 typedef uint64 RenderKey;
 #define RenderKeyMaterialIndexBitCount  8
 #define RenderKeyMeshTypeBitCount       3
-#define RenderKeyTextureIndexBitCount   4
+#define RenderKeyTextureIndexBitCount   7
 #define RenderKeyViewTypeBitCount       2
 #define RenderKeyPassIndexBitCount      4
 #define RenderKeySortLayerIndexBitCount 4
@@ -46,6 +46,7 @@ typedef uint64 RenderKey;
 #define RenderKeyViewTypeBitStart       (RenderKeyTextureIndexBitStart + RenderKeyTextureIndexBitCount)
 #define RenderKeyPassIndexBitStart      (RenderKeyViewTypeBitStart + RenderKeyViewTypeBitCount)
 #define RenderKeySortLayerIndexBitStart (RenderKeyPassIndexBitStart + RenderKeyPassIndexBitCount)
+#define RenderKeyTotalBitCount          (RenderKeySortLayerIndexBitStart + RenderKeySortLayerIndexBitCount)
 
 typedef uint64 FrameBufferIndex;
 typedef uint64 PassIndex;
@@ -202,3 +203,6 @@ internal Rect       gfx_camera_world_bounds(GFX_Camera camera);
 /** Utility */
 internal Vec2 gfx_window_to_screen_position(Vec2 p);
 internal Vec2 gfx_window_to_world_position(Vec2 p);
+
+/** Debug */
+internal void gfx_enable_debug();
