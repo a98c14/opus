@@ -28,6 +28,9 @@ gfx_init(GFX_Configuration configuration)
         configuration.window_width  = window_size.x;
         configuration.window_height = window_size.y;
     }
+#if BUILD_DEBUG
+    gfx_enable_debug();
+#endif
 
     _gfx_ogl_perm_arena  = arena_new_reserve(mb(64));
     _gfx_ogl_frame_arena = arena_new_reserve(mb(16));

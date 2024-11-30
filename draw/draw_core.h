@@ -18,6 +18,12 @@ typedef struct
 typedef struct
 {
     Mat4 model;
+    Vec4 color;
+} D_ShaderDataTriangle;
+
+typedef struct
+{
+    Mat4 model;
     Vec4 bounds;
     Vec4 color;
 } D_ShaderDataSprite;
@@ -39,6 +45,7 @@ typedef struct
     MaterialIndex material_circle;
     MaterialIndex material_sprite;
     MaterialIndex material_text;
+    MaterialIndex material_triangle;
 } D_Context;
 global D_Context* d_context;
 
@@ -75,6 +82,7 @@ internal void d_mesh_push_line(GFX_VertexAtrribute_TexturedColored* vertex_buffe
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);
 internal void d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thickness, Color c);
+internal void d_triangle(Vec2 pos, Vec2 scale, float32 rotation, Color c);
 internal Rect d_rect(Rect r, float32 thickness, Color c);
 internal void d_quad(Quad q, float32 thickness, Color c);
 internal void d_material_raw(MaterialIndex material, void* shader_data);
@@ -86,6 +94,8 @@ internal Rect d_string_raw(Vec2 pos, String str, float32 size, Color c, Alignmen
 internal void d_sprite_many(D_SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
 internal Rect d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
 internal void d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);
+// internal void d_arrow_pro(Vec2 start, Vec2 end, float32 thickness, float32 head_size, Color color);
+internal void d_arrow(Vec2 start, Vec2 end, float32 size, Color color);
 
 /** debug draw functions */
 internal void d_debug_line(Vec2 start, Vec2 end);

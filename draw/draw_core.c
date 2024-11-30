@@ -7,14 +7,15 @@ d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
     d_context->perm_arena  = persistent_arena;
     d_context->frame_arena = frame_arena;
 
-    ArenaTemp temp             = scratch_begin(&persistent_arena, 1);
-    d_context->material_text   = gfx_material_new(d_shader_opengl_font_vert, d_shader_opengl_font_frag, 0, GFX_DrawTypePackedBuffer);
-    d_context->material_sprite = gfx_material_new(d_shader_opengl_sprite_vert, d_shader_opengl_sprite_frag, sizeof(D_ShaderDataSprite), GFX_DrawTypeInstanced);
-    d_context->material_basic  = gfx_material_new(d_shader_opengl_basic_vert, d_shader_opengl_basic_frag, 0, GFX_DrawTypePackedBuffer);
-    d_context->material_rect   = gfx_material_new(d_shader_opengl_rect_vert, d_shader_opengl_rect_frag, 0, GFX_DrawTypePackedBuffer);
-    d_context->material_circle = gfx_material_new(d_shader_opengl_circle_vert, d_shader_opengl_circle_frag, sizeof(D_ShaderDataCircle), GFX_DrawTypeInstanced);
-    d_context->active_pass     = 0;
-    d_context->active_layer    = 5;
+    ArenaTemp temp               = scratch_begin(&persistent_arena, 1);
+    d_context->material_text     = gfx_material_new(d_shader_opengl_font_vert, d_shader_opengl_font_frag, 0, GFX_DrawTypePackedBuffer);
+    d_context->material_sprite   = gfx_material_new(d_shader_opengl_sprite_vert, d_shader_opengl_sprite_frag, sizeof(D_ShaderDataSprite), GFX_DrawTypeInstanced);
+    d_context->material_basic    = gfx_material_new(d_shader_opengl_basic_vert, d_shader_opengl_basic_frag, 0, GFX_DrawTypePackedBuffer);
+    d_context->material_rect     = gfx_material_new(d_shader_opengl_rect_vert, d_shader_opengl_rect_frag, 0, GFX_DrawTypePackedBuffer);
+    d_context->material_circle   = gfx_material_new(d_shader_opengl_circle_vert, d_shader_opengl_circle_frag, sizeof(D_ShaderDataCircle), GFX_DrawTypeInstanced);
+    d_context->material_triangle = gfx_material_new(d_shader_opengl_triangle_vert, d_shader_opengl_triangle_frag, sizeof(D_ShaderDataTriangle), GFX_DrawTypeInstanced);
+    d_context->active_pass       = 0;
+    d_context->active_layer      = 5;
 
     StringList path = string_list();
     string_list_push(temp.arena, &path, asset_path);
@@ -130,6 +131,20 @@ internal void
 d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thickness, Color c)
 {
     d_line(start, add_vec2(start, mul_vec2_f32(direction, scale)), thickness, c);
+}
+
+internal void
+d_triangle(Vec2 pos, Vec2 scale, float32 rotation, Color c)
+{
+    D_ShaderDataTriangle* uniform_data = arena_push_struct(d_context->frame_arena, D_ShaderDataTriangle);
+    uniform_data->model                = transform_quad(pos, vec2(scale.x, scale.y), rotation - 90);
+    uniform_data->color                = color_v4(c);
+
+    GFX_Batch batch;
+    batch.key            = gfx_render_key_new(GFX_ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeTriangle, d_context->material_triangle);
+    batch.element_count  = 1;
+    batch.uniform_buffer = uniform_data;
+    gfx_batch_commit(batch);
 }
 
 internal void
@@ -336,6 +351,22 @@ d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale
     gfx_batch_commit(batch);
 
     return final;
+}
+
+internal void
+d_arrow_pro(Vec2 start, Vec2 end, float32 thickness, float32 head_size, Color color)
+{
+    float32 rotation    = angle_vec2(sub_vec2(end, start));
+    Vec2    head_offset = rotate_vec2(vec2(0, -head_size / 2.0f), rotation - 90);
+
+    d_line(start, add_vec2(end, head_offset), thickness, color);
+    d_triangle(add_vec2(end, head_offset), vec2(head_size, head_size), rotation, color);
+}
+
+internal void
+d_arrow(Vec2 start, Vec2 end, float32 size, Color color)
+{
+    d_arrow_pro(start, end, size, size * 8, color);
 }
 
 /** debug draw functions */
