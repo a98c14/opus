@@ -80,3 +80,14 @@ random_shuffle(int32* numbers, uint32 count)
         numbers[j] = temp;
     }
 }
+
+internal Color
+random_color()
+{
+    Vec4 c = {0};
+    c.r    = random_f32(1);
+    c.g    = random_f32(1);
+    c.b    = random_f32(1);
+    c.a    = 1;
+    return color_from_vec4(c);
+}

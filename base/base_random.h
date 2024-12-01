@@ -2,6 +2,7 @@
 // TODO(selim): Should we move this to another layer? I don't like
 //  having dependencies to third party libraries in the base layer
 #include <opus/third_party/pcg/pcg_basic.h>
+#include "base_color.h"
 #include "base_defines.h"
 #include "base_math.h"
 
@@ -17,3 +18,4 @@ internal Vec2    random_point_between_circle(Vec2 center, float32 min_radius, fl
 internal void    random_shuffle(int32* numbers, uint32 count);
 internal Vec2    random_direction(float32 radius);
 internal Vec2    random_heading();
+internal Color   random_color();
