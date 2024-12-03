@@ -42,6 +42,7 @@ os_init(void)
     }
 
     w32_perm_arena = arena_new_reserve(mb(4));
+    InitializeCriticalSection(&w32_mutex);
 
     LARGE_INTEGER large_int_resolution;
     if (QueryPerformanceFrequency(&large_int_resolution))
@@ -62,7 +63,7 @@ os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params)
     entity->thread.data    = data;
     entity->thread.params  = params;
     entity->reference_mask = W32_PARENT_THREAD_MASK | W32_CHILD_THREAD_MASK;
-    CreateThread(0, 0, w32_thread_base, data, 0, &entity->thread.id);
+    CreateThread(0, 0, w32_thread_base, entity, 0, &entity->thread.id);
     OS_Handle handle = {int_from_ptr(entity)};
 
     return handle;
