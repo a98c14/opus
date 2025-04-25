@@ -118,6 +118,7 @@ internal Rect rect_aligned(float32 x, float32 y, float32 w, float32 h, Alignment
 internal Vec2 rect_get(Rect rect, Alignment alignment);
 internal Rect rect_align(Rect rect, Alignment alignment);
 internal Rect rect_anchor(Rect child, Rect parent, Anchor anchor);
+internal Rect rect_at_o(Vec2 position, Vec2 size, Vec2 offset, Alignment alignment);
 
 /** Similar to anchor but doesn't care about child x,y */
 internal Rect rect_place(Rect child, Rect parent, Anchor anchor);

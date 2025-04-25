@@ -22,6 +22,8 @@ typedef struct
 {
     float32 click_t;
     float32 hover_t;
+
+    Rect rect;
 } UI_Signal;
 
 typedef struct
@@ -136,4 +138,8 @@ internal UI_SpriteAnimator* ui_animator_get(UI_Key key);
 /** common widgets */
 internal void      ui_pad(float32 x);
 internal void      ui_fill(Color c);
+internal void      ui_border(Color c, float32 thickness);
 internal UI_Signal ui_slider(String label, float32 min, float32 max, float32* value);
+
+internal UI_Signal ui_text(String str);
+internal UI_Signal ui_textf(const char* fmt, ...);

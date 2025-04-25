@@ -168,6 +168,12 @@ d_circle(Vec2 pos, float32 radius, float32 thickness, Color c)
     d_circle_scaled(pos, radius, vec2_one(), thickness, c);
 }
 
+internal void
+d_circle_filled(Vec2 pos, float32 radius, Color c)
+{
+    d_circle(pos, radius, 1, c);
+}
+
 internal Rect
 d_rect(Rect r, float32 thickness, Color c)
 {

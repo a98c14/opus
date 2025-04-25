@@ -88,6 +88,7 @@ internal void d_quad(Quad q, float32 thickness, Color c);
 internal void d_material_raw(MaterialIndex material, void* shader_data);
 internal void d_circle_scaled(Vec2 pos, float32 radius, Vec2 scale, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
+internal void d_circle_filled(Vec2 pos, float32 radius, Color c);
 internal Rect d_string(Rect r, String str, float32 size, Color c, Anchor anchor);
 internal Rect d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment);
 internal Rect d_string_raw(Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material);

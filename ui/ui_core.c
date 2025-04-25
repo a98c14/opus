@@ -292,6 +292,13 @@ ui_fill(Color c)
     d_rect(r, 0, c);
 }
 
+internal void
+ui_border(Color c, float32 thickness)
+{
+    Rect r = ui_rect();
+    d_rect(r, thickness, c);
+}
+
 internal UI_Signal
 ui_slider(String label, float32 min_value, float32 max_value, float32* value)
 {
@@ -362,4 +369,28 @@ ui_slider(String label, float32 min_value, float32 max_value, float32* value)
 
     scratch_end(temp);
     return result;
+}
+
+internal UI_Signal
+ui_text(String str)
+{
+    UI_Signal result = {0};
+
+    Rect container   = ui_cut_top(ui_line_height);
+    Rect string_area = d_string(container, str, ui_line_height, ColorWhite, ANCHOR_L_L);
+
+    result.rect = string_area;
+
+    return result;
+}
+
+internal UI_Signal
+ui_textf(const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    String result = string_pushfv(ui_ctx->frame_arena, fmt, args);
+    va_end(args);
+
+    return ui_text(result);
 }
