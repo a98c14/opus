@@ -52,6 +52,82 @@ os_window_create(int32 width, int32 height, String name, WindowKeyCallback key_c
 
     /** Key Code Conversion */
     _os_set_key_conversion(GLFW_KEY_RIGHT_BRACKET, OS_KeyCode_BracketRight);
+    _os_set_key_conversion(GLFW_KEY_LEFT_BRACKET, OS_KeyCode_BracketLeft);
+    _os_set_key_conversion(GLFW_KEY_SPACE, OS_KeyCode_Space);
+    _os_set_key_conversion(GLFW_KEY_BACKSPACE, OS_KeyCode_Backspace);
+    _os_set_key_conversion(GLFW_KEY_TAB, OS_KeyCode_Tab);
+    _os_set_key_conversion(GLFW_KEY_ENTER, OS_KeyCode_Enter);
+    _os_set_key_conversion(GLFW_KEY_ESCAPE, OS_KeyCode_Escape);
+    _os_set_key_conversion(GLFW_KEY_DELETE, OS_KeyCode_Delete);
+
+    /* Arrow Keys */
+    _os_set_key_conversion(GLFW_KEY_RIGHT, OS_KeyCode_RightArrow);
+    _os_set_key_conversion(GLFW_KEY_LEFT, OS_KeyCode_LeftArrow);
+    _os_set_key_conversion(GLFW_KEY_DOWN, OS_KeyCode_DownArrow);
+    _os_set_key_conversion(GLFW_KEY_UP, OS_KeyCode_UpArrow);
+
+    /* Function Keys */
+    _os_set_key_conversion(GLFW_KEY_F1, OS_KeyCode_F1);
+    _os_set_key_conversion(GLFW_KEY_F2, OS_KeyCode_F2);
+    _os_set_key_conversion(GLFW_KEY_F3, OS_KeyCode_F3);
+    _os_set_key_conversion(GLFW_KEY_F4, OS_KeyCode_F4);
+    _os_set_key_conversion(GLFW_KEY_F5, OS_KeyCode_F5);
+    _os_set_key_conversion(GLFW_KEY_F6, OS_KeyCode_F6);
+    _os_set_key_conversion(GLFW_KEY_F7, OS_KeyCode_F7);
+    _os_set_key_conversion(GLFW_KEY_F8, OS_KeyCode_F8);
+    _os_set_key_conversion(GLFW_KEY_F9, OS_KeyCode_F9);
+    _os_set_key_conversion(GLFW_KEY_F10, OS_KeyCode_F10);
+    _os_set_key_conversion(GLFW_KEY_F11, OS_KeyCode_F11);
+    _os_set_key_conversion(GLFW_KEY_F12, OS_KeyCode_F12);
+
+    /* Modifier Keys */
+    _os_set_key_conversion(GLFW_KEY_LEFT_SHIFT, OS_KeyCode_LeftShift);
+    _os_set_key_conversion(GLFW_KEY_RIGHT_SHIFT, OS_KeyCode_RightShift);
+    _os_set_key_conversion(GLFW_KEY_LEFT_CONTROL, OS_KeyCode_LeftControl);
+    _os_set_key_conversion(GLFW_KEY_RIGHT_CONTROL, OS_KeyCode_RightControl);
+    _os_set_key_conversion(GLFW_KEY_LEFT_ALT, OS_KeyCode_LeftAlt);
+    _os_set_key_conversion(GLFW_KEY_RIGHT_ALT, OS_KeyCode_RightAlt);
+
+    /* Numbers */
+    _os_set_key_conversion(GLFW_KEY_0, OS_KeyCode_0);
+    _os_set_key_conversion(GLFW_KEY_1, OS_KeyCode_1);
+    _os_set_key_conversion(GLFW_KEY_2, OS_KeyCode_2);
+    _os_set_key_conversion(GLFW_KEY_3, OS_KeyCode_3);
+    _os_set_key_conversion(GLFW_KEY_4, OS_KeyCode_4);
+    _os_set_key_conversion(GLFW_KEY_5, OS_KeyCode_5);
+    _os_set_key_conversion(GLFW_KEY_6, OS_KeyCode_6);
+    _os_set_key_conversion(GLFW_KEY_7, OS_KeyCode_7);
+    _os_set_key_conversion(GLFW_KEY_8, OS_KeyCode_8);
+    _os_set_key_conversion(GLFW_KEY_9, OS_KeyCode_9);
+
+    /* Letters */
+    _os_set_key_conversion(GLFW_KEY_A, OS_KeyCode_A);
+    _os_set_key_conversion(GLFW_KEY_B, OS_KeyCode_B);
+    _os_set_key_conversion(GLFW_KEY_C, OS_KeyCode_C);
+    _os_set_key_conversion(GLFW_KEY_D, OS_KeyCode_D);
+    _os_set_key_conversion(GLFW_KEY_E, OS_KeyCode_E);
+    _os_set_key_conversion(GLFW_KEY_F, OS_KeyCode_F);
+    _os_set_key_conversion(GLFW_KEY_G, OS_KeyCode_G);
+    _os_set_key_conversion(GLFW_KEY_H, OS_KeyCode_H);
+    _os_set_key_conversion(GLFW_KEY_I, OS_KeyCode_I);
+    _os_set_key_conversion(GLFW_KEY_J, OS_KeyCode_J);
+    _os_set_key_conversion(GLFW_KEY_K, OS_KeyCode_K);
+    _os_set_key_conversion(GLFW_KEY_L, OS_KeyCode_L);
+    _os_set_key_conversion(GLFW_KEY_M, OS_KeyCode_M);
+    _os_set_key_conversion(GLFW_KEY_N, OS_KeyCode_N);
+    _os_set_key_conversion(GLFW_KEY_O, OS_KeyCode_O);
+    _os_set_key_conversion(GLFW_KEY_P, OS_KeyCode_P);
+    _os_set_key_conversion(GLFW_KEY_Q, OS_KeyCode_Q);
+    _os_set_key_conversion(GLFW_KEY_R, OS_KeyCode_R);
+    _os_set_key_conversion(GLFW_KEY_S, OS_KeyCode_S);
+    _os_set_key_conversion(GLFW_KEY_T, OS_KeyCode_T);
+    _os_set_key_conversion(GLFW_KEY_U, OS_KeyCode_U);
+    _os_set_key_conversion(GLFW_KEY_V, OS_KeyCode_V);
+    _os_set_key_conversion(GLFW_KEY_W, OS_KeyCode_W);
+    _os_set_key_conversion(GLFW_KEY_X, OS_KeyCode_X);
+    _os_set_key_conversion(GLFW_KEY_Y, OS_KeyCode_Y);
+    _os_set_key_conversion(GLFW_KEY_Z, OS_KeyCode_Z);
+
     // _os_set_key_conversion(GLFW_MOUSE_BUTTON_RIGHT, OS_KeyCode_MouseRight);
     // _os_set_key_conversion(GLFW_MOUSE_BUTTON_MIDDLE, OS_KeyCode_MouseMiddle);
     _glfw_mouse_conversion_table[GLFW_MOUSE_BUTTON_LEFT]   = OS_KeyCode_MouseLeft;
