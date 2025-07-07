@@ -9,9 +9,10 @@ typedef struct
 } OS_Handle;
 
 internal void      os_init(void);
-internal OS_Handle os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params);
-internal bool32    os_thread_wait(OS_Handle thread_handle, uint64 time_us);
+internal OS_Handle os_thread_launch(OS_ThreadFunctionType* func, void* data);
+internal bool32    os_thread_join(OS_Handle handle, int32 timeout_ms);
 internal void      os_thread_name_set(String name);
+internal void      os_sleep(uint64 time_ms);
 
 internal bool32    os_handle_match(OS_Handle a, OS_Handle b);
 internal OS_Handle os_handle_zero(void);

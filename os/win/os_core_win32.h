@@ -35,8 +35,8 @@ struct W32_Entity
         {
             DWORD                  id;
             OS_ThreadFunctionType* func;
+            HANDLE                 handle;
             void*                  data;
-            void*                  params;
         } thread;
         CRITICAL_SECTION   mutex;
         SRWLOCK            rw_mutex;
@@ -50,3 +50,4 @@ internal void        w32_free_entity(W32_Entity* entity);
 
 /** helpers */
 internal uint32 w32_sleep_ms_from_endt_us(uint64 endt_us);
+internal uint32 w32_sleep_ms_from_timeout(int32 timeout_ms);

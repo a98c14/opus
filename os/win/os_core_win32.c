@@ -56,25 +56,32 @@ os_init(void)
 }
 
 internal OS_Handle
-os_thread_launch(OS_ThreadFunctionType* func, void* data, void* params)
+os_thread_launch(OS_ThreadFunctionType* func, void* data)
 {
     W32_Entity* entity     = w32_alloc_entity(W32_EntityKind_Thread);
     entity->thread.func    = func;
     entity->thread.data    = data;
-    entity->thread.params  = params;
     entity->reference_mask = W32_PARENT_THREAD_MASK | W32_CHILD_THREAD_MASK;
-    CreateThread(0, 0, w32_thread_base, entity, 0, &entity->thread.id);
-    OS_Handle handle = {int_from_ptr(entity)};
+    entity->thread.handle  = CreateThread(0, 0, w32_thread_base, entity, 0, &entity->thread.id);
+    OS_Handle handle       = {int_from_ptr(entity)};
 
     return handle;
 }
 
 internal bool32
-os_thread_wait(OS_Handle handle, uint64 time_us)
+os_thread_join(OS_Handle handle, int32 timeout_ms)
 {
-    (void)handle;
-    (void)time_us;
-    not_implemented();
+    W32_Entity* entity = (W32_Entity*)ptr_from_int(handle.v);
+
+    DWORD sleep_ms    = w32_sleep_ms_from_timeout(timeout_ms);
+    DWORD wait_result = WAIT_OBJECT_0;
+    if (entity != 0)
+    {
+        wait_result = WaitForSingleObject(entity->thread.handle, sleep_ms);
+        CloseHandle(entity->thread.handle);
+        w32_free_entity(entity);
+    }
+    return wait_result == WAIT_OBJECT_0;
 }
 
 internal void
@@ -95,6 +102,12 @@ os_thread_name_set(String name)
     {
         w32_set_thread_description_func(GetCurrentThread(), (WCHAR*)name.value);
     }
+}
+
+internal void
+os_sleep(uint64 time_ms)
+{
+    Sleep((DWORD)time_ms);
 }
 
 /** mutexes */
@@ -354,6 +367,21 @@ w32_free_entity(W32_Entity* entity)
     EnterCriticalSection(&w32_mutex);
     stack_push(w32_entity_free, entity);
     LeaveCriticalSection(&w32_mutex);
+}
+
+internal uint32
+w32_sleep_ms_from_timeout(int32 timeout_ms)
+{
+    uint32 sleep_ms = 0;
+    if (timeout_ms == -1)
+    {
+        sleep_ms = INFINITE;
+    }
+    else
+    {
+        sleep_ms = (uint32)timeout_ms;
+    }
+    return (sleep_ms);
 }
 
 internal uint32
