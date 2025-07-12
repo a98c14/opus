@@ -16,6 +16,7 @@ layout (std140, binding = 1) uniform Texture
 };
 
 uniform mat4 u_model;
+uniform sampler2D u_main_texture;
 
 /* Vertex Data */
 out layout(location = 3) vec2 v_tex_coord;

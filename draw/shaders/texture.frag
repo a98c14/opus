@@ -16,14 +16,15 @@ layout (std140, binding = 1) uniform Texture
 };
 
 uniform mat4 u_model;
+uniform sampler2D u_main_texture;
 
 /* Vertex Data */
-out layout(location = 3) vec2 v_tex_coord;
-out layout(location = 4) vec4 v_color;
+in layout(location = 3) vec2 v_tex_coord;
+in layout(location = 4) vec4 v_color;
 
-void main() 
-{
-    v_tex_coord = a_tex_coord;
-    v_color = a_color;
-    gl_Position = u_model * vec4(a_pos, 0, 1);
+out vec4 color;
+
+void main() {
+    vec4 texture_color = texture(u_main_texture, v_tex_coord);
+    color = texture_color;
 }

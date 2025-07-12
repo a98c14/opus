@@ -46,6 +46,7 @@ typedef struct
     MaterialIndex material_sprite;
     MaterialIndex material_text;
     MaterialIndex material_triangle;
+    MaterialIndex material_texture;
 } D_Context;
 global D_Context* d_context;
 
@@ -69,7 +70,8 @@ typedef struct
     Color             color;
 } D_DrawDataSprite;
 
-internal void d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path);
+internal void d_context_init(String asset_path);
+internal void d_update();
 
 /** batch functions */
 internal void d_mesh_push_vertex(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
@@ -85,6 +87,7 @@ internal void d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thi
 internal void d_triangle(Vec2 pos, Vec2 scale, float32 rotation, Color c);
 internal Rect d_rect(Rect r, float32 thickness, Color c);
 internal void d_quad(Quad q, float32 thickness, Color c);
+internal Rect d_raw(Rect r, TextureIndex texture);
 internal void d_material_raw(MaterialIndex material, void* shader_data);
 internal void d_circle_scaled(Vec2 pos, float32 radius, Vec2 scale, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);

@@ -5,8 +5,15 @@ global Arena*           _gfx_ogl_frame_arena = 0;
 global GFX_OGL_Context* _gfx_ogl_ctx         = 0;
 
 internal void
-gfx_init(GFX_Configuration configuration)
+gfx_init(GFX_Configuration* configuration)
 {
+    if (configuration == 0)
+    {
+        GFX_Configuration default_config = {0};
+        default_config.clear_color       = ColorSlate800;
+        configuration                    = &default_config;
+    }
+
     if (!os_window_is_ready())
     {
         log_error("Could initialize GFX layer, Main Window isn't ready. Call `os_window_create` before initializing GFX layer.");
@@ -17,17 +24,18 @@ gfx_init(GFX_Configuration configuration)
     log_info("Render Key Total Bit Count: (%d/64)", RenderKeyTotalBitCount);
 
     IVec2 window_size = os_window_size();
-    if (configuration.world_width == 0 && configuration.world_height == 0)
+    if (configuration->world_width == 0 && configuration->world_height == 0)
     {
-        configuration.world_width  = (float32)window_size.x;
-        configuration.world_height = (float32)window_size.y;
+        configuration->world_width  = (float32)window_size.x;
+        configuration->world_height = (float32)window_size.y;
     }
 
-    if (configuration.window_width == 0 && configuration.window_height == 0)
+    if (configuration->window_width == 0 && configuration->window_height == 0)
     {
-        configuration.window_width  = window_size.x;
-        configuration.window_height = window_size.y;
+        configuration->window_width  = window_size.x;
+        configuration->window_height = window_size.y;
     }
+
 #if BUILD_DEBUG
     gfx_enable_debug();
 #endif
@@ -37,25 +45,25 @@ gfx_init(GFX_Configuration configuration)
     _gfx_ogl_ctx         = arena_push_struct_zero(_gfx_ogl_perm_arena, GFX_OGL_Context);
     _gfx_ogl_ctx->aspect = _gfx_ogl_ctx->window_width / (float)_gfx_ogl_ctx->window_height;
 
-    if (configuration.window_width == 0)
-        configuration.window_width = (int32)(configuration.window_height * _gfx_ogl_ctx->aspect);
-    if (configuration.window_height == 0)
-        configuration.window_height = (int32)(configuration.window_width / _gfx_ogl_ctx->aspect);
+    if (configuration->window_width == 0)
+        configuration->window_width = (int32)(configuration->window_height * _gfx_ogl_ctx->aspect);
+    if (configuration->window_height == 0)
+        configuration->window_height = (int32)(configuration->window_width / _gfx_ogl_ctx->aspect);
 
-    _gfx_ogl_ctx->window_width  = configuration.window_width;
-    _gfx_ogl_ctx->window_height = configuration.window_height;
+    _gfx_ogl_ctx->window_width  = configuration->window_width;
+    _gfx_ogl_ctx->window_height = configuration->window_height;
     _gfx_ogl_ctx->frame_buffers = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_OGL_FrameBuffer, _GFX_OGL_PASS_CAPACITY);
     _gfx_ogl_ctx->materials     = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_OGL_Material, _GFX_OGL_MATERIAL_CAPACITY);
     _gfx_ogl_ctx->textures      = arena_push_array_zero(_gfx_ogl_perm_arena, GFX_OGL_Texture, _GFX_OGL_TEXTURE_CAPACITY);
 
     glViewport(0, 0, _gfx_ogl_ctx->window_width, _gfx_ogl_ctx->window_height);
 
-    float32 world_height = configuration.world_height;
-    float32 world_width  = configuration.world_width;
+    float32 world_height = configuration->world_height;
+    float32 world_width  = configuration->world_width;
 
-    if (configuration.world_width == 0)
+    if (configuration->world_width == 0)
         world_width = world_height * _gfx_ogl_ctx->aspect;
-    if (configuration.world_height == 0)
+    if (configuration->world_height == 0)
         world_height = world_width / _gfx_ogl_ctx->aspect;
 
     _gfx_ogl_ctx->world_width  = world_width;
@@ -67,7 +75,7 @@ gfx_init(GFX_Configuration configuration)
     _gfx_ogl_ctx->camera[0] = camera;
 
     glEnable(GL_BLEND);
-    Vec4 clear_color = color_v4(configuration.clear_color);
+    Vec4 clear_color = color_v4(configuration->clear_color);
     glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
 
     /* Create Global UBO */
@@ -94,8 +102,8 @@ gfx_init(GFX_Configuration configuration)
     frame_buffer->texture_index       = 0;
     frame_buffer->gl_buffer_id        = 0;
     frame_buffer->clear_color         = clear_color;
-    frame_buffer->width               = configuration.window_width;
-    frame_buffer->height              = configuration.window_height;
+    frame_buffer->width               = configuration->window_width;
+    frame_buffer->height              = configuration->window_height;
     frame_buffer->blend_src_rgb       = GL_SRC_ALPHA;
     frame_buffer->blend_dst_rgb       = GL_ONE_MINUS_SRC_ALPHA;
     frame_buffer->blend_src_alpha     = GL_ONE;
@@ -255,7 +263,6 @@ gfx_material_new(String vertex_shader_text, String fragment_shader_text, uint32 
 
     GFX_OGL_Material* result  = &ctx->materials[material_index];
     result->gl_program_id     = _gfx_ogl_shader_load(vertex_shader_text, fragment_shader_text);
-    result->location_texture  = glGetUniformLocation(result->gl_program_id, "u_main_texture");
     result->uniform_data_size = uniform_data_size;
     result->is_initialized    = 1;
     result->draw_type         = draw_type;
@@ -265,13 +272,21 @@ gfx_material_new(String vertex_shader_text, String fragment_shader_text, uint32 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, result->uniform_buffer_id);
     glBufferData(GL_SHADER_STORAGE_BUFFER, uniform_data_size * _GFX_OGL_MATERIAL_DRAW_BUFFER_ELEMENT_CAPACITY, 0, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    result->location_model = glGetUniformLocation(result->gl_program_id, "u_model");
 
     unsigned int global_ubo_index = glGetUniformBlockIndex(result->gl_program_id, "Global");
-    glUniformBlockBinding(result->gl_program_id, global_ubo_index, _GFX_OGL_BINDING_SLOT_GLOBAL);
+    if (global_ubo_index != GL_INVALID_INDEX)
+    {
+        glUniformBlockBinding(result->gl_program_id, global_ubo_index, _GFX_OGL_BINDING_SLOT_GLOBAL);
+    }
 
     unsigned int texture_ubo_index = glGetUniformBlockIndex(result->gl_program_id, "Texture");
-    glUniformBlockBinding(result->gl_program_id, texture_ubo_index, _GFX_OGL_BINDING_SLOT_TEXTURE);
+    if (texture_ubo_index != GL_INVALID_INDEX)
+    {
+        glUniformBlockBinding(result->gl_program_id, texture_ubo_index, _GFX_OGL_BINDING_SLOT_TEXTURE);
+    }
+
+    result->location_texture = glGetUniformLocation(result->gl_program_id, "u_main_texture");
+    result->location_model   = glGetUniformLocation(result->gl_program_id, "u_model");
 
     return material_index;
 }
@@ -332,7 +347,18 @@ gfx_texture_dims(TextureIndex texture)
 }
 
 internal TextureIndex gfx_texture_array_new(uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
-internal uint32       gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
+
+internal void
+gfx_texture_write(TextureIndex texture_index, void* data)
+{
+    GFX_OGL_Context* ctx     = _gfx_ogl_ctx;
+    GFX_OGL_Texture* texture = &ctx->textures[texture_index];
+
+    glBindTexture(GL_TEXTURE_2D, texture->gl_texture_id);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, texture->format, GL_UNSIGNED_BYTE, data);
+}
+
+internal uint32 gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
 
 internal FrameBufferIndex
 gfx_frame_buffer_new(uint32 width, uint32 height, uint32 filter, Color clear_color)

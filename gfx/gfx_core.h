@@ -156,7 +156,7 @@ typedef struct
 internal GFX_Handle gfx_handle_zero();
 
 /** Core (Per Impl) */
-internal void gfx_init(GFX_Configuration configuration);
+internal void gfx_init(GFX_Configuration* configuration);
 internal void gfx_batch_commit(GFX_Batch batch);
 internal void gfx_render(float32 dt);
 
@@ -184,6 +184,7 @@ internal void                     gfx_attribute_info_add_uint(GFX_VertexAttribut
 internal MaterialIndex gfx_material_new(String vertex_shader_text, String fragment_shader_text, uint32 uniform_data_size, GFX_DrawType draw_type);
 internal TextureIndex  gfx_texture_new(uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
 internal TextureIndex  gfx_texture_array_new(uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
+internal void          gfx_texture_write(TextureIndex texture_index, void* data);
 internal IVec2         gfx_texture_dims(TextureIndex texture);
 internal uint32        gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
 

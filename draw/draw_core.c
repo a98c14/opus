@@ -1,19 +1,23 @@
 #include "draw_core.h"
 
 internal void
-d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
+d_context_init(String asset_path)
 {
-    d_context              = arena_push_struct_zero(persistent_arena, D_Context);
-    d_context->perm_arena  = persistent_arena;
-    d_context->frame_arena = frame_arena;
+    Arena* draw_persistent_arena = arena_new_reserve(mb(16));
+    Arena* draw_frame_arena      = arena_new_reserve(mb(16));
 
-    ArenaTemp temp               = scratch_begin(&persistent_arena, 1);
+    d_context              = arena_push_struct_zero(draw_persistent_arena, D_Context);
+    d_context->perm_arena  = draw_persistent_arena;
+    d_context->frame_arena = draw_frame_arena;
+
+    ArenaTemp temp               = scratch_begin(&draw_persistent_arena, 1);
     d_context->material_text     = gfx_material_new(d_shader_opengl_font_vert, d_shader_opengl_font_frag, 0, GFX_DrawTypePackedBuffer);
     d_context->material_sprite   = gfx_material_new(d_shader_opengl_sprite_vert, d_shader_opengl_sprite_frag, sizeof(D_ShaderDataSprite), GFX_DrawTypeInstanced);
     d_context->material_basic    = gfx_material_new(d_shader_opengl_basic_vert, d_shader_opengl_basic_frag, 0, GFX_DrawTypePackedBuffer);
     d_context->material_rect     = gfx_material_new(d_shader_opengl_rect_vert, d_shader_opengl_rect_frag, 0, GFX_DrawTypePackedBuffer);
     d_context->material_circle   = gfx_material_new(d_shader_opengl_circle_vert, d_shader_opengl_circle_frag, sizeof(D_ShaderDataCircle), GFX_DrawTypeInstanced);
     d_context->material_triangle = gfx_material_new(d_shader_opengl_triangle_vert, d_shader_opengl_triangle_frag, sizeof(D_ShaderDataTriangle), GFX_DrawTypeInstanced);
+    d_context->material_texture  = gfx_material_new(d_shader_opengl_texture_vert, d_shader_opengl_texture_frag, 0, GFX_DrawTypePackedBuffer);
     d_context->active_pass       = 0;
     d_context->active_layer      = 5;
 
@@ -23,6 +27,12 @@ d_context_init(Arena* persistent_arena, Arena* frame_arena, String asset_path)
     String font_path       = string_list_join(temp.arena, &path, 0);
     d_context->active_font = font_load(string("ibx_mono"), font_path, GlyphAtlasTypeFreeType);
     scratch_end(temp);
+}
+
+internal void
+d_update()
+{
+    arena_reset(d_context->frame_arena);
 }
 
 internal void
@@ -252,6 +262,26 @@ d_quad(Quad q, float32 thickness, Color c)
     batch.vertex_buffer_size  = sizeof(GFX_VertexAtrribute_TexturedColored) * vertex_count;
     batch.uniform_buffer      = 0;
     gfx_batch_commit(batch);
+}
+
+internal Rect
+d_raw(Rect r, TextureIndex texture)
+{
+    GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, 6 * 4);
+    uint32                               vertex_count = 0;
+
+    Bounds b = {.bl = vec2(0, 0), .tr = vec2(1, 1)};
+    d_mesh_push_rect(vertices, &vertex_count, r, b, ColorWhite);
+
+    GFX_Batch batch;
+    batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, texture, GFX_MeshTypeDynamic, d_context->material_texture);
+    batch.element_count       = 1;
+    batch.draw_instance_count = vertex_count;
+    batch.vertex_buffer       = vertices;
+    batch.vertex_buffer_size  = sizeof(GFX_VertexAtrribute_TexturedColored) * vertex_count;
+    batch.uniform_buffer      = 0;
+    gfx_batch_commit(batch);
+    return r;
 }
 
 internal Rect
