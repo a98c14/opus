@@ -115,10 +115,23 @@ ui_update(float32 dt)
 
         if (has_parent)
         {
-            e->rect.x = e->parent->cursor.x + e->rect.w / 2;
-            e->rect.y = e->parent->cursor.y - e->rect.h / 2;
+            bool32 is_horizontal = flag_is_set(e->parent->kind, UI_ElementKind_LayoutHorizontal);
+            if (!is_horizontal)
+            {
+                e->rect.x = e->parent->cursor.x + e->rect.w / 2;
+                e->rect.y = e->parent->cursor.y - e->rect.h / 2;
 
-            e->parent->cursor.y -= e->rect.h;
+                e->parent->cursor.y -= e->rect.h;
+            }
+            else
+            {
+                e->rect.w = e->parent->rect.w / e->parent->child_count;
+
+                e->rect.x = e->parent->cursor.x + e->rect.w / 2;
+                e->rect.y = e->parent->cursor.y - e->rect.h / 2;
+
+                e->parent->cursor.x += e->rect.w;
+            }
         }
 
         e->cursor = rect_tl(e->rect);
@@ -476,6 +489,7 @@ ui_entity_add_to_ui(UI_Entity* entity)
     {
         entity->parent = ui_ctx->active_parent;
         dll_push_front_z(&ui_entity_nil, entity->parent->first_child, entity->parent->last_child, entity);
+        entity->parent->child_count++;
     }
 
     if (flag_is_set(entity->kind, UI_ElementKind_Container))
@@ -507,13 +521,19 @@ _ui_entity_init_root()
 /** V2 */
 
 internal void
-ui_begin_container()
+ui_begin_vertical()
 {
     ui_entity_init(UI_ElementKind_Container);
 }
 
 internal void
-ui_end_container()
+ui_begin_horizontal()
+{
+    ui_entity_init(UI_ElementKind_Container | UI_ElementKind_LayoutHorizontal);
+}
+
+internal void
+ui_end()
 {
     ui_ctx->active_parent = ui_ctx->active_element->parent;
 }
@@ -546,6 +566,17 @@ internal UI_Signal
 ui_button(String label)
 {
     UI_Entity* entity = ui_entity_init(UI_ElementKind_Clickable);
+    entity->text      = label;
+
+    UI_Signal result = {0};
+
+    return result;
+}
+
+internal UI_Signal
+ui_label(String label)
+{
+    UI_Entity* entity = ui_entity_init(0);
     entity->text      = label;
 
     UI_Signal result = {0};

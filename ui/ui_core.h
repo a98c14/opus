@@ -30,9 +30,10 @@ typedef struct
 
 typedef enum
 {
-    UI_ElementKind_Undefined = 0,
-    UI_ElementKind_Clickable = 1 << 1,
-    UI_ElementKind_Container = 1 << 2,
+    UI_ElementKind_Undefined        = 0,
+    UI_ElementKind_Clickable        = 1 << 1,
+    UI_ElementKind_Container        = 1 << 2,
+    UI_ElementKind_LayoutHorizontal = 1 << 3,
 } UI_ElementKind;
 
 typedef struct UI_Entity UI_Entity;
@@ -40,10 +41,11 @@ struct UI_Entity
 {
     UI_Entity* next;
     UI_Entity* prev;
-
     UI_Entity* parent;
     UI_Entity* first_child;
     UI_Entity* last_child;
+
+    uint32 child_count;
 
     UI_ElementKind kind;
     UI_Key         key;
@@ -183,10 +185,13 @@ internal UI_Entity* ui_entity_init(UI_ElementKind kind);
 
 internal void _ui_entity_init_root(void);
 
-internal void ui_begin_container();
-internal void ui_end_container();
+/** V2 Widgets */
+internal void ui_begin_vertical();
+internal void ui_begin_horizontal();
+internal void ui_end();
+
+internal UI_Signal ui_button(String label);
+internal UI_Signal ui_label(String label);
 
 internal void ui_set_wh(float32 w, float32 h);
 internal void ui_set_bg_color(Color color);
-
-internal UI_Signal ui_button(String label);
