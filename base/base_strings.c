@@ -580,3 +580,10 @@ string_static_get(StaticStringIndex index)
 {
     return g_static_string_storage->static_strings[index];
 }
+
+/** utility */
+internal bool32
+string_is_empty(String str)
+{
+    return str.value != 0 && str.length <= 0;
+}

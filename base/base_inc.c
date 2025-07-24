@@ -14,3 +14,4 @@
 #include "base_strings.c"
 #include "base_thread_context.c"
 #include "base_intersection.c"
+#include "base_geometry.c"

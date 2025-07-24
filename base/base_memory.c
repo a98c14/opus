@@ -29,7 +29,7 @@ arena_release(Arena* arena)
 internal void*
 arena_push(Arena* arena, uint64 size)
 {
-    xassert(arena->pos + size <= arena->cap, "arena buffer overflow");
+    xassert_m(arena->pos + size <= arena->cap, "arena buffer overflow");
     void* result = 0;
     if (arena->pos + size <= arena->cap)
     {
@@ -75,7 +75,7 @@ internal void
 arena_reset(Arena* arena)
 {
     arena->pos = sizeof(Arena);
-    // TODO(selim): poison memory
+    // TODO(selim): poison memory and zero if in debug mode
 }
 
 internal ArenaTemp
@@ -104,7 +104,7 @@ make_ring_buffer(Arena* arena, uint64 size)
 internal RingBufferEntry
 ring_write(RingBuffer* buffer, void* src, uint64 size)
 {
-    xassert(size <= buffer->size, "ring buffer doesn't have enough room to write given data");
+    xassert_m(size <= buffer->size, "ring buffer doesn't have enough room to write given data");
     RingBufferEntry result;
     result.position = buffer->write_pos;
     result.size     = size;
@@ -125,7 +125,7 @@ ring_write(RingBuffer* buffer, void* src, uint64 size)
 internal RingBufferEntry
 ring_write_contiguous(RingBuffer* buffer, void* src, uint64 size)
 {
-    xassert(size <= buffer->size, "ring buffer doesn't have enough room to write given data");
+    xassert_m(size <= buffer->size, "ring buffer doesn't have enough room to write given data");
     uint64 ring_off = buffer->write_pos % buffer->size;
     if (ring_off + size > buffer->size)
         ring_off = 0;
@@ -142,7 +142,7 @@ ring_write_contiguous(RingBuffer* buffer, void* src, uint64 size)
 internal RingBufferEntry
 ring_read(RingBuffer* buffer, void* dst, uint32 size)
 {
-    xassert(size <= buffer->size, "ring buffer doesn't have enough room to read given data");
+    xassert_m(size <= buffer->size, "ring buffer doesn't have enough room to read given data");
     RingBufferEntry result;
     result.position = buffer->read_pos;
     result.size     = size;
@@ -155,8 +155,8 @@ ring_read(RingBuffer* buffer, void* dst, uint32 size)
 internal void
 ring_read_entry(RingBuffer* buffer, void* dst, RingBufferEntry entry)
 {
-    xassert(entry.size <= buffer->size, "ring buffer doesn't have enough room to read given data");
-    xassert(entry.position + buffer->size > buffer->write_pos, "trying to read overwritten data from ring buffer");
+    xassert_m(entry.size <= buffer->size, "ring buffer doesn't have enough room to read given data");
+    xassert_m(entry.position + buffer->size > buffer->write_pos, "trying to read overwritten data from ring buffer");
     uint64 ring_off           = entry.position % buffer->size;
     uint64 bytes_before_split = buffer->size - ring_off;
     uint64 pre_split_bytes    = min(bytes_before_split, entry.size);
@@ -169,7 +169,7 @@ internal void*
 ring_peek_entry(RingBuffer* buffer, RingBufferEntry entry)
 {
     uint64 ring_off = entry.position % buffer->size;
-    xassert(entry.size <= buffer->size, "ring buffer doesn't have enough room to read given data");
-    xassert(ring_off + entry.size < buffer->size, "trying to peek to an entry that wraps around. use `ring_write_contiguous` to create entries that doesn't wrap around.");
+    xassert_m(entry.size <= buffer->size, "ring buffer doesn't have enough room to read given data");
+    xassert_m(ring_off + entry.size < buffer->size, "trying to peek to an entry that wraps around. use `ring_write_contiguous` to create entries that doesn't wrap around.");
     return buffer->base + ring_off;
 }

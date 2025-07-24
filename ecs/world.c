@@ -164,7 +164,7 @@ chunk_find_space(Arena* arena, ComponentTypeField components, uint32 space_requi
         n->chunk_handle   = new_chunk;
         stack_push(result.first, n);
     }
-    xassert(result.first, "could not find the requested chunk space");
+    xassert_m(result.first, "could not find the requested chunk space");
     return result;
 }
 
@@ -210,7 +210,7 @@ chunk_copy_data_buffer(ChunkIndex src_chunk_index, ChunkIndex dst_chunk_index, C
 
     int32 src_buffer_index = src_archetype->component_buffer_index_map[src];
     int32 dst_buffer_index = dst_archetype->component_buffer_index_map[dst];
-    xassert(type_manager->component_sizes[dst] == type_manager->component_sizes[src], "component sizes must be equal when copying data buffers");
+    xassert_m(type_manager->component_sizes[dst] == type_manager->component_sizes[src], "component sizes must be equal when copying data buffers");
     DataBuffer* src_buffer     = &src_chunk->data_buffers[src_buffer_index];
     DataBuffer* dst_buffer     = &dst_chunk->data_buffers[dst_buffer_index];
     usize       component_size = type_manager->component_sizes[dst];
@@ -220,7 +220,7 @@ chunk_copy_data_buffer(ChunkIndex src_chunk_index, ChunkIndex dst_chunk_index, C
 internal void
 chunk_copy_data_buffer_in_place(ChunkIndex chunk_index, ComponentType src, ComponentType dst)
 {
-    xassert(src != dst, "cannot copy component onto itself");
+    xassert_m(src != dst, "cannot copy component onto itself");
     chunk_copy_data_buffer(chunk_index, chunk_index, src, dst);
 }
 
@@ -472,7 +472,7 @@ component_buffer_internal(Chunk* chunk, ComponentType type)
     Archetype* archetype = &world->archetypes[chunk->archetype_index];
 
     int32 component_index = archetype->component_buffer_index_map[type];
-    xassert(component_index >= 0, "component doesn't exist on the entity");
+    xassert_m(component_index >= 0, "component doesn't exist on the entity");
     void* component_data = chunk->data_buffers[component_index].data;
     return component_data;
 }
@@ -532,7 +532,7 @@ component_remove_many(Entity entity, ComponentTypeField components)
     World*        world           = g_entity_manager->world;
     EntityAddress current_address = world->entity_addresses[entity.index];
 
-    xassert(!entity_address_is_null(current_address), "entity address is not valid");
+    xassert_m(!entity_address_is_null(current_address), "entity address is not valid");
 
     ComponentTypeField current_components = world->chunk_components[current_address.chunk_index];
     ComponentTypeField new_components     = component_type_field_not(current_components, components);
@@ -579,7 +579,7 @@ entity_get_types(Entity entity)
     World* world = g_entity_manager->world;
 
     EntityAddress current_address = world->entity_addresses[entity.index];
-    xassert(!entity_address_is_null(current_address), "given entity does not exist");
+    xassert_m(!entity_address_is_null(current_address), "given entity does not exist");
     return world->chunk_components[current_address.chunk_index];
 }
 
@@ -591,7 +591,7 @@ entity_copy_data(Entity src, Entity dst)
 
     EntityAddress src_address = world->entity_addresses[src.index];
     EntityAddress dst_address = world->entity_addresses[dst.index];
-    xassert(!entity_address_is_null(src_address) && !entity_address_is_null(dst_address), "invalid entity during copy");
+    xassert_m(!entity_address_is_null(src_address) && !entity_address_is_null(dst_address), "invalid entity during copy");
     chunk_copy_data(src_address, dst_address);
 }
 
@@ -657,7 +657,7 @@ internal bool32
 component_data_exists_internal(Entity entity, ComponentType component_type)
 {
     World* world = g_entity_manager->world;
-    xassert(world->entities[entity.index].version == entity.version, "invalid entity");
+    xassert_m(world->entities[entity.index].version == entity.version, "invalid entity");
     EntityAddress address = world->entity_addresses[entity.index];
     return component_type_field_is_set(&world->chunk_components[address.chunk_index], component_type);
 }
@@ -667,13 +667,13 @@ component_data_ref_internal(Entity entity, ComponentType component_type)
 {
     World*        world   = g_entity_manager->world;
     EntityAddress address = world->entity_addresses[entity.index];
-    xassert(!entity_address_is_null(address), "given entity is not valid");
+    xassert_m(!entity_address_is_null(address), "given entity is not valid");
     Chunk*     chunk     = &world->chunks[address.chunk_index];
     Archetype* archetype = &world->archetypes[chunk->archetype_index];
-    xassert(chunk->entities[address.chunk_internal_index].version == entity.version, "given entity is not the same as the one in chunk");
+    xassert_m(chunk->entities[address.chunk_internal_index].version == entity.version, "given entity is not the same as the one in chunk");
 
     int32 component_index = archetype->component_buffer_index_map[component_type];
-    xassert(component_index >= 0, "component doesn't exist on the entity");
+    xassert_m(component_index >= 0, "component doesn't exist on the entity");
     usize component_size = g_entity_manager->type_manager->component_sizes[component_type];
     void* component_data = (void*)((uint8*)chunk->data_buffers[component_index].data + component_size * address.chunk_internal_index);
     return component_data;

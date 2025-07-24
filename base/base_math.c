@@ -146,6 +146,15 @@ vec4(float32 x, float32 y, float32 z, float32 w)
     return result;
 }
 
+internal IVec2
+ivec2_xy(Vec2 xy)
+{
+    IVec2 result;
+    result.x = (int32)xy.x;
+    result.y = (int32)xy.y;
+    return result;
+}
+
 internal Rect
 rect_from_xy_wh(float32 x, float32 y, float32 w, float32 h)
 {

@@ -24,7 +24,7 @@ gfx_camera_new(float32 width, float32 height, float32 near_plane, float32 far_pl
 internal RenderKey
 gfx_render_key_new(GFX_ViewType view_type, SortLayerIndex sort_layer, PassIndex pass, TextureIndex texture, GFX_MeshType mesh_type, MaterialIndex material_index)
 {
-    xassert(view_type < 4, "invalid view_type value provided");
+    xassert_m(view_type < 4, "invalid view_type value provided");
     log_trace("Render key new, sort: %2d, pass: %2d, view: %2d, texture: %2d, geometry: %2d, material: %2d", sort_layer, pass, view_type, texture, geometry, material_index);
     RenderKey result = ((uint64)sort_layer << RenderKeySortLayerIndexBitStart) +
                        ((uint64)pass << RenderKeyPassIndexBitStart) +

@@ -129,3 +129,6 @@ global StaticStringStorage* g_static_string_storage;
 internal void              string_storage_init(Arena* arena, uint64 capacity);
 internal StaticStringIndex string_static_new(String str);
 internal String            string_static_get(StaticStringIndex index);
+
+/** utility */
+internal bool32 string_is_empty(String str);

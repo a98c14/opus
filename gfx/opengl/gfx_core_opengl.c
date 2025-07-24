@@ -457,7 +457,7 @@ internal void
 gfx_render(float32 dt)
 {
     GFX_OGL_Context* ctx = _gfx_ogl_ctx;
-    xassert(ctx->pass_count > 0, "At least ONE render pass must be configured!");
+    xassert_m(ctx->pass_count > 0, "At least ONE render pass must be configured!");
     GFX_Camera camera = ctx->camera[0];
     ctx->timer += dt;
     ctx->stat_draw_count   = 0;

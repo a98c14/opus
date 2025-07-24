@@ -3,7 +3,7 @@
 internal void
 input_key_callback(OS_KeyCode key_code, OS_KeyState state)
 {
-    xassert(_input_context != NULL, "Input layer hasn't been initialized. Call `input_init` before using input layer callbacks!");
+    xassert_m(_input_context != NULL, "Input layer hasn't been initialized. Call `input_init` before using input layer callbacks!");
     log_debug("Key callback called. Key: %d, State: %d", key_code, state);
 
     Input_Event new_event = {0};

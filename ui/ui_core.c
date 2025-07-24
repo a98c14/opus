@@ -49,7 +49,14 @@ ui_init(Arena* arena)
     ui_ctx                   = arena_push_struct_zero(arena, UI_Context);
     ui_ctx->persistent_arena = arena;
     ui_ctx->frame_arena      = arena_new_reserve(mb(32));
-    ui_line_height           = em(1);
+
+    _ui_entity_init_root();
+
+    key_select = string("ui_select");
+
+    input_register_key(key_select, OS_KeyCode_MouseLeft);
+
+    ui_line_height = roundf(em(0.8f));
 }
 
 internal void
@@ -61,32 +68,105 @@ ui_state_load_atlas(D_SpriteAtlas* atlas)
 internal void
 ui_update(float32 dt)
 {
+    //** Layout Calculations */
+
+    UI_EntityNode* first = 0;
+    UI_EntityNode* last  = 0;
+
+    UI_EntityNode* nodes_to_process = 0;
+    UI_EntityNode* process_node     = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
+    process_node->value             = ui_ctx->root;
+
+    /** traverse the nodes */
+    while (process_node != 0)
+    {
+        UI_Entity* e = process_node->value;
+
+        for (UI_Entity* child = e->first_child; child != &ui_entity_nil; child = child->next)
+        {
+            UI_EntityNode* process_node = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
+            process_node->value         = child;
+            stack_push(nodes_to_process, process_node);
+        }
+
+        UI_EntityNode* node = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
+        node->value         = e;
+        dll_push_back(first, last, node);
+
+        process_node = nodes_to_process;
+        stack_pop(nodes_to_process);
+    }
+
+    /** Layout */
+    for (UI_EntityNode* node = first; node != 0; node = node->next)
+    {
+        UI_Entity* e          = node->value;
+        bool32     has_parent = e->parent != &ui_entity_nil;
+
+        if (has_parent && e->rect.w == 0)
+        {
+            e->rect.w = e->parent->rect.w;
+        }
+
+        if (has_parent && e->rect.h == 0)
+        {
+            e->rect.h = ui_line_height;
+        }
+
+        if (has_parent)
+        {
+            e->rect.x = e->parent->cursor.x + e->rect.w / 2;
+            e->rect.y = e->parent->cursor.y - e->rect.h / 2;
+
+            e->parent->cursor.y -= e->rect.h;
+        }
+
+        e->cursor = rect_tl(e->rect);
+    }
+
+    /** Events */
+    Input_MouseInfo mouse = input_mouse_info();
+    for (UI_EntityNode* node = last; node != 0; node = node->prev)
+    {
+        UI_Entity* e = node->value;
+
+        Intersection intersection = intersects_rect_point(e->rect, mouse.screen);
+
+        if (intersection.intersects && input_is_held(ui_input_select))
+        {
+            e->click_t = 1;
+        }
+
+        if (intersection.intersects)
+        {
+            e->hot_t = 1;
+            break;
+        }
+
+        e->cursor = rect_tl(e->rect);
+    }
+
+    /** Render */
+    for (UI_EntityNode* node = first; node != 0; node = node->next)
+    {
+        UI_Entity* e = node->value;
+
+        Color bg_color = e->hot_t > 0 ? e->highlight_color : e->bg_color;
+        bg_color       = e->click_t > 0 ? ColorRed400 : bg_color;
+
+        d_rect(e->rect, 0, bg_color);
+        if (!string_is_empty(e->text))
+        {
+            d_string(e->rect, e->text, ui_line_height, e->fg_color, ANCHOR_L_L);
+        }
+    }
+
     ui_ctx->frame++;
     ui_ctx->update_t += dt;
+
     arena_reset(ui_ctx->frame_arena);
-    ui_create_fixed(screen_rect());
 
-    // for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)
-    // {
-    //     UI_SpriteAnimator* animator = &ui_ctx->active_animations[i];
-
-    //     /** if widget hasn't updated the animation last frame, take control and play exit animation */
-    //     if (animator->owner.value > 0 && animator->exit_animation > 0 && animator->updated_at < ui_ctx->update_t)
-    //     {
-    //         D_Animation animation             = ui_ctx->sprite_atlas->animations[animator->exit_animation];
-    //         uint32      exit_animation_length = animation_length(animation);
-
-    //         uint32 current_frame = (uint32)((ui_ctx->update_t - animator->started_at) / UI_ANIMATION_UPDATE_RATE);
-    //         if (current_frame == exit_animation_length)
-    //             memory_zero_struct(animator);
-
-    //         // draw_sprite_rect(animator->last_rect, animation.sprite_start_index + current_frame, ANCHOR_C_C);
-    //     }
-    //     else if (animator->owner.value > 0 && animator->updated_at < ui_ctx->update_t)
-    //     {
-    //         memory_zero_struct(animator);
-    //     }
-    // }
+    _ui_entity_init_root();
 }
 
 internal bool32
@@ -110,27 +190,27 @@ ui_set_key(UI_Key key)
 internal Rect
 ui_rect(void)
 {
-    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    xassert_m(ui_ctx->layout_stack, "there is no active layout!");
     return ui_ctx->layout_stack->v.r;
 }
 
 internal Rect*
 ui_rect_ref(void)
 {
-    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    xassert_m(ui_ctx->layout_stack, "there is no active layout!");
     return &ui_ctx->layout_stack->v.r;
 }
 internal void
 ui_rect_set(Rect r)
 {
-    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    xassert_m(ui_ctx->layout_stack, "there is no active layout!");
     ui_ctx->layout_stack->v.r = r;
 }
 
 internal Rect
 ui_cut_dynamic(CutSide cut_side, float32 size)
 {
-    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    xassert_m(ui_ctx->layout_stack, "there is no active layout!");
     return rect_cut(&ui_ctx->layout_stack->v.r, size, cut_side);
 }
 
@@ -179,7 +259,7 @@ ui_push_cut(UI_Key key, CutSide cut_side, float32 size)
 internal void
 ui_pop(void)
 {
-    xassert(ui_ctx->layout_stack, "there is no active layout!");
+    xassert_m(ui_ctx->layout_stack, "there is no active layout!");
     stack_pop(ui_ctx->layout_stack);
 }
 
@@ -233,48 +313,6 @@ ui_animation_rect(D_AnimationIndex animation)
         max_rect.h        = max(max_rect.h, s->size.h - 2);
     }
     return max_rect;
-}
-
-/** animation */
-internal UI_SpriteAnimator*
-ui_animator_find(UI_Key key)
-{
-    for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)
-    {
-        if (ui_ctx->active_animations[i].owner.value == key.value)
-            return &ui_ctx->active_animations[i];
-    }
-
-    return 0;
-}
-
-internal UI_SpriteAnimator*
-ui_animator_reserve(UI_Key key)
-{
-    for (uint32 i = 0; i < UI_MAX_ANIMATION_COUNT; i++)
-    {
-        if (ui_ctx->active_animations[i].owner.value == ui_key_null.value)
-        {
-            UI_SpriteAnimator* animator = &ui_ctx->active_animations[i];
-            animator->owner             = key;
-            return animator;
-        }
-    }
-
-    return 0;
-}
-
-internal UI_SpriteAnimator*
-ui_animator_get(UI_Key key)
-{
-    UI_SpriteAnimator* animator = ui_animator_find(key);
-    if (!animator)
-    {
-        animator = ui_animator_reserve(key);
-        xassert(animator, "Could not reserve animator. Exceeded maximum active animation limit for UI");
-    }
-
-    return animator;
 }
 
 /** common widgets */
@@ -332,7 +370,8 @@ ui_slider(String label, float32 min_value, float32 max_value, float32* value)
     Intersection    handle_intersection = intersects_circle_point(handle, mouse.screen);
     if (handle_intersection.intersects)
     {
-        ui_ctx->hot = key;
+        ui_ctx->hot    = key;
+        result.is_warm = true;
     }
     else
     {
@@ -353,8 +392,9 @@ ui_slider(String label, float32 min_value, float32 max_value, float32* value)
 
     if (ui_is_active(key))
     {
-        *value = remap_f32(rect_left(inner_bar), rect_right(inner_bar), min_value, max_value, mouse.screen.x);
-        *value = clamp(min_value, *value, max_value);
+        *value        = remap_f32(rect_left(inner_bar), rect_right(inner_bar), min_value, max_value, mouse.screen.x);
+        *value        = clamp(min_value, *value, max_value);
+        result.is_hot = true;
     }
 
     if (ui_is_active(key) && !input_is_held(ui_input_select))
@@ -368,6 +408,17 @@ ui_slider(String label, float32 min_value, float32 max_value, float32* value)
     d_circle(handle.center, handle.radius, 1, slider_handle_color);
 
     scratch_end(temp);
+    return result;
+}
+
+internal UI_Signal
+ui_slider_int(String label, int32 min_value, int32 max_value, float32* value)
+{
+    UI_Signal result = ui_slider(label, (float32)min_value, (float32)max_value, value);
+    if (!result.is_hot)
+    {
+        *value = roundf(*value);
+    }
     return result;
 }
 
@@ -393,4 +444,111 @@ ui_textf(const char* fmt, ...)
     va_end(args);
 
     return ui_text(result);
+}
+
+internal UI_Entity*
+ui_entity_new(UI_ElementKind kind)
+{
+    UI_Entity* result;
+
+    result = arena_push_struct_zero(ui_ctx->frame_arena, UI_Entity);
+
+    result->next        = &ui_entity_nil;
+    result->prev        = &ui_entity_nil;
+    result->first_child = &ui_entity_nil;
+    result->last_child  = &ui_entity_nil;
+    result->parent      = &ui_entity_nil;
+
+    result->key  = ui_key_null;
+    result->kind = kind;
+
+    result->bg_color        = ColorSlate400;
+    result->highlight_color = ColorSlate200;
+    result->fg_color        = ColorBlack;
+
+    return result;
+}
+
+internal void
+ui_entity_add_to_ui(UI_Entity* entity)
+{
+    if (ui_ctx->active_parent != &ui_entity_nil)
+    {
+        entity->parent = ui_ctx->active_parent;
+        dll_push_front_z(&ui_entity_nil, entity->parent->first_child, entity->parent->last_child, entity);
+    }
+
+    if (flag_is_set(entity->kind, UI_ElementKind_Container))
+    {
+        ui_ctx->active_parent = entity;
+    }
+
+    ui_ctx->active_element = entity;
+}
+
+internal UI_Entity*
+ui_entity_init(UI_ElementKind kind)
+{
+    UI_Entity* entity = ui_entity_new(kind);
+    ui_entity_add_to_ui(entity);
+    return entity;
+}
+
+internal void
+_ui_entity_init_root()
+{
+    ui_ctx->root           = ui_entity_new(UI_ElementKind_Container);
+    ui_ctx->root->bg_color = ColorRed100;
+    ui_ctx->root->rect     = screen_rect();
+    ui_ctx->active_element = ui_ctx->root;
+    ui_ctx->active_parent  = ui_ctx->root;
+}
+
+/** V2 */
+
+internal void
+ui_begin_container()
+{
+    ui_entity_init(UI_ElementKind_Container);
+}
+
+internal void
+ui_end_container()
+{
+    ui_ctx->active_parent = ui_ctx->active_element->parent;
+}
+
+internal void
+ui_set_rect()
+{
+}
+
+internal void
+ui_set_wh(float32 w, float32 h)
+{
+    xassert(ui_ctx->active_element != &ui_entity_nil);
+
+    ui_ctx->active_element->rect = rect_from_wh(w, h);
+}
+
+internal void
+ui_set_bg_color(Color color)
+{
+    xassert(ui_ctx->active_element != &ui_entity_nil);
+
+    ui_ctx->active_element->bg_color        = color;
+    Color hg_color                          = color_is_dark(color) ? ColorWhite : ColorBlack;
+    ui_ctx->active_element->highlight_color = color_lerp(ui_ctx->active_element->bg_color, hg_color, 0.6f);
+}
+
+/** V2 Widgets */
+internal UI_Signal
+ui_button(String label)
+{
+    UI_Entity* entity = ui_entity_init(UI_ElementKind_Clickable);
+    entity->text      = label;
+
+    UI_Signal result = {0};
+
+    return result;
 }

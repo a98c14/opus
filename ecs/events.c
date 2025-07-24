@@ -20,7 +20,7 @@ event_manager_global_init(Arena* arena, uint32 event_type_count)
 internal void
 event_manager_initialize_event_type(EventManager* event_manager, EntityEventType type, usize data_size)
 {
-    xassert(type < event_manager->event_type_count, "invalid event type");
+    xassert_m(type < event_manager->event_type_count, "invalid event type");
     event_manager->event_data_sizes[type]              = data_size;
     event_manager->event_buffers[type].component_types = arena_push_array_zero(event_manager->arena, ComponentTypeField, ENTITY_EVENT_BUFFER_CAPACITY);
     event_manager->event_buffers[type].data            = arena_push_zero(event_manager->arena, data_size * ENTITY_EVENT_BUFFER_CAPACITY);
@@ -29,7 +29,7 @@ event_manager_initialize_event_type(EventManager* event_manager, EntityEventType
 internal void
 event_manager_fire(EventManager* event_manager, EntityEventType type, ComponentTypeField types, void* data)
 {
-    xassert(event_manager->event_buffers[type].data, "event type hasn't been initialized");
+    xassert_m(event_manager->event_buffers[type].data, "event type hasn't been initialized");
 
     EntityEventBuffer* event_buffer    = &event_manager->event_buffers[type];
     usize              event_data_size = event_manager->event_data_sizes[type];

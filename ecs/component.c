@@ -22,7 +22,7 @@ component_type_register_begin(Arena* temp_arena)
 internal void
 component_type_register_add(ComponentTypeRegistrationRequest* request, ComponentType type_index, usize component_size, ComponentDataType component_type)
 {
-    xassert((component_type == ComponentDataTypeTag && component_size == 0) || (component_type == ComponentDataTypeDefault && component_size > 0), "component size should be larger than 0 or DefaultComponents and should be 0 for TagComponents");
+    xassert_m((component_type == ComponentDataTypeTag && component_size == 0) || (component_type == ComponentDataTypeDefault && component_size > 0), "component size should be larger than 0 or DefaultComponents and should be 0 for TagComponents");
     request->component_sizes[request->component_type_count]      = component_size;
     request->component_data_types[request->component_type_count] = component_type;
     request->component_indices[request->component_type_count]    = type_index;

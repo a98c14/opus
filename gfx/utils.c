@@ -40,7 +40,7 @@ texture_array_from_file(Arena* arena, Renderer* renderer, StringList texture_pat
         data_index++;
         path = path->next;
     }
-    xassert(width > 0 && height > 0 && channels > 0, "failed to load texture array");
+    xassert_m(width > 0 && height > 0 && channels > 0, "failed to load texture array");
     uint32       filter  = pixel_perfect ? GL_NEAREST : GL_LINEAR;
     TextureIndex texture = texture_array_new(renderer, width, height, channels, filter, texture_paths.count, data_array);
     for (int i = 0; i < texture_paths.count; i++)

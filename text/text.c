@@ -236,9 +236,9 @@ font_load(String font_name, String font_path, GlyphAtlasType atlas_type)
 internal GlyphAtlas*
 font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
 {
-    xassert(pixel_size > 0, "font size needs to be larger than 0");
+    xassert_m(pixel_size > 0, "font size needs to be larger than 0");
     FontFace* font_face = &g_font_cache->font_faces[font_face_index];
-    xassert(font_face, "could not find given font face");
+    xassert_m(font_face, "could not find given font face");
 
     uint32         font_size   = (uint32)(pixel_size);
     uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? font_size : 32;

@@ -116,7 +116,7 @@ prefab_copy_data(PrefabIndex src, PrefabIndex dst)
 {
     PrefabNode* src_prefab = &g_prefab_manager->prefabs[src];
     PrefabNode* dst_prefab = &g_prefab_manager->prefabs[dst];
-    xassert(!entity_is_same(src_prefab->entity, dst_prefab->entity), "cannot copy prefab to itself");
+    xassert_m(!entity_is_same(src_prefab->entity, dst_prefab->entity), "cannot copy prefab to itself");
     entity_copy_data(src_prefab->entity, dst_prefab->entity);
 }
 

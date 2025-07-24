@@ -187,7 +187,7 @@ d_circle_filled(Vec2 pos, float32 radius, Color c)
 internal Rect
 d_rect(Rect r, float32 thickness, Color c)
 {
-    xassert(thickness >= 0, "rect thickness can't be lower than zero, use zero for filled rects.");
+    xassert_m(thickness >= 0, "rect thickness can't be lower than zero, use zero for filled rects.");
     GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, 6 * 4);
     uint32                               vertex_count = 0;
 
@@ -235,7 +235,7 @@ d_material_raw(MaterialIndex material, void* shader_data)
 internal void
 d_quad(Quad q, float32 thickness, Color c)
 {
-    xassert(thickness >= 0, "quad thickness can't be lower than zero, use zero for filled rects.");
+    xassert_m(thickness >= 0, "quad thickness can't be lower than zero, use zero for filled rects.");
     GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, 6 * 6);
     uint32                               vertex_count = 0;
 
@@ -300,7 +300,6 @@ d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
 internal Rect
 d_string_raw(Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material)
 {
-
     GlyphAtlas* atlas         = font_get_atlas(d_context->active_font, size);
     Rect        string_bounds = text_calculate_bounds(atlas, pos, alignment, str, size);
     Vec2        base_offset   = {

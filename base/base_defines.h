@@ -147,35 +147,49 @@ typedef uintptr_t uptr;
 typedef size_t    usize;
 
 /* List Helpers */
-#define check_null(p) ((p) == 0)
-#define set_null(p)   ((p) = 0)
+#define check_null(nil, p) ((p) == 0 || (p) == nil)
+#define set_null(nil, p)   ((p) = nil)
 
 #define int_from_ptr(ptr) ((uint64)(ptr))
 #define ptr_from_int(i)   (void*)((uint8*)0 + (i))
 
-#define queue_push_nz(f, l, n, next, zchk, zset)       (zchk(f) ? (((f) = (l) = (n)), zset((n)->next)) : ((l)->next = (n), (l) = (n), zset((n)->next)))
-#define queue_push_front_nz(f, l, n, next, zchk, zset) (zchk(f) ? (((f) = (l) = (n)), zset((n)->next)) : ((n)->next = (f)), ((f) = (n)))
-#define queue_pop_nz(f, l, next, zset)                 ((f) == (l) ? (zset(f), zset(l)) : ((f) = (f)->next))
-#define stack_push_n(f, n, next)                       ((n)->next = (f), (f) = (n))
-#define stack_pop_nz(f, next, zchk)                    (zchk(f) ? 0 : ((f) = (f)->next))
-#define stack_pop_n(f, next)                           ((f) = (f)->next)
+#define queue_push_nz(nil, f, l, n, next)       (check_null(nil, f) ? (((f) = (l) = (n)), set_null(nil, (n)->next)) : ((l)->next = (n), (l) = (n), set_null(nil, (n)->next)))
+#define queue_push_front_nz(nil, f, l, n, next) (check_null(nil, f) ? (((f) = (l) = (n)), set_null(nil, (n)->next)) : ((n)->next = (f)), ((f) = (n)))
+#define queue_pop_nz(nil, f, l, next)           ((f) == (l) ? (set_null(nil, f), set_null(nil, l)) : ((f) = (f)->next))
+#define stack_push_n(nil, f, n, next)           ((n)->next = (f), (f) = (n))
+#define stack_pop_nz(nil, f, next)              (check_null(nil, f) ? 0 : ((f) = (f)->next))
+#define stack_pop_n(nil, f, next)               ((f) = (f)->next)
 
-#define dll_insert_npz(f, l, p, n, next, prev, zchk, zset)                                                                                                          \
-    (zchk(f) ? (((f) = (l) = (n)), zset((n)->next), zset((n)->prev)) : zchk(p) ? (zset((n)->prev), (n)->next = (f), (zchk(f) ? (0) : ((f)->prev = (n))), (f) = (n)) \
-                                                                               : ((zchk((p)->next) ? (0) : (((p)->next->prev) = (n))), (n)->next = (p)->next, (n)->prev = (p), (p)->next = (n), ((p) == (l) ? (l) = (n) : (0))))
-#define dll_push_back_npz(f, l, n, next, prev, zchk, zset) dll_insert_npz(f, l, l, n, next, prev, zchk, zset)
-#define dll_remove_npz(f, l, n, next, prev, zchk, zset)    (((f) == (n)) ? ((f) = (f)->next, (zchk(f) ? (zset(l)) : zset((f)->prev))) : ((l) == (n)) ? ((l) = (l)->prev, (zchk(l) ? (zset(f)) : zset((l)->next))) \
-                                                                                                                                                     : ((zchk((n)->next) ? (0) : ((n)->next->prev = (n)->prev)), (zchk((n)->prev) ? (0) : ((n)->prev->next = (n)->next))))
+#define dll_insert_npz(nil, f, l, p, n, next, prev)                                                                                                                                                                             \
+    (check_null(nil, f) ? (((f) = (l) = (n)), set_null(nil, (n)->next), set_null(nil, (n)->prev)) : check_null(nil, p) ? (set_null(nil, (n)->prev), (n)->next = (f), (check_null(nil, f) ? (0) : ((f)->prev = (n))), (f) = (n)) \
+                                                                                                                       : ((check_null(nil, (p)->next) ? (0) : (((p)->next->prev) = (n))), (n)->next = (p)->next, (n)->prev = (p), (p)->next = (n), ((p) == (l) ? (l) = (n) : (0))))
+#define dll_push_back_npz(nil, f, l, n, next, prev) dll_insert_npz(nil, f, l, l, n, next, prev)
+#define dll_remove_npz(nil, f, l, n, next, prev)    (((f) == (n)) ? ((f) = (f)->next, (check_null(nil, f) ? (set_null(nil, l)) : set_null(nil, (f)->prev))) : ((l) == (n)) ? ((l) = (l)->prev, (check_null(nil, l) ? (set_null(nil, f)) : set_null(nil, (l)->next))) \
+                                                                                                                                                                           : ((check_null(nil, (n)->next) ? (0) : ((n)->next->prev = (n)->prev)), (check_null(nil, (n)->prev) ? (0) : ((n)->prev->next = (n)->next))))
 
-#define queue_push(f, l, n)       queue_push_nz(f, l, n, next, check_null, set_null)
-#define queue_push_front(f, l, n) queue_push_front_nz(f, l, n, next, check_null, set_null)
-#define queue_pop(f, l)           queue_pop_nz(f, l, next, set_null)
-#define stack_push(f, n)          stack_push_n(f, n, next)
-#define stack_pop(f)              stack_pop_nz(f, next, check_null)
-#define dll_push_back(f, l, n)    dll_push_back_npz(f, l, n, next, prev, check_null, set_null)
-#define dll_push_front(f, l, n)   dll_push_back_npz(l, f, n, prev, next, check_null, set_null)
-#define dll_insert(f, l, p, n)    dll_insert_npz(f, l, p, n, next, prev, check_null, set_null)
-#define dll_remove(f, l, n)       dll_remove_npz(f, l, n, next, prev, check_null, set_null)
+#define queue_push(f, l, n)       queue_push_nz(0, f, l, n, next)
+#define queue_push_front(f, l, n) queue_push_front_nz(0, f, l, n, next)
+#define queue_pop(f, l)           queue_pop_nz(0, f, l, next)
+
+#define queue_push_z(nil, f, l, n)       queue_push_nz(nil, f, l, n, next)
+#define queue_push_front_z(nil, f, l, n) queue_push_front_nz(nil, f, l, n, next)
+#define queue_pop_z(nil, f, l)           queue_pop_nz(nil, f, l, next)
+
+#define stack_push(f, n) stack_push_n(0, f, n, next)
+#define stack_pop(f)     stack_pop_nz(0, f, next)
+
+#define stack_push_z(nil, f, n) stack_push_n(nil, f, n, next)
+#define stack_pop_z(nil, f)     stack_pop_nz(nil, f, next)
+
+#define dll_push_back(f, l, n)  dll_push_back_npz(0, f, l, n, next, prev)
+#define dll_push_front(f, l, n) dll_push_back_npz(0, l, f, n, prev, next)
+#define dll_insert(f, l, p, n)  dll_insert_npz(0, f, l, p, n, next, prev)
+#define dll_remove(f, l, n)     dll_remove_npz(0, f, l, n, next, prev)
+
+#define dll_push_back_z(nil, f, l, n)  dll_push_back_npz(nil, f, l, n, next, prev)
+#define dll_push_front_z(nil, f, l, n) dll_push_back_npz(nil, l, f, n, prev, next)
+#define dll_insert_z(nil, f, l, p, n)  dll_insert_npz(nil, f, l, p, n, next, prev)
+#define dll_remove_z(nil, f, l, n)     dll_remove_npz(nil, f, l, n, next, prev)
 
 #define for_each(n, f) for ((n = f); (n != 0); (n = n->next))
 

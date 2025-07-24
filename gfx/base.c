@@ -59,7 +59,7 @@ renderer_init(Arena* arena, RendererConfiguration* configuration)
     g_renderer->materials     = arena_push_array_zero(arena, Material, MATERIAL_CAPACITY);
     g_renderer->textures      = arena_push_array_zero(arena, Texture, TEXTURE_CAPACITY);
 
-    xassert(configuration->world_width > 0 || configuration->world_height > 0, "at least one of world width or world height needs to have a value");
+    xassert_m(configuration->world_width > 0 || configuration->world_height > 0, "at least one of world width or world height needs to have a value");
     glViewport(0, 0, g_renderer->window_width, g_renderer->window_height);
 
     g_renderer->aspect   = g_renderer->window_width / (float)g_renderer->window_height;
@@ -448,7 +448,7 @@ r_frame_buffer_set_blend(FrameBufferIndex frame_buffer_index, uint32 blend_src_r
 internal void
 r_render(Renderer* renderer, float32 dt)
 {
-    xassert(renderer->pass_count > 0, "At least ONE render pass must be configured!");
+    xassert_m(renderer->pass_count > 0, "At least ONE render pass must be configured!");
     Camera* camera = &renderer->camera;
     renderer->timer += dt;
     renderer->stat_draw_count   = 0;

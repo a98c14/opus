@@ -5,10 +5,11 @@
 
 typedef uint32 Color;
 
-internal Color color_lerp(Color a, Color b, float32 t);
-internal Color color_set_alpha(Color c, float32 a);
-internal Vec4  color_v4(Color hex);
-internal Color color_from_vec4(Vec4 c);
+internal Color  color_lerp(Color a, Color b, float32 t);
+internal Color  color_set_alpha(Color c, float32 a);
+internal Vec4   color_v4(Color hex);
+internal Color  color_from_vec4(Vec4 c);
+internal bool32 color_is_dark(Color c);
 
 global const Color ColorClear                = 0x0f172a00;
 global const Color ColorBlack                = 0x000000ff;

@@ -29,7 +29,7 @@ d_trail_reset(Trail* trail)
 internal void
 d_trail_push_position(Trail* trail, Vec2 position)
 {
-    xassert(trail->end - trail->start < trail->capacity, "trail point count exceeded capacity");
+    xassert_m(trail->end - trail->start < trail->capacity, "trail point count exceeded capacity");
     trail->buffer[(trail->end) % trail->capacity].position    = position;
     trail->buffer[(trail->end) % trail->capacity].t_remaining = trail->t_lifetime;
     trail->end++;

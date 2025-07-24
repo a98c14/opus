@@ -57,3 +57,10 @@ color_from_vec4(Vec4 c)
     uint32 a = (uint8)(c.a * 255.f) << 0;
     return r + g + b + a;
 }
+
+internal bool32
+color_is_dark(Color c)
+{
+    Vec4 v = color_v4(c);
+    return v.x + v.y + v.z <= 0.6;
+}

@@ -5,7 +5,6 @@
 
 #include "ui_inputs.h"
 
-#define UI_MAX_ANIMATION_COUNT   16
 #define UI_ANIMATION_UPDATE_RATE 24.0f
 #define UI_INPUT_BUFFER_SIZE     32
 
@@ -23,8 +22,62 @@ typedef struct
     float32 click_t;
     float32 hover_t;
 
+    bool32 is_hot;
+    bool32 is_warm;
+
     Rect rect;
 } UI_Signal;
+
+typedef enum
+{
+    UI_ElementKind_Undefined = 0,
+    UI_ElementKind_Clickable = 1 << 1,
+    UI_ElementKind_Container = 1 << 2,
+} UI_ElementKind;
+
+typedef struct UI_Entity UI_Entity;
+struct UI_Entity
+{
+    UI_Entity* next;
+    UI_Entity* prev;
+
+    UI_Entity* parent;
+    UI_Entity* first_child;
+    UI_Entity* last_child;
+
+    UI_ElementKind kind;
+    UI_Key         key;
+
+    /** cursor */
+    Vec2 cursor;
+
+    /** events */
+    float32 hot_t;
+    float32 click_t;
+
+    /** styling */
+    Rect   rect;
+    String text;
+    Color  bg_color;
+    Color  highlight_color;
+    Color  fg_color;
+};
+
+read_only global UI_Entity ui_entity_nil = {
+    &ui_entity_nil,
+    &ui_entity_nil,
+    &ui_entity_nil,
+    &ui_entity_nil,
+};
+
+typedef struct UI_EntityNode UI_EntityNode;
+struct UI_EntityNode
+{
+    UI_EntityNode* next;
+    UI_EntityNode* prev;
+
+    UI_Entity* value;
+};
 
 typedef struct
 {
@@ -40,32 +93,15 @@ struct UI_LayoutNode
     UI_LayoutNode* next;
 };
 
-/** Animation */
-typedef struct
-{
-    UI_Key  owner;
-    float32 started_at;
-    float32 updated_at;
-
-    Rect             last_rect;
-    D_AnimationIndex exit_animation;
-} UI_SpriteAnimator;
-
-typedef struct UI_Entity UI_Entity;
-struct UI_Entity
-{
-    UI_Entity* next;
-    UI_Entity* prev;
-
-    Vec2 handle_initial_position;
-    Vec2 handle_current_position;
-};
-
 typedef struct
 {
     Arena* persistent_arena;
     Arena* frame_arena;
     uint64 frame;
+
+    UI_Entity* root;
+    UI_Entity* active_element;
+    UI_Entity* active_parent;
 
     UI_Key hot;
     UI_Key active;
@@ -79,15 +115,15 @@ typedef struct
 
     UI_LayoutNode* layout_stack;
 
-    /** animation */
     D_SpriteAtlas* sprite_atlas;
 
-    /** animation_ring_buffer */
-    UI_SpriteAnimator active_animations[UI_MAX_ANIMATION_COUNT];
 } UI_Context;
 
 global UI_Context* ui_ctx;
 global float32     ui_line_height;
+
+/** UI Keys */
+global String key_select;
 
 internal UI_Key ui_key_str(String str);
 internal UI_Key ui_key_cstr(char* str);
@@ -130,16 +166,27 @@ internal void ui_debug();
 internal Rect ui_sprite_rect(D_SpriteIndex sprite);
 internal Rect ui_animation_rect(D_AnimationIndex animation);
 
-/** animation */
-internal UI_SpriteAnimator* ui_animator_find(UI_Key key);
-internal UI_SpriteAnimator* ui_animator_reserve(UI_Key key);
-internal UI_SpriteAnimator* ui_animator_get(UI_Key key);
-
 /** common widgets */
 internal void      ui_pad(float32 x);
 internal void      ui_fill(Color c);
 internal void      ui_border(Color c, float32 thickness);
 internal UI_Signal ui_slider(String label, float32 min, float32 max, float32* value);
+internal UI_Signal ui_slider_int(String label, int32 min_value, int32 max_value, float32* value);
 
 internal UI_Signal ui_text(String str);
 internal UI_Signal ui_textf(const char* fmt, ...);
+
+/** V2 */
+internal UI_Entity* ui_entity_new(UI_ElementKind kind);
+internal void       ui_entity_add_to_ui(UI_Entity* entity);
+internal UI_Entity* ui_entity_init(UI_ElementKind kind);
+
+internal void _ui_entity_init_root(void);
+
+internal void ui_begin_container();
+internal void ui_end_container();
+
+internal void ui_set_wh(float32 w, float32 h);
+internal void ui_set_bg_color(Color color);
+
+internal UI_Signal ui_button(String label);
