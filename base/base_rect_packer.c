@@ -32,7 +32,7 @@ rect_packer_find(RectPacker* rect_packer, int32 width, int32 height)
         if (width > rect_right(rect_packer->rect) - point.x)
             break;
 
-        if (point.y > min_y)
+        if (point.y >= min_y)
             continue;
 
         int32 k;
@@ -40,7 +40,7 @@ rect_packer_find(RectPacker* rect_packer, int32 width, int32 height)
         {
             Vec2 next_point = rect_packer->points[k];
 
-            if (next_point.x > point.x + width)
+            if (next_point.x >= point.x + width)
                 break;
 
             if (point.y < next_point.y)
