@@ -83,30 +83,21 @@ rect_packer_add(RectPacker* rect_packer, int32 width, int32 height)
                                     ? rect_right(result.rect) < rect_packer->points[result.idx_right].x
                                     : rect_right(result.rect) < rect_packer->rect.w);
 
-    if (inserted_count > removed_count)
+    int32 count_diff = inserted_count - removed_count;
+    if (count_diff != 0)
     {
-        int32 idx = rect_packer->point_count - 1;
-        while (idx > result.idx_left)
-        {
-            rect_packer->points[idx + 1] = rect_packer->points[idx];
-            idx--;
-        }
-    }
-    else if (removed_count > inserted_count)
-    {
-        int32 idx = result.idx_left + 2;
-        while (idx < rect_packer->point_count)
-        {
-            rect_packer->points[idx] = rect_packer->points[idx + 1];
-            idx++;
-        }
+        int32 src_idx     = result.idx_left + (count_diff > 0 ? 0 : 2);
+        int32 dst_idx     = result.idx_left + 1;
+        int32 shift_count = rect_packer->point_count - src_idx;
+
+        memory_copy_typed(&rect_packer->points[dst_idx],
+                          &rect_packer->points[src_idx],
+                          shift_count);
     }
 
-    rect_packer->points[result.idx_left]     = rect_tl(result.rect);
-    rect_packer->points[result.idx_left + 1] = rect_br(result.rect);
-
-    rect_packer->point_count = rect_packer->point_count + inserted_count - removed_count;
-
+    rect_packer->points[result.idx_left]          = rect_tl(result.rect);
+    rect_packer->points[result.idx_left + 1]      = rect_br(result.rect);
+    rect_packer->point_count                      = rect_packer->point_count + count_diff;
     rect_packer->rects[rect_packer->rect_count++] = result.rect;
 
     return result;
