@@ -77,7 +77,7 @@ ui_update(float32 dt)
     UI_EntityNode* process_node     = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
     process_node->value             = ui_ctx->root;
 
-    /** traverse the nodes */
+    /** Traverse the nodes */
     while (process_node != 0)
     {
         UI_Entity* e = process_node->value;
@@ -118,10 +118,12 @@ ui_update(float32 dt)
             bool32 is_horizontal = flag_is_set(e->parent->kind, UI_ElementKind_LayoutHorizontal);
             if (!is_horizontal)
             {
+                // TODO(selim): need to support margins
                 e->rect.x = e->parent->cursor.x + e->rect.w / 2;
                 e->rect.y = e->parent->cursor.y - e->rect.h / 2;
 
                 e->parent->cursor.y -= e->rect.h;
+                e->parent->rect = rect_from_bl_tr(vec2(rect_left(e->parent->rect), rect_bottom(e->rect)), rect_tr(e->parent->rect));
             }
             else
             {
@@ -145,18 +147,17 @@ ui_update(float32 dt)
 
         Intersection intersection = intersects_rect_point(e->rect, mouse.screen);
 
-        if (intersection.intersects && input_is_held(ui_input_select))
+        bool32 is_clickable = flag_is_set(e->kind, UI_ElementKind_Clickable);
+        if (is_clickable && intersection.intersects && input_is_held(ui_input_select))
         {
             e->click_t = 1;
         }
 
-        if (intersection.intersects)
+        if (is_clickable && intersection.intersects)
         {
             e->hot_t = 1;
             break;
         }
-
-        e->cursor = rect_tl(e->rect);
     }
 
     /** Render */

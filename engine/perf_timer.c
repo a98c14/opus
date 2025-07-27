@@ -34,7 +34,7 @@ perf_timer_avg(PerfTimer* profiler)
 internal float32
 perf_timer_min(PerfTimer* profiler)
 {
-    float32 min_elapsed = FLOAT32_MAX;
+    float32 min_elapsed = MAX_FLOAT32;
     for (int32 i = 0; i < PROFILER_BUFFER_CAPACITY; i++)
         min_elapsed = min(profiler->elapsed[i], min_elapsed);
     return min_elapsed;
@@ -43,7 +43,7 @@ perf_timer_min(PerfTimer* profiler)
 internal float32
 perf_timer_max(PerfTimer* profiler)
 {
-    float32 max_elapsed = FLOAT32_MIN;
+    float32 max_elapsed = MIN_FLOAT32;
     for (int32 i = 0; i < PROFILER_BUFFER_CAPACITY; i++)
         max_elapsed = max(profiler->elapsed[i], max_elapsed);
     return max_elapsed;

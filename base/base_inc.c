@@ -15,3 +15,4 @@
 #include "base_thread_context.c"
 #include "base_intersection.c"
 #include "base_geometry.c"
+#include "base_rect_packer.c"

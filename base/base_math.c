@@ -147,6 +147,15 @@ vec4(float32 x, float32 y, float32 z, float32 w)
 }
 
 internal IVec2
+ivec2(int32 x, int32 y)
+{
+    IVec2 result;
+    result.x = x;
+    result.y = y;
+    return result;
+}
+
+internal IVec2
 ivec2_xy(Vec2 xy)
 {
     IVec2 result;
@@ -1142,7 +1151,7 @@ bounds_from_rect(Rect r)
 internal Bounds
 quad_bounds(Quad a)
 {
-    Bounds result = (Bounds){.bl = vec2(FLOAT32_MAX, FLOAT32_MAX), .tr = vec2(FLOAT32_MIN, FLOAT32_MIN)};
+    Bounds result = (Bounds){.bl = vec2(MAX_FLOAT32, MAX_FLOAT32), .tr = vec2(MIN_FLOAT32, MIN_FLOAT32)};
     for (uint32 i = 0; i < QuadVertexIndexCOUNT; i++)
     {
         result.bl.x = min(result.bl.x, a.vertices[i].x);

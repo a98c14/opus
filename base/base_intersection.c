@@ -123,7 +123,7 @@ intersects_polygon(BPolygon a, BPolygon b)
     memory_copy_typed(normals + a.normal_count, b.normals, b.normal_count);
 
     Vec2    min_overlap_vector;
-    float32 min_overlap_amount = FLOAT32_MAX;
+    float32 min_overlap_amount = MAX_FLOAT32;
     float32 min_sign;
 
     for (int32 i = 0; i < normal_count; i++)
@@ -157,7 +157,7 @@ intersects_polygon(BPolygon a, BPolygon b)
 
     // HACK(selim): I don't know how to get the contact points
     // so this i a buggy workaround for now.
-    float32 min_d = FLOAT32_MAX;
+    float32 min_d = MAX_FLOAT32;
     for (int32 i = 0; i < b.vertex_count; i++)
     {
         float32 d = dot_vec2(b.vertices[i], mul_vec2_f32(result.mtv, -1));
@@ -295,8 +295,8 @@ internal Projection
 project_polygon(BPolygon a, Vec2 line)
 {
     Projection result;
-    float32    min = FLOAT32_MAX;
-    float32    max = FLOAT32_MIN;
+    float32    min = MAX_FLOAT32;
+    float32    max = MIN_FLOAT32;
     for (int32 i = 0; i < a.vertex_count; i++)
     {
         Vec2    vertex = a.vertices[i];
@@ -314,8 +314,8 @@ internal Projection
 project_vertices(Vec2* vertices, uint32 vertex_count, Vec2 line)
 {
     Projection result;
-    float32    min = FLOAT32_MAX;
-    float32    max = FLOAT32_MIN;
+    float32    min = MAX_FLOAT32;
+    float32    max = MIN_FLOAT32;
     for (uint32 i = 0; i < vertex_count; i++)
     {
         Vec2    vertex = vertices[i];
@@ -357,7 +357,7 @@ internal Vec2
 closest_point_rect(Rect r, Vec2 v)
 {
     Vec2    closest     = v;
-    float32 min_dist_sq = FLOAT32_MAX;
+    float32 min_dist_sq = MAX_FLOAT32;
 
     float32 dist_sq = distsqr_vec2(rect_bl(r), v);
     if (dist_sq < min_dist_sq)
@@ -405,7 +405,7 @@ minimum_translation_vector(Vec2 normal, Projection p0, Projection p1, Vec2 cente
 internal Vec2
 BPolygon_tr(BPolygon p)
 {
-    Vec2 max = vec2(FLOAT32_MIN, FLOAT32_MIN);
+    Vec2 max = vec2(MIN_FLOAT32, MIN_FLOAT32);
     for (int32 i = 0; i < p.vertex_count; i++)
     {
         max.x = max(p.vertices[i].x, max.x);

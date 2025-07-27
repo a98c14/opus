@@ -240,12 +240,14 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
     FontFace* font_face = &g_font_cache->font_faces[font_face_index];
     xassert_m(font_face, "could not find given font face");
 
-    uint32         font_size   = (uint32)(pixel_size);
-    uint32         size        = font_face->atlas_type == GlyphAtlasTypeFreeType ? font_size : 32;
-    uint64         params[]    = {font_face_index, size};
-    uint64         hash        = hash_array_uint64(params, array_count(params));
+    uint32 font_size = (uint32)(pixel_size);
+    uint32 size      = font_face->atlas_type == GlyphAtlasTypeFreeType ? font_size : 32;
+    uint64 params[]  = {font_face_index, size};
+    uint64 hash      = hash_array_uint64(params, array_count(params));
+
     FontCacheList* font_bucket = &g_font_cache->rasterized_font_cache[hash % g_font_cache->rasterized_font_cache_capacity];
     FontCacheNode* node;
+
     for_each(node, font_bucket->first)
     {
         if (node->hash == hash)
@@ -268,24 +270,22 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
     }
 
     uint32 x_padding = 4;
+    // FT_Int32 calc_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_DEFAULT
+    //                                                             : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
 
-    FT_Int32 calc_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_DEFAULT : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
-    // TODO(selim): Load non-ASCII characters as well
-    for (int i = 32; i < 128; ++i)
-    {
-        if (FT_Load_Char(font_face->freetype_face, i, calc_flags))
-        {
-            fprintf(stderr, "ERROR: could not load glyph of a character with code %d\n", i);
-            exit(1);
-        }
+    // for (int i = 32; i < 128; ++i)
+    // {
+    //     if (FT_Load_Char(font_face->freetype_face, i, calc_flags))
+    //     {
+    //         fprintf(stderr, "ERROR: could not load glyph of a character with code %d\n", i);
+    //         exit(1);
+    //     }
+    // }
 
-        atlas->atlas_info.width += font_face->freetype_face->glyph->bitmap.width + x_padding;
-        atlas->atlas_info.height = max(atlas->atlas_info.height, font_face->freetype_face->glyph->bitmap.rows);
-    }
+    atlas->texture           = gfx_texture_new(2048, 2048, 1, GL_LINEAR, NULL);
+    atlas->atlas_info.width  = 2048;
+    atlas->atlas_info.height = 2048;
 
-    atlas->atlas_info.width += 8;
-    atlas->atlas_info.height += 8;
-    atlas->texture      = gfx_texture_new(atlas->atlas_info.width, atlas->atlas_info.height, 1, GL_LINEAR, NULL);
     FT_Int32 load_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_RENDER : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
 
     int32 x = 0;
@@ -318,7 +318,9 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
         atlas->glyphs[i - 32].atlas_bounds.right  = (x + glyph->bitmap.width) / (float32)atlas->atlas_info.width;
         atlas->glyphs[i - 32].atlas_bounds.top    = y_padding / (float32)atlas->atlas_info.height;
 
+        // TODO(selim): need to wrap this
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y_padding, glyph->bitmap.width, glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
+
         x += glyph->bitmap.width + x_padding;
     }
 

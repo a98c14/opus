@@ -20,3 +20,4 @@
 #include "base_thread_context.h"
 #include "base_intersection.h"
 #include "base_geometry.h"
+#include "base_rect_packer.h"

@@ -10,3 +10,4 @@
 internal void o_debug();
 
 internal void o_debug_mouse();
+internal void o_debug_rect_packer(RectPacker* rect_packer);

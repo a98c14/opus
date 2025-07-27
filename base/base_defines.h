@@ -265,8 +265,8 @@ global float32 ANGLE_TO_RAD_FLOAT32 = 3.14159265359f / 180.0f;
 global float32 RAD_TO_ANGLE_FLOAT32 = 180.0f / 3.14159265359f;
 
 // TODO: Find the actual min/max float values
-global float32 FLOAT32_MIN = -1000000;
-global float32 FLOAT32_MAX = 1000000;
+global float32 MIN_FLOAT32 = -1000000;
+global float32 MAX_FLOAT32 = 1000000;
 
 global uint64 MAX_UINT64 = 0xffffffffffffffffull;
 global uint32 MAX_UINT32 = 0xffffffff;
