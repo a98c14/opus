@@ -46,3 +46,10 @@ gfx_render_key_mask(RenderKey key, uint64 bit_start, uint64 bit_count)
 {
     return (key >> bit_start) & ((1ull << bit_count) - 1);
 }
+
+/** Utility */
+internal Bounds
+gfx_rect_to_texture_bounds(Rect rect, uint32 texture_width, uint32 texture_height)
+{
+    return bounds_from_rect(rect_scale_xy(rect_flip_y(rect), 1.f / texture_width, 1.f / texture_height));
+}

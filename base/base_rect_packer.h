@@ -24,5 +24,5 @@ typedef struct
 } RectPackerAddResult;
 
 internal RectPacker*         rect_packer_new(Arena* arena, Rect rect);
-internal RectPackerAddResult rect_packer_find(RectPacker* rect_packer, int32 width, int32 height);
-internal RectPackerAddResult rect_packer_add(RectPacker* rect_packer, int32 width, int32 height);
+internal RectPackerAddResult rect_packer_find(RectPacker* rect_packer, float32 width, float32 height);
+internal RectPackerAddResult rect_packer_add(RectPacker* rect_packer, float32 width, float32 height);

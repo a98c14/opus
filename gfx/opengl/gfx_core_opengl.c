@@ -358,6 +358,17 @@ gfx_texture_write(TextureIndex texture_index, void* data)
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, texture->width, texture->height, texture->format, GL_UNSIGNED_BYTE, data);
 }
 
+internal void
+gfx_texture_write_rect(TextureIndex texture_index, Rect rect, void* data)
+{
+    GFX_OGL_Context* ctx     = _gfx_ogl_ctx;
+    GFX_OGL_Texture* texture = &ctx->textures[texture_index];
+
+    glBindTexture(GL_TEXTURE_2D, texture->gl_texture_id);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, (int32)rect_left(rect), (int32)rect_bottom(rect), (uint32)rect.w, (uint32)rect.h, GL_RED, GL_UNSIGNED_BYTE, data);
+}
+
 internal uint32 gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
 
 internal FrameBufferIndex

@@ -15,7 +15,7 @@ rect_packer_new(Arena* arena, Rect rect)
 }
 
 internal RectPackerAddResult
-rect_packer_find(RectPacker* rect_packer, int32 width, int32 height)
+rect_packer_find(RectPacker* rect_packer, float32 width, float32 height)
 {
     RectPackerAddResult result = {0};
 
@@ -61,14 +61,14 @@ rect_packer_find(RectPacker* rect_packer, int32 width, int32 height)
 
     result.succeeded = result.idx_right != MAX_INT32;
     result.rect      = rect_from_bl_tr(
-        vec2((float32)min_x, (float32)min_y),
-        vec2((float32)min_x + width, (float32)min_y + height));
+        vec2(min_x, min_y),
+        vec2(min_x + width, min_y + height));
 
     return result;
 }
 
 internal RectPackerAddResult
-rect_packer_add(RectPacker* rect_packer, int32 width, int32 height)
+rect_packer_add(RectPacker* rect_packer, float32 width, float32 height)
 {
     RectPackerAddResult result = rect_packer_find(rect_packer, width, height);
 

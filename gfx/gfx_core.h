@@ -185,6 +185,7 @@ internal MaterialIndex gfx_material_new(String vertex_shader_text, String fragme
 internal TextureIndex  gfx_texture_new(uint32 width, uint32 height, uint32 channels, uint32 filter, void* data);
 internal TextureIndex  gfx_texture_array_new(uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
 internal void          gfx_texture_write(TextureIndex texture_index, void* data);
+internal void          gfx_texture_write_rect(TextureIndex texture_index, Rect rect, void* data);
 internal IVec2         gfx_texture_dims(TextureIndex texture);
 internal uint32        gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
 
@@ -202,8 +203,9 @@ internal Vec3       gfx_camera_position(GFX_Camera camera);
 internal Rect       gfx_camera_world_bounds(GFX_Camera camera);
 
 /** Utility */
-internal Vec2 gfx_window_to_screen_position(Vec2 p);
-internal Vec2 gfx_window_to_world_position(Vec2 p);
+internal Vec2   gfx_window_to_screen_position(Vec2 p);
+internal Vec2   gfx_window_to_world_position(Vec2 p);
+internal Bounds gfx_rect_to_texture_bounds(Rect rect, uint32 texture_width, uint32 texture_height);
 
 /** Debug */
 internal void gfx_enable_debug();

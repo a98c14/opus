@@ -54,7 +54,7 @@ typedef struct
     uint32 codepoint;
 } UnicodeDecode;
 
-internal UnicodeDecode utf8_decode(uint8* str, uint64 max);
+internal UnicodeDecode utf8_decode(char* str, uint64 max);
 internal UnicodeDecode utf16_decode(uint16* str, uint64 max);
 internal uint32        utf8_encode(uint8* str, int32 codepoint);
 internal uint32        utf16_encode(uint16* str, int32 codepoint);
@@ -129,3 +129,5 @@ global StaticStringStorage* g_static_string_storage;
 internal void              string_storage_init(Arena* arena, uint64 capacity);
 internal StaticStringIndex string_static_new(String str);
 internal String            string_static_get(StaticStringIndex index);
+
+internal bool32 string_is_empty(String str);

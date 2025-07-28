@@ -198,6 +198,33 @@ rect_from_wh(float32 w, float32 h)
     return result;
 }
 
+internal Rect
+rect_flip_x(Rect rect)
+{
+    Rect result = rect;
+    result.w *= -1;
+    return result;
+}
+
+internal Rect
+rect_flip_y(Rect rect)
+{
+    Rect result = rect;
+    result.h *= -1;
+    return result;
+}
+
+internal Rect
+rect_scale_xy(Rect rect, float32 x_scale, float32 y_scale)
+{
+    Rect result = rect;
+    result.x *= x_scale;
+    result.w *= x_scale;
+    result.y *= y_scale;
+    result.h *= y_scale;
+    return result;
+}
+
 internal Circle
 circle(Vec2 center, float32 radius)
 {

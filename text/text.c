@@ -1,11 +1,5 @@
 #include "text.h"
 
-internal Glyph
-glyph_get(GlyphAtlas* atlas, char c)
-{
-    return atlas->glyphs[(int)c - 32];
-}
-
 internal float32
 glyph_width(Glyph glyph, float32 size)
 {
@@ -28,17 +22,6 @@ glyph_position(Glyph glyph, float32 size, Vec2 base_offset)
     return result;
 }
 
-internal GlyphAtlas*
-glyph_atlas_load(Arena* arena, GlyphAtlasInfo* atlas_info, Glyph* glyphs, uint32 glyph_count, TextureIndex texture)
-{
-    GlyphAtlas* atlas  = arena_push_struct_zero(arena, GlyphAtlas);
-    atlas->glyphs      = glyphs;
-    atlas->glyph_count = glyph_count;
-    atlas->atlas_info  = *atlas_info;
-    atlas->texture     = texture;
-    return atlas;
-}
-
 internal void
 text_line_add(Arena* frame_arena, TextLineList* lines, String str, Vec2 size)
 {
@@ -51,55 +34,18 @@ text_line_add(Arena* frame_arena, TextLineList* lines, String str, Vec2 size)
     lines->count++;
 }
 
-internal TextLineList*
-text_lines_from_string(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, float32 max_width)
-{
-    int32   space_index    = -1;
-    float32 width          = 0;
-    float32 width_at_space = 0;
-
-    TextLineList* lines = arena_push_struct_zero(frame_arena, TextLineList);
-
-    Glyph  glyph;
-    String remaining = str;
-    for (uint32 i = 0; i < remaining.length; i++)
-    {
-        glyph = glyph_get(atlas, remaining.value[i]);
-        if (char_is_space(remaining.value[i]))
-        {
-            // NOTE(selim): glyph width is added to cover the last letter of the string
-            width_at_space = width;
-            space_index    = i;
-        }
-
-        float32 new_width = width + glyph.advance * size;
-        if (new_width > max_width && space_index > 0)
-        {
-            text_line_add(frame_arena, lines, string_substr(remaining, 0, space_index + 1), vec2(width_at_space, size));
-
-            remaining = string_skip(remaining, space_index + 1);
-            i         = 0;
-            width     = 0;
-            continue;
-        }
-
-        width = new_width;
-    }
-    text_line_add(frame_arena, lines, remaining, vec2(width, size));
-    return lines;
-}
-
-// TODO(selim): Go over each of these functions at some point. Currently we calculate glyph bounds multiple times for each string.
 internal Rect
-text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, String str, float32 size)
+text_calculate_bounds(FontFaceIndex font_face, Vec2 position, Alignment alignment, String str, float32 size)
 {
-    Vec2  string_size = vec2_zero();
-    Glyph glyph;
-    for (uint32 i = 0; i < str.length; i++)
+    Vec2   string_size = vec2_zero();
+    uint64 processed   = 0;
+    while (processed < str.length)
     {
-        glyph = glyph_get(atlas, str.value[i]);
-        string_size.x += glyph.advance * size;
+        UnicodeDecode utf_char = utf8_decode(str.value + processed, 4);
+        Glyph         glyph    = font_get_glyph(font_face, size, utf_char.codepoint);
+        string_size.x += glyph.advance.x * size;
         string_size.y = max(glyph.plane_bounds.top * size, string_size.y);
+        processed += utf_char.inc;
     };
 
     float32 x = string_size.x * AlignmentMultiplierX[alignment];
@@ -107,82 +53,6 @@ text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, Str
     return (Rect){.x = x + position.x, .y = y + position.y, .w = string_size.x, .h = string_size.y};
 }
 
-internal Rect
-text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, GFX_Batch* batch);
-// {
-//     // TODO(selim): !!!!!!!!!!!!!!!!!!!!!!
-//     //     Rect string_bounds = text_calculate_bounds(atlas, position, alignment, str, size_in_pixels);
-//     //     Vec2 base_offset   = {
-//     //           .x = string_bounds.w * FontAlignmentMultiplierX[alignment],
-//     //           .y = string_bounds.h * FontAlignmentMultiplierY[alignment]};
-//     // #if DEBUG_TEXT
-//     //     draw_debug_rect(string_bounds);
-//     // #endif
-//     //     uint32 index = dst_index;
-//     //     for (uint32 i = 0; i < str.length; i++)
-//     //     {
-//     //         Glyph   glyph        = glyph_get(atlas, str.value[i]);
-//     //         float32 w            = glyph_width(glyph, size_in_pixels);
-//     //         float32 h            = glyph_height(glyph, size_in_pixels);
-//     //         Vec2    plane_offset = {.x = size_in_pixels * glyph.plane_bounds.left, .y = size_in_pixels * glyph.plane_bounds.bottom};
-//     //         float32 x            = position.x + base_offset.x + plane_offset.x + w / 2.0f;
-//     //         float32 y            = position.y + base_offset.y + plane_offset.y + h / 2.0f;
-
-//     //         Mat4 transform = transform_quad_aligned(vec2(x, y), vec2(w, h));
-//     //         memcpy(&dst_matrices[index], &transform, sizeof(transform));
-//     //         base_offset.x += glyph.advance * size_in_pixels;
-//     //         index++;
-//     //     }
-
-//     // return string_bounds;
-//     return (Rect){0};
-// }
-
-internal Rect
-text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, GFX_Batch* batch);
-// {
-//     // TODO(selim): !!!!!!!!!!!!!!!!!!!!!!
-//     //     TextLineList* lines         = text_lines_from_string(frame_arena, atlas, str, size, max_width);
-//     //     Rect          string_bounds = rect_at(position, lines->size, alignment);
-//     // #if DEBUG_TEXT
-//     //     draw_debug_rect(string_bounds);
-//     // #endif
-
-//     //     TextLineNode* line_node;
-//     //     Rect          lines_rect = string_bounds;
-//     //     for_each(line_node, lines->first)
-//     //     {
-//     //         Rect   line_rect       = rect_cut_top(&lines_rect, line_node->v.size.h);
-//     //         Rect   inner_line_rect = rect_from_wh(line_node->v.size.w, line_node->v.size.h);
-//     //         Anchor a               = {.child = alignment, .parent = alignment};
-//     //         inner_line_rect        = rect_anchor(inner_line_rect, line_rect, a);
-//     // #if DEBUG_TEXT
-//     //         draw_debug_rect_b(inner_line_rect);
-//     // #endif
-//     //         Vec2 base_offset = {
-//     //             .x = inner_line_rect.x - inner_line_rect.w * 0.5,
-//     //             .y = inner_line_rect.y - inner_line_rect.h * 0.5};
-
-//     //         String line_str = line_node->v.str;
-//     //         for (uint32 i = 0; i < line_str.length; i++)
-//     //         {
-//     //             Glyph   glyph = glyph_get(atlas, line_str.value[i]);
-//     //             float32 w     = glyph_width(glyph, size);
-//     //             float32 h     = glyph_height(glyph, size);
-//     //             Vec2    pos   = glyph_position(glyph, size, base_offset);
-
-//     //             Mat4 transform = transform_quad_aligned(pos, vec2(w, h));
-//     //             memcpy(&dst_matrices[dst_index], &transform, sizeof(transform));
-//     //             dst_index++;
-//     //             base_offset.x += glyph.advance * size;
-//     //         }
-//     //     }
-
-//     //     return string_bounds;
-//     return (Rect){0};
-// }
-
-/** freetype */
 internal void
 font_cache_init(Arena* arena)
 {
@@ -200,6 +70,9 @@ font_cache_init(Arena* arena)
 
     g_font_cache->rasterized_font_cache_capacity = 512;
     g_font_cache->rasterized_font_cache          = arena_push_array_zero(arena, FontCacheList, g_font_cache->rasterized_font_cache_capacity);
+
+    g_font_cache->glyph_cache_capacity = 4096;
+    g_font_cache->glyph_cache          = arena_push_array_zero(arena, GlyphCacheList, g_font_cache->glyph_cache_capacity);
 }
 
 internal FontFaceIndex
@@ -233,6 +106,61 @@ font_load(String font_name, String font_path, GlyphAtlasType atlas_type)
     return face_index;
 }
 
+internal Glyph
+font_get_glyph(FontFaceIndex font_face_index, float32 pixel_size, uint32 codepoint)
+{
+    uint32 font_size = font_pixel_to_font_size(pixel_size);
+    uint64 params[]  = {font_face_index, font_size, codepoint};
+    uint64 hash      = hash_array_uint64(params, array_count(params));
+
+    GlyphCacheList* cache = &g_font_cache->glyph_cache[hash % g_font_cache->glyph_cache_capacity];
+    GlyphCacheNode* node;
+    for_each(node, cache->first)
+    {
+        if (node->hash == hash)
+        {
+            return node->glyph;
+        }
+    }
+
+    GlyphAtlas* atlas = font_get_atlas(font_face_index, pixel_size);
+
+    FontFace* font_face  = &g_font_cache->font_faces[font_face_index];
+    FT_Int32  load_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_RENDER : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
+    if (FT_Load_Char(font_face->freetype_face, codepoint, load_flags))
+    {
+        fprintf(stderr, "ERROR: could not load glyph of a character with code %d\n", codepoint);
+        exit(1);
+    }
+
+    FT_GlyphSlot freetype_glyph = font_face->freetype_face->glyph;
+    if (FT_Render_Glyph(freetype_glyph, FT_RENDER_MODE_NORMAL))
+    {
+        fprintf(stderr, "ERROR: could not render glyph of a character with code %d\n", codepoint);
+        exit(1);
+    }
+
+    Glyph glyph               = {0};
+    glyph.advance.x           = (freetype_glyph->advance.x >> 6) / (float32)pixel_size;
+    glyph.advance.y           = (freetype_glyph->advance.y >> 6) / (float32)pixel_size;
+    glyph.plane_bounds.left   = (freetype_glyph->bitmap_left) / (float32)pixel_size;
+    glyph.plane_bounds.bottom = (freetype_glyph->bitmap_top - (int32)freetype_glyph->bitmap.rows) / (float32)pixel_size;
+    glyph.plane_bounds.right  = (freetype_glyph->bitmap_left + (int32)freetype_glyph->bitmap.width) / (float32)pixel_size;
+    glyph.plane_bounds.top    = (freetype_glyph->bitmap_top) / (float32)pixel_size;
+
+    RectPackerAddResult rect_add_result = rect_packer_add(atlas->packer, (float32)freetype_glyph->bitmap.width, (float32)freetype_glyph->bitmap.rows);
+    glyph.atlas_bounds                  = gfx_rect_to_texture_bounds(rect_add_result.rect, atlas->atlas_info.width, atlas->atlas_info.height);
+
+    gfx_texture_write_rect(atlas->texture, rect_add_result.rect, freetype_glyph->bitmap.buffer);
+
+    node        = arena_push_struct_zero(g_font_cache->arena, GlyphCacheNode);
+    node->glyph = glyph;
+    node->hash  = hash;
+    queue_push(cache->first, cache->last, node);
+
+    return glyph;
+}
+
 internal GlyphAtlas*
 font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
 {
@@ -246,8 +174,8 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
     uint64 hash      = hash_array_uint64(params, array_count(params));
 
     FontCacheList* font_bucket = &g_font_cache->rasterized_font_cache[hash % g_font_cache->rasterized_font_cache_capacity];
-    FontCacheNode* node;
 
+    FontCacheNode* node;
     for_each(node, font_bucket->first)
     {
         if (node->hash == hash)
@@ -256,9 +184,25 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
         }
     }
 
+    node                    = arena_push_struct_zero(g_font_cache->arena, FontCacheNode);
+    node->v.font_face_index = font_face_index;
+    node->v.atlas           = font_atlas_new(font_face_index, pixel_size);
+    node->v.size            = size;
+    node->hash              = hash;
+
+    queue_push(font_bucket->first, font_bucket->last, node);
+
+    return node->v.atlas;
+}
+
+internal GlyphAtlas*
+font_atlas_new(FontFaceIndex font_face_index, float32 pixel_size)
+{
+    FontFace* font_face = &g_font_cache->font_faces[font_face_index];
+    uint32    font_size = (uint32)(pixel_size);
+    uint32    size      = font_face->atlas_type == GlyphAtlasTypeFreeType ? font_size : 32;
+
     GlyphAtlas* atlas      = arena_push_struct_zero(g_font_cache->arena, GlyphAtlas);
-    atlas->glyph_count     = 128;
-    atlas->glyphs          = arena_push_array_zero(g_font_cache->arena, Glyph, atlas->glyph_count);
     atlas->type            = font_face->atlas_type;
     atlas->atlas_info.size = size;
 
@@ -269,66 +213,17 @@ font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size)
         return 0;
     }
 
-    uint32 x_padding = 4;
-    // FT_Int32 calc_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_DEFAULT
-    //                                                             : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
-
-    // for (int i = 32; i < 128; ++i)
-    // {
-    //     if (FT_Load_Char(font_face->freetype_face, i, calc_flags))
-    //     {
-    //         fprintf(stderr, "ERROR: could not load glyph of a character with code %d\n", i);
-    //         exit(1);
-    //     }
-    // }
-
-    atlas->texture           = gfx_texture_new(2048, 2048, 1, GL_LINEAR, NULL);
+    // uint32 x_padding         = 4;
     atlas->atlas_info.width  = 2048;
     atlas->atlas_info.height = 2048;
+    atlas->texture           = gfx_texture_new(atlas->atlas_info.width, atlas->atlas_info.height, 1, GL_LINEAR, NULL);
+    atlas->packer            = rect_packer_new(g_font_cache->arena, rect_from_bl_tr(vec2_zero(), vec2((float32)atlas->atlas_info.width, (float32)atlas->atlas_info.height)));
 
-    FT_Int32 load_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_RENDER : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
+    return atlas;
+}
 
-    int32 x = 0;
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    for (uint32 i = 32; i < 128; ++i)
-    {
-        if (FT_Load_Char(font_face->freetype_face, i, load_flags))
-        {
-            fprintf(stderr, "ERROR: could not load glyph of a character with code %d\n", i);
-            exit(1);
-        }
-
-        FT_GlyphSlot glyph = font_face->freetype_face->glyph;
-        if (FT_Render_Glyph(glyph, FT_RENDER_MODE_NORMAL))
-        {
-            fprintf(stderr, "ERROR: could not render glyph of a character with code %d\n", i);
-            exit(1);
-        }
-
-        atlas->glyphs[i - 32].advance             = (glyph->advance.x >> 6) / (float32)size;
-        atlas->glyphs[i - 32].advance_y           = (glyph->advance.y >> 6) / (float32)size;
-        atlas->glyphs[i - 32].plane_bounds.left   = (glyph->bitmap_left) / (float32)size;
-        atlas->glyphs[i - 32].plane_bounds.bottom = (glyph->bitmap_top - (int32)glyph->bitmap.rows) / (float32)size;
-        atlas->glyphs[i - 32].plane_bounds.right  = (glyph->bitmap_left + (int32)glyph->bitmap.width) / (float32)size;
-        atlas->glyphs[i - 32].plane_bounds.top    = (glyph->bitmap_top) / (float32)size;
-
-        int32 y_padding                           = 2;
-        atlas->glyphs[i - 32].atlas_bounds.left   = x / (float32)atlas->atlas_info.width;
-        atlas->glyphs[i - 32].atlas_bounds.bottom = (y_padding + glyph->bitmap.rows) / (float32)atlas->atlas_info.height;
-        atlas->glyphs[i - 32].atlas_bounds.right  = (x + glyph->bitmap.width) / (float32)atlas->atlas_info.width;
-        atlas->glyphs[i - 32].atlas_bounds.top    = y_padding / (float32)atlas->atlas_info.height;
-
-        // TODO(selim): need to wrap this
-        glTexSubImage2D(GL_TEXTURE_2D, 0, x, y_padding, glyph->bitmap.width, glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, glyph->bitmap.buffer);
-
-        x += glyph->bitmap.width + x_padding;
-    }
-
-    node                    = arena_push_struct_zero(g_font_cache->arena, FontCacheNode);
-    node->v.font_face_index = font_face_index;
-    node->v.atlas           = atlas;
-    node->v.size            = size;
-    node->hash              = hash;
-    queue_push(font_bucket->first, font_bucket->last, node);
-    return node->v.atlas;
+internal uint32
+font_pixel_to_font_size(float32 pixel_size)
+{
+    return (uint32)(pixel_size);
 }

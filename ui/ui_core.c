@@ -69,7 +69,6 @@ internal void
 ui_update(float32 dt)
 {
     //** Layout Calculations */
-
     UI_EntityNode* first = 0;
     UI_EntityNode* last  = 0;
 
@@ -513,7 +512,7 @@ internal void
 _ui_entity_init_root()
 {
     ui_ctx->root           = ui_entity_new(UI_ElementKind_Container);
-    ui_ctx->root->bg_color = ColorRed100;
+    ui_ctx->root->bg_color = 0;
     ui_ctx->root->rect     = screen_rect();
     ui_ctx->active_element = ui_ctx->root;
     ui_ctx->active_parent  = ui_ctx->root;

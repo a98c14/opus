@@ -85,7 +85,7 @@ read_only global uint8 utf8_class[32] = {
 // clang-format on
 
 internal UnicodeDecode
-utf8_decode(uint8* str, uint64 max)
+utf8_decode(char* str, uint64 max)
 {
     UnicodeDecode result     = {1, MAX_UINT32};
     uint8         byte       = str[0];
@@ -234,8 +234,8 @@ str16_from_8(Arena* arena, String in)
 {
     uint64        cap  = in.length * 2;
     uint16*       str  = arena_push_array(arena, uint16, cap + 1);
-    uint8*        ptr  = (uint8*)in.value;
-    uint8*        opl  = ptr + in.length;
+    char*         ptr  = in.value;
+    char*         opl  = ptr + in.length;
     uint64        size = 0;
     UnicodeDecode consume;
     for (; ptr < opl; ptr += consume.inc)

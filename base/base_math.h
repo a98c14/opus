@@ -236,6 +236,9 @@ internal IVec2 ivec2_xy(Vec2 xy);
 internal Rect rect_from_xy_wh(float32 x, float32 y, float32 w, float32 h);
 internal Rect rect_from_bl_tr(Vec2 bl, Vec2 tr);
 internal Rect rect_from_wh(float32 w, float32 h);
+internal Rect rect_flip_x(Rect rect);
+internal Rect rect_flip_y(Rect rect);
+internal Rect rect_scale_xy(Rect rect, float32 x_scale, float32 y_scale);
 
 internal Circle circle(Vec2 center, float32 radius);
 internal Range  range(float32 min, float32 max);

@@ -26,11 +26,10 @@ typedef enum
 
 typedef struct
 {
-    uint32  unicode;
-    float32 advance; // TODO(selim): Make this `Vec2` and combine with `y`
-    float32 advance_y;
-    Bounds  plane_bounds;
-    Bounds  atlas_bounds;
+    uint32 unicode;
+    Vec2   advance;
+    Bounds plane_bounds;
+    Bounds atlas_bounds;
 } Glyph;
 
 typedef struct
@@ -48,11 +47,13 @@ typedef struct
 
 typedef struct
 {
-    GlyphAtlasType type;
+    // Glyph*         glyphs;
+
     uint32         glyph_count;
-    Glyph*         glyphs;
+    GlyphAtlasType type;
     GlyphAtlasInfo atlas_info;
     TextureIndex   texture;
+    RectPacker*    packer;
 } GlyphAtlas;
 
 typedef struct
@@ -77,21 +78,6 @@ typedef struct
     TextLineNode* last;
 } TextLineList;
 
-internal GlyphAtlas* glyph_atlas_load(Arena* arena, GlyphAtlasInfo* atlas_info, Glyph* glyphs, uint32 glyph_count, TextureIndex texture);
-
-internal Glyph   glyph_get(GlyphAtlas* atlas, char c);
-internal float32 glyph_width(Glyph glyph, float32 size);
-internal float32 glyph_height(Glyph glyph, float32 size);
-internal Vec2    glyph_position(Glyph glyph, float32 size, Vec2 base_offset);
-
-internal void          text_line_add(Arena* frame_arena, TextLineList* lines, String str, Vec2 size);
-internal TextLineList* text_lines_from_string(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, float32 max_width);
-
-internal Rect text_calculate_bounds(GlyphAtlas* atlas, Vec2 position, Alignment alignment, String str, float32 size);
-internal Rect text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, GFX_Batch* batch);
-internal Rect text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, GFX_Batch* batch);
-
-/** freetype */
 typedef uint32 FontFaceIndex;
 typedef struct
 {
@@ -124,6 +110,21 @@ typedef struct
     FontCacheNode* last;
 } FontCacheList;
 
+typedef struct GlyphCacheNode GlyphCacheNode;
+struct GlyphCacheNode
+{
+    Glyph           glyph;
+    uint64          hash;
+    GlyphCacheNode* next;
+};
+
+typedef struct
+{
+    uint32          count;
+    GlyphCacheNode* first;
+    GlyphCacheNode* last;
+} GlyphCacheList;
+
 typedef struct
 {
     Arena*     arena;
@@ -135,9 +136,25 @@ typedef struct
 
     uint64         rasterized_font_cache_capacity;
     FontCacheList* rasterized_font_cache;
+
+    uint64          glyph_cache_capacity;
+    GlyphCacheList* glyph_cache;
 } FontCache;
 FontCache* g_font_cache;
+
+internal float32 glyph_width(Glyph glyph, float32 size);
+internal float32 glyph_height(Glyph glyph, float32 size);
+internal Vec2    glyph_position(Glyph glyph, float32 size, Vec2 base_offset);
+
+internal void text_line_add(Arena* frame_arena, TextLineList* lines, String str, Vec2 size);
+
+internal Rect text_calculate_bounds(FontFaceIndex font_face, Vec2 position, Alignment alignment, String str, float32 size);
+internal Rect text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, GFX_Batch* batch);
+internal Rect text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, GFX_Batch* batch);
 
 internal void          font_cache_init(Arena* arena);
 internal FontFaceIndex font_load(String font_name, String font_path, GlyphAtlasType atlas_type);
 internal GlyphAtlas*   font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size);
+internal GlyphAtlas*   font_atlas_new(FontFaceIndex font_face_index, float32 pixel_size);
+internal Glyph         font_get_glyph(FontFaceIndex font_face_index, float32 pixel_size, uint32 codepoint);
+internal uint32        font_pixel_to_font_size(float32 pixel_size);
