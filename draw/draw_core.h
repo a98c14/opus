@@ -75,13 +75,13 @@ internal void d_context_init(String asset_path);
 internal void d_update();
 
 /** batch functions */
-internal void d_mesh_push_vertex(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
-internal void d_mesh_push_rect(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Rect rect, Bounds tex_coord, Color color);
-internal void d_mesh_push_glyph(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Glyph glyph, Vec2 pos, float32 size, Color color);
-internal void d_mesh_push_string(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, String str, Vec2 pos, float32 size, Color c);
-internal void d_mesh_push_character(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, uint64 codepoint, Vec2 pos, float32 size, Color c);
-internal void d_mesh_push_triangle_strip(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
-internal void d_mesh_push_line(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 start, Vec2 end, float32 thickness, Color c);
+internal void       d_mesh_push_vertex(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
+internal void       d_mesh_push_rect(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Rect rect, Bounds tex_coord, Color color);
+internal void       d_mesh_push_glyph(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Glyph glyph, Vec2 pos, float32 size, Color color);
+internal AtlasIndex d_mesh_push_string(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, String str, Vec2 pos, float32 size, Color c);
+internal AtlasIndex d_mesh_push_character(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, uint64 codepoint, Vec2 pos, float32 size, Color c);
+internal void       d_mesh_push_triangle_strip(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
+internal void       d_mesh_push_line(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 start, Vec2 end, float32 thickness, Color c);
 
 /** draw functions */
 internal void d_line(Vec2 start, Vec2 end, float32 thickness, Color c);

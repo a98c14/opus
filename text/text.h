@@ -18,25 +18,21 @@ const float32 FontAlignmentMultiplierX[AlignmentCount] = {  -0.5,    -0.5,  -0.5
 const float32 FontAlignmentMultiplierY[AlignmentCount] = {  -0.5,       0,    -1,   -0.5,  -0.5,           0,            0,       -1,        -1};
 // clang-format on
 
-typedef enum
-{
-    GlyphAtlasTypeSDF,
-    GlyphAtlasTypeFreeType
-} GlyphAtlasType;
+typedef uint32 AtlasIndex;
 
 typedef struct
 {
-    uint32 unicode;
-    Vec2   advance;
-    Bounds plane_bounds;
-    Bounds atlas_bounds;
+    uint32     unicode;
+    Vec2       advance;
+    Bounds     plane_bounds;
+    Bounds     atlas_bounds;
+    AtlasIndex atlas_index;
 } Glyph;
 
 typedef struct
 {
     uint32  width;
     uint32  height;
-    uint32  size;
     uint16  distance_range;
     float32 line_height;
     float32 ascender;
@@ -47,13 +43,13 @@ typedef struct
 
 typedef struct
 {
-    // Glyph*         glyphs;
-
+    uint32         index;
     uint32         glyph_count;
-    GlyphAtlasType type;
     GlyphAtlasInfo atlas_info;
     TextureIndex   texture;
     RectPacker*    packer;
+    bool32         is_full;
+    bool32         is_initialized;
 } GlyphAtlas;
 
 typedef struct
@@ -81,10 +77,9 @@ typedef struct
 typedef uint32 FontFaceIndex;
 typedef struct
 {
-    GlyphAtlasType atlas_type;
-    uint64         hash;
-    String         name;
-    FT_Face        freetype_face;
+    uint64  hash;
+    String  name;
+    FT_Face freetype_face;
 } FontFace;
 
 typedef struct
@@ -94,28 +89,13 @@ typedef struct
     FontFaceIndex font_face_index;
 } RasterizedFont;
 
-typedef struct FontCacheNode FontCacheNode;
-struct FontCacheNode
-{
-    uint64         hash;
-    RasterizedFont v;
-
-    FontCacheNode* next;
-};
-
-typedef struct
-{
-    uint32         count;
-    FontCacheNode* first;
-    FontCacheNode* last;
-} FontCacheList;
-
 typedef struct GlyphCacheNode GlyphCacheNode;
 struct GlyphCacheNode
 {
     Glyph           glyph;
     uint64          hash;
     GlyphCacheNode* next;
+    uint64          codepoint;
 };
 
 typedef struct
@@ -134,8 +114,8 @@ typedef struct
     uint32    font_face_count;
     FontFace* font_faces;
 
-    uint64         rasterized_font_cache_capacity;
-    FontCacheList* rasterized_font_cache;
+    uint32      atlas_count;
+    GlyphAtlas* glyph_atlases;
 
     uint64          glyph_cache_capacity;
     GlyphCacheList* glyph_cache;
@@ -153,8 +133,8 @@ internal Rect text_calculate_transforms(GlyphAtlas* atlas, String str, float32 s
 internal Rect text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, GFX_Batch* batch);
 
 internal void          font_cache_init(Arena* arena);
-internal FontFaceIndex font_load(String font_name, String font_path, GlyphAtlasType atlas_type);
-internal GlyphAtlas*   font_get_atlas(FontFaceIndex font_face_index, float32 pixel_size);
-internal GlyphAtlas*   font_atlas_new(FontFaceIndex font_face_index, float32 pixel_size);
+internal FontFaceIndex font_load(String font_name, String font_path);
 internal Glyph         font_get_glyph(FontFaceIndex font_face_index, float32 pixel_size, uint64 codepoint);
+internal GlyphAtlas*   font_get_available_atlas();
 internal uint32        font_pixel_to_font_size(float32 pixel_size);
+internal TextureIndex  font_get_atlas_texture(AtlasIndex atlas);

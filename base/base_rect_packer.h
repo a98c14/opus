@@ -6,6 +6,8 @@
 
 typedef struct
 {
+    float32 padding;
+
     Vec2* points;
     int32 point_count;
 
@@ -23,6 +25,6 @@ typedef struct
     int32  idx_right;
 } RectPackerAddResult;
 
-internal RectPacker*         rect_packer_new(Arena* arena, Rect rect);
+internal RectPacker*         rect_packer_new(Arena* arena, Rect rect, float32 padding);
 internal RectPackerAddResult rect_packer_find(RectPacker* rect_packer, float32 width, float32 height);
 internal RectPackerAddResult rect_packer_add(RectPacker* rect_packer, float32 width, float32 height);

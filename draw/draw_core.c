@@ -24,12 +24,12 @@ d_context_init(String asset_path)
     StringList path = string_list();
     string_list_push(temp.arena, &path, asset_path);
     string_list_pushf(temp.arena, &path, "\\IBMPlexMono-Bold.ttf");
-    d_context->active_font = font_load(string("ibx_mono"), string_list_join(temp.arena, &path, 0), GlyphAtlasTypeFreeType);
+    d_context->active_font = font_load(string("ibx_mono"), string_list_join(temp.arena, &path, 0));
 
     StringList icon_path = string_list();
     string_list_push(temp.arena, &icon_path, asset_path);
     string_list_pushf(temp.arena, &icon_path, "\\icons.ttf");
-    d_context->icon_font = font_load(string("icons"), string_list_join(temp.arena, &icon_path, 0), GlyphAtlasTypeFreeType);
+    d_context->icon_font = font_load(string("icons"), string_list_join(temp.arena, &icon_path, 0));
     scratch_end(temp);
 }
 
@@ -90,7 +90,7 @@ d_mesh_push_glyph(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* ve
     d_mesh_push_rect(vertex_buffer, vertex_count, rect_at(pos, vec2(w, h), AlignmentBottomLeft), glyph.atlas_bounds, color);
 }
 
-internal void
+internal AtlasIndex
 d_mesh_push_string(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, String str, Vec2 pos, float32 size, Color c)
 {
     float32 advance_x = 0;
@@ -98,18 +98,21 @@ d_mesh_push_string(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* v
     pos.y             = roundf(pos.y);
 
     uint64 processed = 0;
+    Glyph  glyph     = {0};
     while (processed < str.length)
     {
-        UnicodeDecode utf_char  = utf8_decode(str.value + processed, 4);
-        Glyph         glyph     = font_get_glyph(font_face, size, utf_char.codepoint);
-        Vec2          glyph_pos = vec2(pos.x + advance_x, pos.y);
+        UnicodeDecode utf_char = utf8_decode(str.value + processed, 4);
+        glyph                  = font_get_glyph(font_face, size, utf_char.codepoint);
+        Vec2 glyph_pos         = vec2(pos.x + advance_x, pos.y);
         d_mesh_push_glyph(vertex_buffer, vertex_count, glyph, glyph_pos, size, c);
         advance_x += glyph.advance.x * size;
         processed += utf_char.inc;
     }
+
+    return glyph.atlas_index;
 }
 
-internal void
+internal AtlasIndex
 d_mesh_push_character(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, uint64 codepoint, Vec2 pos, float32 size, Color c)
 {
     pos.x = roundf(pos.x);
@@ -118,6 +121,8 @@ d_mesh_push_character(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32
     Glyph glyph     = font_get_glyph(font_face, size, codepoint);
     Vec2  glyph_pos = vec2(pos.x, pos.y);
     d_mesh_push_glyph(vertex_buffer, vertex_count, glyph, glyph_pos, size, c);
+
+    return glyph.atlas_index;
 }
 
 internal void
@@ -326,11 +331,13 @@ d_string_raw(FontFaceIndex font, Vec2 pos, String str, float32 size, Color c, Al
 
     GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, str.length * 6);
     uint32                               vertex_count = 0;
-    d_mesh_push_string(vertices, &vertex_count, font, str, add_vec2(pos, base_offset), size, c);
 
-    GlyphAtlas* atlas = font_get_atlas(font, size);
-    GFX_Batch   batch;
-    batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, GFX_MeshTypeDynamic, material);
+    // TODO(selim): There is a bug here, if the string characters fall in to separate textures, characters that are in the first one wouldn't render.
+    // Instead of batching like this we should just push glyphs one by one I think.
+    AtlasIndex atlas_index = d_mesh_push_string(vertices, &vertex_count, font, str, add_vec2(pos, base_offset), size, c);
+
+    GFX_Batch batch;
+    batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, font_get_atlas_texture(atlas_index), GFX_MeshTypeDynamic, material);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
     batch.vertex_buffer       = vertices;
@@ -345,11 +352,10 @@ d_character(FontFaceIndex font, Vec2 pos, uint64 codepoint, float32 size, Color 
 {
     GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, 6);
     uint32                               vertex_count = 0;
-    d_mesh_push_character(vertices, &vertex_count, font, codepoint, pos, size, c);
+    AtlasIndex                           atlas_index  = d_mesh_push_character(vertices, &vertex_count, font, codepoint, pos, size, c);
 
-    GlyphAtlas* atlas = font_get_atlas(font, size);
-    GFX_Batch   batch;
-    batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, GFX_MeshTypeDynamic, material);
+    GFX_Batch batch;
+    batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, font_get_atlas_texture(atlas_index), GFX_MeshTypeDynamic, material);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
     batch.vertex_buffer       = vertices;

@@ -1,15 +1,16 @@
 #include "base_rect_packer.h"
 
 internal RectPacker*
-rect_packer_new(Arena* arena, Rect rect)
+rect_packer_new(Arena* arena, Rect rect, float32 padding)
 {
     RectPacker* result = arena_push_struct_zero(arena, RectPacker);
     result->points     = arena_push_array_zero(arena, Vec2, (int32)rect.w);
     result->rect       = rect;
-    result->rects      = arena_push_array_zero(arena, Rect, 2048); // TODO: maybe this should be a linked list
+    result->rects      = arena_push_array_zero(arena, Rect, 4096); // TODO: maybe this should be a linked list
 
     result->point_count = 1;
     result->points[0]   = rect_bl(rect);
+    result->padding     = padding;
 
     return result;
 }
