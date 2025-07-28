@@ -136,5 +136,6 @@ internal void          font_cache_init(Arena* arena);
 internal FontFaceIndex font_load(String font_name, String font_path);
 internal Glyph         font_get_glyph(FontFaceIndex font_face_index, float32 pixel_size, uint64 codepoint);
 internal GlyphAtlas*   font_get_available_atlas();
+internal void          font_atlas_init(GlyphAtlas* atlas, AtlasIndex atlas_index);
 internal uint32        font_pixel_to_font_size(float32 pixel_size);
-internal TextureIndex  font_get_atlas_texture(AtlasIndex atlas);
+internal TextureIndex  font_get_atlas_texture(AtlasIndex atlas_index);

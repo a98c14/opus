@@ -202,20 +202,30 @@ font_get_available_atlas()
     GlyphAtlas* atlas = &g_font_cache->glyph_atlases[atlas_index];
     if (!atlas->is_initialized)
     {
-        atlas->index             = atlas_index;
-        atlas->atlas_info.width  = 2048;
-        atlas->atlas_info.height = 2048;
-        atlas->texture           = gfx_texture_new(atlas->atlas_info.width, atlas->atlas_info.height, 1, GL_LINEAR, NULL);
-        atlas->packer            = rect_packer_new(g_font_cache->arena, rect_from_bl_tr(vec2_zero(), vec2((float32)atlas->atlas_info.width, (float32)atlas->atlas_info.height)), 2);
-        atlas->is_initialized    = true;
+        font_atlas_init(atlas, atlas_index);
     }
 
     return atlas;
 }
 
-internal TextureIndex
-font_get_atlas_texture(AtlasIndex atlas)
+internal void
+font_atlas_init(GlyphAtlas* atlas, AtlasIndex atlas_index)
 {
-    xassert(g_font_cache->glyph_atlases[atlas].is_initialized);
-    return g_font_cache->glyph_atlases[atlas].texture;
+    atlas->index             = atlas_index;
+    atlas->atlas_info.width  = 2048;
+    atlas->atlas_info.height = 2048;
+    atlas->texture           = gfx_texture_new(atlas->atlas_info.width, atlas->atlas_info.height, 1, GL_LINEAR, NULL);
+    atlas->packer            = rect_packer_new(g_font_cache->arena, rect_from_bl_tr(vec2_zero(), vec2((float32)atlas->atlas_info.width, (float32)atlas->atlas_info.height)), 2);
+    atlas->is_initialized    = true;
+}
+
+internal TextureIndex
+font_get_atlas_texture(AtlasIndex atlas_index)
+{
+    if (!g_font_cache->glyph_atlases[atlas_index].is_initialized)
+    {
+        font_atlas_init(&g_font_cache->glyph_atlases[atlas_index], atlas_index);
+    }
+
+    return g_font_cache->glyph_atlases[atlas_index].texture;
 }
