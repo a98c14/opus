@@ -37,6 +37,7 @@ typedef struct
     PassIndex      active_pass;
     SortLayerIndex active_layer;
     FontFaceIndex  active_font;
+    FontFaceIndex  icon_font;
     GFX_ViewType   active_view;
 
     /** materials */
@@ -78,6 +79,7 @@ internal void d_mesh_push_vertex(GFX_VertexAtrribute_TexturedColored* vertex_buf
 internal void d_mesh_push_rect(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Rect rect, Bounds tex_coord, Color color);
 internal void d_mesh_push_glyph(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Glyph glyph, Vec2 pos, float32 size, Color color);
 internal void d_mesh_push_string(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, String str, Vec2 pos, float32 size, Color c);
+internal void d_mesh_push_character(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, uint64 codepoint, Vec2 pos, float32 size, Color c);
 internal void d_mesh_push_triangle_strip(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 pos, Vec2 tex_coord, Color color);
 internal void d_mesh_push_line(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, Vec2 start, Vec2 end, float32 thickness, Color c);
 
@@ -94,7 +96,8 @@ internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
 internal void d_circle_filled(Vec2 pos, float32 radius, Color c);
 internal Rect d_string(Rect r, String str, float32 size, Color c, Anchor anchor);
 internal Rect d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment);
-internal Rect d_string_raw(Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material);
+internal Rect d_string_raw(FontFaceIndex font, Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material);
+internal Rect d_character(FontFaceIndex font, Vec2 pos, uint64 codepoint, float32 size, Color c, MaterialIndex material);
 internal void d_sprite_many(D_SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
 internal Rect d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
 internal void d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);

@@ -84,6 +84,19 @@ read_only global uint8 utf8_class[32] = {
 };
 // clang-format on
 
+internal String
+utf8(Arena* arena, int32 codepoint)
+{
+    char   buffer[4];
+    uint32 length = utf8_encode(buffer, codepoint);
+
+    String result = {0};
+    result.value  = arena_push_array_zero(arena, char, length);
+    result.length = length;
+    memory_copy(result.value, buffer, length);
+    return result;
+}
+
 internal UnicodeDecode
 utf8_decode(char* str, uint64 max)
 {
@@ -163,33 +176,33 @@ utf16_decode(uint16* str, uint64 max)
 }
 
 internal uint32
-utf8_encode(uint8* str, int32 codepoint)
+utf8_encode(char* str, int32 codepoint)
 {
     uint32 inc = 0;
     if (codepoint <= 0x7F)
     {
-        str[0] = (uint8)codepoint;
+        str[0] = (char)codepoint;
         inc    = 1;
     }
     else if (codepoint <= 0x7FF)
     {
-        str[0] = (uint8)((bitmask2 << 6) | ((codepoint >> 6) & bitmask5));
-        str[1] = (uint8)(bit8 | (codepoint & bitmask6));
+        str[0] = (char)((bitmask2 << 6) | ((codepoint >> 6) & bitmask5));
+        str[1] = (char)(bit8 | (codepoint & bitmask6));
         inc    = 2;
     }
     else if (codepoint <= 0xFFFF)
     {
-        str[0] = (uint8)((bitmask3 << 5) | ((codepoint >> 12) & bitmask4));
-        str[1] = (uint8)(bit8 | ((codepoint >> 6) & bitmask6));
-        str[2] = (uint8)(bit8 | (codepoint & bitmask6));
+        str[0] = (char)((bitmask3 << 5) | ((codepoint >> 12) & bitmask4));
+        str[1] = (char)(bit8 | ((codepoint >> 6) & bitmask6));
+        str[2] = (char)(bit8 | (codepoint & bitmask6));
         inc    = 3;
     }
     else if (codepoint <= 0x10FFFF)
     {
-        str[0] = (uint8)((bitmask4 << 4) | ((codepoint >> 18) & bitmask3));
-        str[1] = (uint8)(bit8 | ((codepoint >> 12) & bitmask6));
-        str[2] = (uint8)(bit8 | ((codepoint >> 6) & bitmask6));
-        str[3] = (uint8)(bit8 | (codepoint & bitmask6));
+        str[0] = (char)((bitmask4 << 4) | ((codepoint >> 18) & bitmask3));
+        str[1] = (char)(bit8 | ((codepoint >> 12) & bitmask6));
+        str[2] = (char)(bit8 | ((codepoint >> 6) & bitmask6));
+        str[3] = (char)(bit8 | (codepoint & bitmask6));
         inc    = 4;
     }
     else
@@ -223,7 +236,7 @@ utf16_encode(uint16* str, int32 codepoint)
 }
 
 internal uint32
-utf8_from_utf32_single(uint8* buffer, int32 character)
+utf8_from_utf32_single(char* buffer, int32 character)
 {
     return (utf8_encode(buffer, character));
 }
@@ -252,7 +265,7 @@ internal String
 str8_from_16(Arena* arena, String16 in)
 {
     uint64  cap  = in.size * 3;
-    uint8*  str  = arena_push_array(arena, uint8, cap + 1);
+    char*   str  = arena_push_array(arena, char, cap + 1);
     uint16* ptr  = in.value;
     uint16* opl  = ptr + in.size;
     uint64  size = 0;

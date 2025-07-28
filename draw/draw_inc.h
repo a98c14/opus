@@ -4,3 +4,4 @@
 #include "draw_shaders.h"
 #include "draw_trail.h"
 #include "draw_sprite.h"
+#include "draw_icons.h"

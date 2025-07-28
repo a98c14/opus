@@ -63,7 +63,8 @@
 #define this_function_name __func__
 #endif
 
-#define stringify(value) #value
+#define stringify2(value) #value
+#define stringify(value)  stringify2(value)
 #define statement(statement) \
     do                       \
     {                        \

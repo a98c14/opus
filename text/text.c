@@ -107,7 +107,7 @@ font_load(String font_name, String font_path, GlyphAtlasType atlas_type)
 }
 
 internal Glyph
-font_get_glyph(FontFaceIndex font_face_index, float32 pixel_size, uint32 codepoint)
+font_get_glyph(FontFaceIndex font_face_index, float32 pixel_size, uint64 codepoint)
 {
     uint32 font_size = font_pixel_to_font_size(pixel_size);
     uint64 params[]  = {font_face_index, font_size, codepoint};
@@ -127,16 +127,16 @@ font_get_glyph(FontFaceIndex font_face_index, float32 pixel_size, uint32 codepoi
 
     FontFace* font_face  = &g_font_cache->font_faces[font_face_index];
     FT_Int32  load_flags = atlas->type == GlyphAtlasTypeFreeType ? FT_LOAD_RENDER : FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF);
-    if (FT_Load_Char(font_face->freetype_face, codepoint, load_flags))
+    if (FT_Load_Char(font_face->freetype_face, (FT_ULong)codepoint, load_flags))
     {
-        fprintf(stderr, "ERROR: could not load glyph of a character with code %d\n", codepoint);
+        fprintf(stderr, "ERROR: could not load glyph of a character with code %lld\n", codepoint);
         exit(1);
     }
 
     FT_GlyphSlot freetype_glyph = font_face->freetype_face->glyph;
     if (FT_Render_Glyph(freetype_glyph, FT_RENDER_MODE_NORMAL))
     {
-        fprintf(stderr, "ERROR: could not render glyph of a character with code %d\n", codepoint);
+        fprintf(stderr, "ERROR: could not render glyph of a character with code %lld\n", codepoint);
         exit(1);
     }
 

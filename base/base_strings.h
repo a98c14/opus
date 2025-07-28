@@ -54,11 +54,12 @@ typedef struct
     uint32 codepoint;
 } UnicodeDecode;
 
+internal String        utf8(Arena* arena, int32 codepoint);
 internal UnicodeDecode utf8_decode(char* str, uint64 max);
 internal UnicodeDecode utf16_decode(uint16* str, uint64 max);
-internal uint32        utf8_encode(uint8* str, int32 codepoint);
+internal uint32        utf8_encode(char* str, int32 codepoint);
 internal uint32        utf16_encode(uint16* str, int32 codepoint);
-internal uint32        utf8_from_utf32_single(uint8* buffer, int32 character);
+internal uint32        utf8_from_utf32_single(char* buffer, int32 character);
 
 /** string conversion */
 internal String16 str16_from_8(Arena* arena, String in);

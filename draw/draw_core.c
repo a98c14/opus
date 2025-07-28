@@ -24,8 +24,12 @@ d_context_init(String asset_path)
     StringList path = string_list();
     string_list_push(temp.arena, &path, asset_path);
     string_list_pushf(temp.arena, &path, "\\IBMPlexMono-Bold.ttf");
-    String font_path       = string_list_join(temp.arena, &path, 0);
-    d_context->active_font = font_load(string("ibx_mono"), font_path, GlyphAtlasTypeFreeType);
+    d_context->active_font = font_load(string("ibx_mono"), string_list_join(temp.arena, &path, 0), GlyphAtlasTypeFreeType);
+
+    StringList icon_path = string_list();
+    string_list_push(temp.arena, &icon_path, asset_path);
+    string_list_pushf(temp.arena, &icon_path, "\\icons.ttf");
+    d_context->icon_font = font_load(string("icons"), string_list_join(temp.arena, &icon_path, 0), GlyphAtlasTypeFreeType);
     scratch_end(temp);
 }
 
@@ -103,6 +107,17 @@ d_mesh_push_string(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* v
         advance_x += glyph.advance.x * size;
         processed += utf_char.inc;
     }
+}
+
+internal void
+d_mesh_push_character(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* vertex_count, FontFaceIndex font_face, uint64 codepoint, Vec2 pos, float32 size, Color c)
+{
+    pos.x = roundf(pos.x);
+    pos.y = roundf(pos.y);
+
+    Glyph glyph     = font_get_glyph(font_face, size, codepoint);
+    Vec2  glyph_pos = vec2(pos.x, pos.y);
+    d_mesh_push_glyph(vertex_buffer, vertex_count, glyph, glyph_pos, size, c);
 }
 
 internal void
@@ -298,22 +313,22 @@ d_string(Rect r, String str, float32 size, Color c, Anchor anchor)
 internal Rect
 d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
 {
-    return d_string_raw(pos, str, size, c, alignment, d_context->material_text);
+    return d_string_raw(d_context->active_font, pos, str, size, c, alignment, d_context->material_text);
 }
 
 internal Rect
-d_string_raw(Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material)
+d_string_raw(FontFaceIndex font, Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material)
 {
-    Rect string_bounds = text_calculate_bounds(d_context->active_font, pos, alignment, str, size);
+    Rect string_bounds = text_calculate_bounds(font, pos, alignment, str, size);
     Vec2 base_offset   = {
           .x = string_bounds.w * FontAlignmentMultiplierX[alignment],
           .y = string_bounds.h * FontAlignmentMultiplierY[alignment]};
 
     GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, str.length * 6);
     uint32                               vertex_count = 0;
-    d_mesh_push_string(vertices, &vertex_count, d_context->active_font, str, add_vec2(pos, base_offset), size, c);
+    d_mesh_push_string(vertices, &vertex_count, font, str, add_vec2(pos, base_offset), size, c);
 
-    GlyphAtlas* atlas = font_get_atlas(d_context->active_font, size);
+    GlyphAtlas* atlas = font_get_atlas(font, size);
     GFX_Batch   batch;
     batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, GFX_MeshTypeDynamic, material);
     batch.element_count       = 1;
@@ -323,6 +338,25 @@ d_string_raw(Vec2 pos, String str, float32 size, Color c, Alignment alignment, M
     batch.uniform_buffer      = 0;
     gfx_batch_commit(batch);
     return string_bounds;
+}
+
+internal Rect
+d_character(FontFaceIndex font, Vec2 pos, uint64 codepoint, float32 size, Color c, MaterialIndex material)
+{
+    GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, 6);
+    uint32                               vertex_count = 0;
+    d_mesh_push_character(vertices, &vertex_count, font, codepoint, pos, size, c);
+
+    GlyphAtlas* atlas = font_get_atlas(font, size);
+    GFX_Batch   batch;
+    batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, GFX_MeshTypeDynamic, material);
+    batch.element_count       = 1;
+    batch.draw_instance_count = vertex_count;
+    batch.vertex_buffer       = vertices;
+    batch.vertex_buffer_size  = sizeof(GFX_VertexAtrribute_TexturedColored) * vertex_count;
+    batch.uniform_buffer      = 0;
+    gfx_batch_commit(batch);
+    return (Rect){0};
 }
 
 internal void
