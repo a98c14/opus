@@ -112,26 +112,36 @@ ui_update(float32 dt)
             e->rect.h = ui_line_height;
         }
 
+        // e->rect.w += e->padding.w;
+        // e->rect.h += e->padding.h;
+
         if (has_parent)
         {
-            bool32 is_horizontal = flag_is_set(e->parent->kind, UI_ElementKind_LayoutHorizontal);
+            bool32 is_horizontal = e->parent->direction == UI_AxisHorizontal;
+
+            Vec2 cursor_move = {0};
+
             if (!is_horizontal)
             {
-                // TODO(selim): need to support margins
-                e->rect.x = e->parent->cursor.x + e->rect.w / 2;
-                e->rect.y = e->parent->cursor.y - e->rect.h / 2;
-
-                e->parent->cursor.y -= e->rect.h;
-                e->parent->rect = rect_from_bl_tr(vec2(rect_left(e->parent->rect), rect_bottom(e->rect)), rect_tr(e->parent->rect));
+                // e->rect.h     = e->parent->rect.h / e->parent->child_count;
+                cursor_move.h = -e->rect.h;
             }
             else
             {
-                e->rect.w = e->parent->rect.w / e->parent->child_count;
+                // e->rect.w     = e->parent->rect.w / e->parent->child_count;
+                cursor_move.x = e->rect.w;
+            }
 
-                e->rect.x = e->parent->cursor.x + e->rect.w / 2;
-                e->rect.y = e->parent->cursor.y - e->rect.h / 2;
+            e->rect = rect_at_o(e->parent->cursor, e->rect.size, e->pos, AlignmentTopLeft);
 
-                e->parent->cursor.x += e->rect.w;
+            e->parent->cursor = add_vec2(e->parent->cursor, cursor_move);
+            e->parent->cursor = add_vec2(e->parent->cursor, e->pos);
+
+            if (e->parent->cursor.x > rect_right(e->parent->rect))
+            {
+                float32 grow = e->parent->cursor.x - rect_right(e->parent->rect);
+                e->parent->rect.w += grow;
+                e->parent->rect.x += grow / 2;
             }
         }
 
@@ -167,7 +177,7 @@ ui_update(float32 dt)
         Color bg_color = e->hot_t > 0 ? e->highlight_color : e->bg_color;
         bg_color       = e->click_t > 0 ? ColorRed400 : bg_color;
 
-        d_rect(e->rect, 0, bg_color);
+        d_ui_element(e->rect, bg_color, 1);
         if (!string_is_empty(e->text))
         {
             d_string(e->rect, e->text, ui_line_height, e->fg_color, ANCHOR_L_L);
@@ -529,7 +539,8 @@ ui_begin_vertical()
 internal void
 ui_begin_horizontal()
 {
-    ui_entity_init(UI_ElementKind_Container | UI_ElementKind_LayoutHorizontal);
+    UI_Entity* entity = ui_entity_init(UI_ElementKind_Container);
+    entity->direction = UI_AxisHorizontal;
 }
 
 internal void
@@ -544,11 +555,19 @@ ui_set_rect()
 }
 
 internal void
+ui_set_pos(float32 x, float32 y)
+{
+    xassert(ui_ctx->active_element != &ui_entity_nil);
+
+    ui_ctx->active_element->pos = vec2(x, y);
+}
+
+internal void
 ui_set_wh(float32 w, float32 h)
 {
     xassert(ui_ctx->active_element != &ui_entity_nil);
 
-    ui_ctx->active_element->rect = rect_from_wh(w, h);
+    ui_ctx->active_element->rect = rect_at(rect_tl(ui_ctx->active_element->rect), vec2(w, h), AlignmentTopLeft);
 }
 
 internal void
@@ -559,6 +578,22 @@ ui_set_bg_color(Color color)
     ui_ctx->active_element->bg_color        = color;
     Color hg_color                          = color_is_dark(color) ? ColorWhite : ColorBlack;
     ui_ctx->active_element->highlight_color = color_lerp(ui_ctx->active_element->bg_color, hg_color, 0.6f);
+}
+
+internal void
+ui_set_margin(float32 x, float32 y)
+{
+    xassert(ui_ctx->active_element != &ui_entity_nil);
+
+    ui_ctx->active_element->margin = vec2(x, y);
+}
+
+internal void
+ui_set_padding(float32 x, float32 y)
+{
+    xassert(ui_ctx->active_element != &ui_entity_nil);
+
+    ui_ctx->active_element->padding = vec2(x, y);
 }
 
 /** V2 Widgets */

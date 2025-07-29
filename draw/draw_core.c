@@ -18,6 +18,7 @@ d_context_init(String asset_path)
     d_context->material_circle   = gfx_material_new(d_shader_opengl_circle_vert, d_shader_opengl_circle_frag, sizeof(D_ShaderDataCircle), GFX_DrawTypeInstanced);
     d_context->material_triangle = gfx_material_new(d_shader_opengl_triangle_vert, d_shader_opengl_triangle_frag, sizeof(D_ShaderDataTriangle), GFX_DrawTypeInstanced);
     d_context->material_texture  = gfx_material_new(d_shader_opengl_texture_vert, d_shader_opengl_texture_frag, 0, GFX_DrawTypePackedBuffer);
+    d_context->material_ui       = gfx_material_new(d_shader_opengl_ui_vert, d_shader_opengl_ui_frag, sizeof(D_ShaderDataUI), GFX_DrawTypeInstanced);
     d_context->active_pass       = 0;
     d_context->active_layer      = 5;
 
@@ -446,6 +447,22 @@ internal void
 d_arrow(Vec2 start, Vec2 end, float32 size, Color color)
 {
     d_arrow_pro(start, end, size, size * 8, color);
+}
+
+internal void
+d_ui_element(Rect rect, Color c, float32 border_thickness)
+{
+    D_ShaderDataUI* uniform_data     = arena_push_array(d_context->frame_arena, D_ShaderDataUI, 1);
+    uniform_data[0].roundness        = vec4_xxxx(0.2f);
+    uniform_data[0].color            = color_v4(c);
+    uniform_data[0].model            = transform_quad_aligned(rect.center, rect.size);
+    uniform_data[0].border_thickness = border_thickness;
+
+    GFX_Batch batch;
+    batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeQuad, d_context->material_ui);
+    batch.element_count  = 1;
+    batch.uniform_buffer = uniform_data;
+    gfx_batch_commit(batch);
 }
 
 /** debug draw functions */

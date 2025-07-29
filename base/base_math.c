@@ -146,6 +146,17 @@ vec4(float32 x, float32 y, float32 z, float32 w)
     return result;
 }
 
+internal Vec4
+vec4_xxxx(float32 x)
+{
+    Vec4 result;
+    result.x = x;
+    result.y = x;
+    result.z = x;
+    result.w = x;
+    return result;
+}
+
 internal IVec2
 ivec2(int32 x, int32 y)
 {

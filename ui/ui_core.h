@@ -30,11 +30,25 @@ typedef struct
 
 typedef enum
 {
-    UI_ElementKind_Undefined        = 0,
-    UI_ElementKind_Clickable        = 1 << 1,
-    UI_ElementKind_Container        = 1 << 2,
-    UI_ElementKind_LayoutHorizontal = 1 << 3,
+    UI_ElementKind_Undefined = 0,
+    UI_ElementKind_Clickable = 1 << 1,
+    UI_ElementKind_Container = 1 << 2,
 } UI_ElementKind;
+
+typedef enum
+{
+    UI_SizeKind_Fill        = 0,
+    UI_SizeKind_Percentage  = 1,
+    UI_SizeKind_Fixed       = 2,
+    UI_SizeKind_FitContents = 3,
+    UI_SizeKind_COUNT
+} UI_SizeKind;
+
+typedef enum
+{
+    UI_AxisVertical   = 0,
+    UI_AxisHorizontal = 1
+} UI_Axis;
 
 typedef struct UI_Entity UI_Entity;
 struct UI_Entity
@@ -57,12 +71,23 @@ struct UI_Entity
     float32 hot_t;
     float32 click_t;
 
+    /** render */
+    Rect rect;
+
     /** styling */
-    Rect   rect;
     String text;
     Color  bg_color;
     Color  highlight_color;
     Color  fg_color;
+
+    /** translation */
+    UI_SizeKind size_kind;
+    Vec2        pos;
+    Vec2        size;
+    UI_Axis     direction;
+
+    Vec2 margin;
+    Vec2 padding;
 };
 
 read_only global UI_Entity ui_entity_nil = {
@@ -195,3 +220,4 @@ internal UI_Signal ui_label(String label);
 
 internal void ui_set_wh(float32 w, float32 h);
 internal void ui_set_bg_color(Color color);
+internal void ui_set_margin(float32 x, float32 y);

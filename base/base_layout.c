@@ -141,7 +141,9 @@ rect_anchor(Rect child, Rect parent, Anchor anchor)
 internal Rect
 rect_at_o(Vec2 position, Vec2 size, Vec2 offset, Alignment alignment)
 {
-    return rect_at(add_vec2(position, offset), size, alignment);
+    Rect result = rect_at(position, size, alignment);
+    result      = rect_move(result, offset);
+    return result;
 }
 
 internal Rect

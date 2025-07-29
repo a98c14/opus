@@ -30,6 +30,15 @@ typedef struct
 
 typedef struct
 {
+    Mat4    model;
+    Vec4    color;
+    Vec4    roundness;
+    float32 border_thickness;
+    Vec3    _ignore;
+} D_ShaderDataUI;
+
+typedef struct
+{
     Arena* perm_arena;
     Arena* frame_arena;
 
@@ -48,6 +57,7 @@ typedef struct
     MaterialIndex material_text;
     MaterialIndex material_triangle;
     MaterialIndex material_texture;
+    MaterialIndex material_ui;
 } D_Context;
 global D_Context* d_context;
 
@@ -101,8 +111,9 @@ internal Rect d_character(FontFaceIndex font, Vec2 pos, uint64 codepoint, float3
 internal void d_sprite_many(D_SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
 internal Rect d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
 internal void d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);
-// internal void d_arrow_pro(Vec2 start, Vec2 end, float32 thickness, float32 head_size, Color color);
+internal void d_arrow_pro(Vec2 start, Vec2 end, float32 thickness, float32 head_size, Color color);
 internal void d_arrow(Vec2 start, Vec2 end, float32 size, Color color);
+internal void d_ui_element(Rect rect, Color c, float32 border_thickness);
 
 /** debug draw functions */
 internal void d_debug_line(Vec2 start, Vec2 end);
