@@ -9,8 +9,9 @@ struct ShaderData
     mat4 model;
     vec4 color;
     vec4 roundness;
+    vec2 size;
     float border_thickness;
-    vec3 _ignore;
+    float _;
 };
 
 layout (std140, binding = 0) uniform Global
@@ -36,10 +37,14 @@ uniform sampler2D u_main_texture;
 /* Vertex Data */
 out vec2 v_tex_coord;
 out vec4 v_color;
+out vec4 v_roundness;
+out vec2 v_size;
 
 void main() 
 {
     v_tex_coord = a_tex_coord;
     v_color = data[gl_InstanceID].color;
+    v_roundness = data[gl_InstanceID].roundness;
+    v_size = data[gl_InstanceID].size;
     gl_Position = g_projection * g_view * data[gl_InstanceID].model * vec4(a_pos, 0, 1);
 }

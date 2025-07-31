@@ -109,7 +109,7 @@ ui_update(float32 dt)
 
         if (has_parent && e->rect.h == 0)
         {
-            e->rect.h = ui_line_height;
+            e->rect.h = ui_line_height * 2;
         }
 
         // e->rect.w += e->padding.w;
@@ -177,10 +177,11 @@ ui_update(float32 dt)
         Color bg_color = e->hot_t > 0 ? e->highlight_color : e->bg_color;
         bg_color       = e->click_t > 0 ? ColorRed400 : bg_color;
 
-        d_ui_element(e->rect, bg_color, 1);
+        d_ui_element(e->rect, bg_color, 1, vec4_xxxx(5.0));
         if (!string_is_empty(e->text))
         {
-            d_string(e->rect, e->text, ui_line_height, e->fg_color, ANCHOR_L_L);
+            Rect inner_rect = rect_shrink(e->rect, e->padding);
+            d_string(inner_rect, e->text, ui_line_height, e->fg_color, ANCHOR_L_L);
         }
     }
 
@@ -488,6 +489,8 @@ ui_entity_new(UI_ElementKind kind)
     result->bg_color        = ColorSlate400;
     result->highlight_color = ColorSlate200;
     result->fg_color        = ColorBlack;
+
+    result->padding = vec2(8, 8);
 
     return result;
 }

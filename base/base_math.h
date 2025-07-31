@@ -218,6 +218,7 @@ typedef struct
 
 /* Constructors */
 internal Vec2 vec2(float32 x, float32 y);
+internal Vec2 vec2_xx(float32 x);
 internal Vec2 vec2_zero();
 internal Vec2 vec2_one();
 internal Vec2 vec2_right();

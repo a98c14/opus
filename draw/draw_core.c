@@ -88,7 +88,8 @@ d_mesh_push_glyph(GFX_VertexAtrribute_TexturedColored* vertex_buffer, uint32* ve
     pos.x = pos.x + glyph.plane_bounds.left * size;
     pos.y = pos.y + glyph.plane_bounds.bottom * size;
 
-    d_mesh_push_rect(vertex_buffer, vertex_count, rect_at(pos, vec2(w, h), AlignmentBottomLeft), glyph.atlas_bounds, color);
+    Rect glyph_bounds = rect_at(pos, vec2(w, h), AlignmentBottomLeft);
+    d_mesh_push_rect(vertex_buffer, vertex_count, glyph_bounds, glyph.atlas_bounds, color);
 }
 
 internal AtlasIndex
@@ -326,16 +327,16 @@ internal Rect
 d_string_raw(FontFaceIndex font, Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material)
 {
     Rect string_bounds = text_calculate_bounds(font, pos, alignment, str, size);
-    Vec2 base_offset   = {
-          .x = string_bounds.w * FontAlignmentMultiplierX[alignment],
-          .y = string_bounds.h * FontAlignmentMultiplierY[alignment]};
+    Vec2 base_offset   = add_vec2(rect_cl(string_bounds), vec2(0, size * FontAlignmentMultiplierY[alignment]));
+    // d_debug_rect(string_bounds);
 
     GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, str.length * 6);
     uint32                               vertex_count = 0;
 
     // TODO(selim): There is a bug here, if the string characters fall in to separate textures, characters that are in the first one wouldn't render.
     // Instead of batching like this we should just push glyphs one by one I think.
-    AtlasIndex atlas_index = d_mesh_push_string(vertices, &vertex_count, font, str, add_vec2(pos, base_offset), size, c);
+    AtlasIndex atlas_index = d_mesh_push_string(vertices, &vertex_count, font, str, base_offset, size, c);
+    // d_debug_rect(string_bounds);
 
     GFX_Batch batch;
     batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, font_get_atlas_texture(atlas_index), GFX_MeshTypeDynamic, material);
@@ -450,13 +451,14 @@ d_arrow(Vec2 start, Vec2 end, float32 size, Color color)
 }
 
 internal void
-d_ui_element(Rect rect, Color c, float32 border_thickness)
+d_ui_element(Rect rect, Color c, float32 border_thickness, Vec4 border_radius)
 {
     D_ShaderDataUI* uniform_data     = arena_push_array(d_context->frame_arena, D_ShaderDataUI, 1);
-    uniform_data[0].roundness        = vec4_xxxx(0.2f);
+    uniform_data[0].roundness        = border_radius;
     uniform_data[0].color            = color_v4(c);
     uniform_data[0].model            = transform_quad_aligned(rect.center, rect.size);
     uniform_data[0].border_thickness = border_thickness;
+    uniform_data[0].size             = rect.size;
 
     GFX_Batch batch;
     batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeQuad, d_context->material_ui);
@@ -466,6 +468,12 @@ d_ui_element(Rect rect, Color c, float32 border_thickness)
 }
 
 /** debug draw functions */
+internal void
+d_debug_point(Vec2 p)
+{
+    d_circle_filled(p, 2, ColorRed400);
+}
+
 internal void
 d_debug_line(Vec2 start, Vec2 end)
 {
@@ -487,7 +495,7 @@ d_debug_rect(Rect r)
 internal void
 d_debug_rect2(Rect r)
 {
-    d_rect(r, px(1.2f), ColorGreen400);
+    d_rect(r, px(1.2f), ColorBlue400);
 }
 
 internal int

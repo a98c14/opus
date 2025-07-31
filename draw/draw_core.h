@@ -33,8 +33,9 @@ typedef struct
     Mat4    model;
     Vec4    color;
     Vec4    roundness;
+    Vec2    size;
     float32 border_thickness;
-    Vec3    _ignore;
+    float32 _;
 } D_ShaderDataUI;
 
 typedef struct
@@ -113,9 +114,10 @@ internal Rect d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect re
 internal void d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);
 internal void d_arrow_pro(Vec2 start, Vec2 end, float32 thickness, float32 head_size, Color color);
 internal void d_arrow(Vec2 start, Vec2 end, float32 size, Color color);
-internal void d_ui_element(Rect rect, Color c, float32 border_thickness);
+internal void d_ui_element(Rect rect, Color c, float32 border_thickness, Vec4 border_radius);
 
 /** debug draw functions */
+internal void d_debug_point(Vec2 p);
 internal void d_debug_line(Vec2 start, Vec2 end);
 internal void d_debug_line2(Vec2 start, Vec2 end);
 internal void d_debug_rect(Rect r);

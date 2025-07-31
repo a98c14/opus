@@ -13,9 +13,8 @@
 #define DEBUG_TEXT 0
 
 // clang-format off
-//                                                        Center,  Bottom,   Top,  Right,  Left,  BottomLeft,  BottomRight,  TopLeft,  TopRight
-const float32 FontAlignmentMultiplierX[AlignmentCount] = {  -0.5,    -0.5,  -0.5,     -1,     0,           0,           -1,        0,        -1};
-const float32 FontAlignmentMultiplierY[AlignmentCount] = {  -0.5,       0,    -1,   -0.5,  -0.5,           0,            0,       -1,        -1};
+//                                                        Center,  Bottom,   Top,  Right,   Left,  BottomLeft,  BottomRight,  TopLeft,  TopRight
+const float32 FontAlignmentMultiplierY[AlignmentCount] = {  -0.375,  -0.5, -0.25, -0.375, -0.375,        -0.5,         -0.5,    -0.25,     -0.25};
 // clang-format on
 
 typedef uint32 AtlasIndex;
