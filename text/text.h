@@ -127,7 +127,8 @@ internal Vec2    glyph_position(Glyph glyph, float32 size, Vec2 base_offset);
 
 internal void text_line_add(Arena* frame_arena, TextLineList* lines, String str, Vec2 size);
 
-internal Rect text_calculate_bounds(FontFaceIndex font_face, Vec2 position, Alignment alignment, String str, float32 size);
+internal Vec2 text_calculate_size(FontFaceIndex font_face, String str, float32 size);
+internal Rect text_calculate_rect(FontFaceIndex font_face, Vec2 position, Alignment alignment, String str, float32 size);
 internal Rect text_calculate_transforms(GlyphAtlas* atlas, String str, float32 size_in_pixels, Vec2 position, Alignment alignment, GFX_Batch* batch);
 internal Rect text_calculate_glyph_matrices(Arena* frame_arena, GlyphAtlas* atlas, String str, float32 size, Vec2 position, Alignment alignment, float32 max_width, GFX_Batch* batch);
 

@@ -37,17 +37,18 @@ typedef enum
 
 typedef enum
 {
-    UI_SizeKind_Fill        = 0,
-    UI_SizeKind_Percentage  = 1,
-    UI_SizeKind_Fixed       = 2,
-    UI_SizeKind_FitContents = 3,
+    UI_SizeKind_FitContents,
+    UI_SizeKind_Fixed,
+    UI_SizeKind_SumOfChildren,
+    UI_SizeKind_Percentage,
     UI_SizeKind_COUNT
 } UI_SizeKind;
 
 typedef enum
 {
     UI_AxisVertical   = 0,
-    UI_AxisHorizontal = 1
+    UI_AxisHorizontal = 1,
+    UI_AxisCOUNT
 } UI_Axis;
 
 typedef struct UI_Entity UI_Entity;
@@ -61,6 +62,9 @@ struct UI_Entity
 
     uint32 child_count;
 
+#if BUILD_DEBUG
+    String debug_str;
+#endif
     UI_ElementKind kind;
     UI_Key         key;
 
@@ -73,12 +77,17 @@ struct UI_Entity
 
     /** render */
     Rect rect;
+    Rect inner_rect;
+    Rect outer_rect;
 
     /** styling */
     String text;
     Color  bg_color;
     Color  highlight_color;
     Color  fg_color;
+
+    /** layout */
+    bool32 grow[UI_AxisCOUNT];
 
     /** translation */
     UI_SizeKind size_kind;
@@ -105,6 +114,12 @@ struct UI_EntityNode
 
     UI_Entity* value;
 };
+
+typedef struct
+{
+    UI_EntityNode* first;
+    UI_EntityNode* last;
+} UI_EntityList;
 
 typedef struct
 {
@@ -207,6 +222,8 @@ internal UI_Signal ui_textf(const char* fmt, ...);
 internal UI_Entity* ui_entity_new(UI_ElementKind kind);
 internal void       ui_entity_add_to_ui(UI_Entity* entity);
 internal UI_Entity* ui_entity_init(UI_ElementKind kind);
+internal UI_Entity* ui_entity_init_widget(UI_ElementKind kind);
+internal void       ui_entity_add_to_list(UI_Entity* entity, UI_EntityList* list);
 
 internal void _ui_entity_init_root(void);
 

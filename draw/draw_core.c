@@ -326,7 +326,7 @@ d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment alignment)
 internal Rect
 d_string_raw(FontFaceIndex font, Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material)
 {
-    Rect string_bounds = text_calculate_bounds(font, pos, alignment, str, size);
+    Rect string_bounds = text_calculate_rect(font, pos, alignment, str, size);
     Vec2 base_offset   = add_vec2(rect_cl(string_bounds), vec2(0, size * FontAlignmentMultiplierY[alignment]));
     // d_debug_rect(string_bounds);
 

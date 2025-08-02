@@ -69,12 +69,14 @@ internal void
 ui_update(float32 dt)
 {
     //** Layout Calculations */
-    UI_EntityNode* first = 0;
-    UI_EntityNode* last  = 0;
 
     UI_EntityNode* nodes_to_process = 0;
     UI_EntityNode* process_node     = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
     process_node->value             = ui_ctx->root;
+
+    UI_EntityList* entity_calculation_lists = arena_push_array_zero(ui_ctx->frame_arena, UI_EntityList, UI_SizeKind_COUNT);
+    UI_EntityList* entity_grow_lists        = arena_push_array_zero(ui_ctx->frame_arena, UI_EntityList, UI_AxisCOUNT);
+    UI_EntityList  all_elements             = {0};
 
     /** Traverse the nodes */
     while (process_node != 0)
@@ -88,69 +90,102 @@ ui_update(float32 dt)
             stack_push(nodes_to_process, process_node);
         }
 
-        UI_EntityNode* node = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
-        node->value         = e;
-        dll_push_back(first, last, node);
+        ui_entity_add_to_list(e, &entity_calculation_lists[e->size_kind]);
+        for (int32 i = 0; i < UI_AxisCOUNT; i++)
+        {
+            if (!e->grow[i])
+                continue;
+
+            ui_entity_add_to_list(e, &entity_grow_lists[i]);
+        }
+
+        ui_entity_add_to_list(e, &all_elements);
 
         process_node = nodes_to_process;
         stack_pop(nodes_to_process);
     }
 
-    /** Layout */
-    for (UI_EntityNode* node = first; node != 0; node = node->next)
+    /** Size Calculation */
+    for (UI_EntityNode* node = entity_calculation_lists[UI_SizeKind_FitContents].first; node != 0; node = node->next)
     {
-        UI_Entity* e          = node->value;
-        bool32     has_parent = e->parent != &ui_entity_nil;
+        UI_Entity* e         = node->value;
+        Vec2       text_size = text_calculate_size(d_context->active_font, e->text, ui_line_height);
+        e->size              = add_vec2(text_size, e->padding);
+    }
 
-        if (has_parent && e->rect.w == 0)
+    /** Layout */
+    for (UI_EntityNode* node = all_elements.first; node != 0; node = node->next)
+    {
+        UI_Entity* e = node->value;
+
+        if (e->parent == &ui_entity_nil)
+            continue;
+
+        bool32 is_horizontal = e->parent->direction == UI_AxisHorizontal;
+        Vec2   cursor_move   = {0};
+        if (!is_horizontal)
         {
-            e->rect.w = e->parent->rect.w;
+            cursor_move.h = -e->size.h - e->margin.y / 2.0f;
+        }
+        else
+        {
+            cursor_move.x = e->size.w + e->margin.x / 2.0f;
         }
 
-        if (has_parent && e->rect.h == 0)
+        e->rect       = rect_at(e->parent->cursor, e->size, AlignmentTopLeft);
+        e->outer_rect = rect_expand(e->rect, e->margin);
+        e->inner_rect = rect_shrink(e->rect, e->padding);
+        e->cursor     = rect_tl(e->inner_rect);
+
+        e->parent->cursor = add_vec2(e->parent->cursor, cursor_move);
+    }
+
+    /** Grow */
+    for (UI_EntityNode* node = entity_calculation_lists[UI_SizeKind_SumOfChildren].last; node != 0; node = node->prev)
+    {
+        UI_Entity* e = node->value;
+
+        Vec2 bl = vec2(MAX_FLOAT32, MAX_FLOAT32);
+        Vec2 tr = vec2(MIN_FLOAT32, MIN_FLOAT32);
+
+        for (UI_Entity* child = node->value->first_child; child != &ui_entity_nil; child = child->next)
         {
-            e->rect.h = ui_line_height * 2;
+            bl = min_vec2(bl, rect_bl(child->outer_rect));
+            tr = max_vec2(tr, rect_tr(child->outer_rect));
         }
 
-        // e->rect.w += e->padding.w;
-        // e->rect.h += e->padding.h;
+        e->rect       = rect_from_bl_tr(bl, tr);
+        e->outer_rect = rect_expand(e->rect, e->margin);
+        e->inner_rect = rect_shrink(e->rect, e->padding);
+    }
 
-        if (has_parent)
+    /** Fill Parent */
+    for (uint32 i = 0; i < UI_AxisCOUNT; i++)
+    {
+        for (UI_EntityNode* node = entity_grow_lists[i].last; node != 0; node = node->prev)
         {
-            bool32 is_horizontal = e->parent->direction == UI_AxisHorizontal;
+            UI_Entity* e = node->value;
 
-            Vec2 cursor_move = {0};
-
-            if (!is_horizontal)
+            if (i == UI_AxisVertical)
             {
-                // e->rect.h     = e->parent->rect.h / e->parent->child_count;
-                cursor_move.h = -e->rect.h;
+                e->size.x     = max(e->size.x, e->parent->inner_rect.w);
+                e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
+                e->outer_rect = rect_expand(e->rect, e->margin);
+                e->inner_rect = rect_shrink(e->rect, e->padding);
             }
-            else
+            else if (i == UI_AxisHorizontal)
             {
-                // e->rect.w     = e->parent->rect.w / e->parent->child_count;
-                cursor_move.x = e->rect.w;
-            }
-
-            e->rect = rect_at_o(e->parent->cursor, e->rect.size, e->pos, AlignmentTopLeft);
-
-            e->parent->cursor = add_vec2(e->parent->cursor, cursor_move);
-            e->parent->cursor = add_vec2(e->parent->cursor, e->pos);
-
-            if (e->parent->cursor.x > rect_right(e->parent->rect))
-            {
-                float32 grow = e->parent->cursor.x - rect_right(e->parent->rect);
-                e->parent->rect.w += grow;
-                e->parent->rect.x += grow / 2;
+                e->size.y     = max(e->size.y, e->parent->inner_rect.h);
+                e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
+                e->outer_rect = rect_expand(e->rect, e->margin);
+                e->inner_rect = rect_shrink(e->rect, e->padding);
             }
         }
-
-        e->cursor = rect_tl(e->rect);
     }
 
     /** Events */
     Input_MouseInfo mouse = input_mouse_info();
-    for (UI_EntityNode* node = last; node != 0; node = node->prev)
+    for (UI_EntityNode* node = all_elements.last; node != 0; node = node->prev)
     {
         UI_Entity* e = node->value;
 
@@ -170,7 +205,7 @@ ui_update(float32 dt)
     }
 
     /** Render */
-    for (UI_EntityNode* node = first; node != 0; node = node->next)
+    for (UI_EntityNode* node = all_elements.first; node != 0; node = node->next)
     {
         UI_Entity* e = node->value;
 
@@ -180,8 +215,7 @@ ui_update(float32 dt)
         d_ui_element(e->rect, bg_color, 1, vec4_xxxx(5.0));
         if (!string_is_empty(e->text))
         {
-            Rect inner_rect = rect_shrink(e->rect, e->padding);
-            d_string(inner_rect, e->text, ui_line_height, e->fg_color, ANCHOR_L_L);
+            d_string(e->inner_rect, e->text, ui_line_height, e->fg_color, ANCHOR_L_L);
         }
     }
 
@@ -490,7 +524,11 @@ ui_entity_new(UI_ElementKind kind)
     result->highlight_color = ColorSlate200;
     result->fg_color        = ColorBlack;
 
-    result->padding = vec2(8, 8);
+    result->padding   = vec2(8, 8);
+    result->margin    = vec2(8, 8);
+    result->size      = vec2(8, ui_line_height * 2);
+    result->direction = UI_AxisVertical;
+    result->size_kind = UI_SizeKind_FitContents;
 
     return result;
 }
@@ -521,14 +559,38 @@ ui_entity_init(UI_ElementKind kind)
     return entity;
 }
 
+internal UI_Entity*
+ui_entity_init_widget(UI_ElementKind kind)
+{
+    UI_Entity* entity                       = ui_entity_init(kind);
+    entity->size_kind                       = UI_SizeKind_FitContents;
+    entity->grow[entity->parent->direction] = 1;
+    return entity;
+}
+
+internal void
+ui_entity_add_to_list(UI_Entity* entity, UI_EntityList* list)
+{
+    UI_EntityNode* node_all_element = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
+    node_all_element->value         = entity;
+    dll_push_back(list->first, list->last, node_all_element);
+}
+
 internal void
 _ui_entity_init_root()
 {
-    ui_ctx->root           = ui_entity_new(UI_ElementKind_Container);
-    ui_ctx->root->bg_color = 0;
-    ui_ctx->root->rect     = screen_rect();
-    ui_ctx->active_element = ui_ctx->root;
-    ui_ctx->active_parent  = ui_ctx->root;
+    UI_Entity* e  = ui_entity_new(UI_ElementKind_Container);
+    e->rect       = screen_rect();
+    e->inner_rect = rect_shrink(e->rect, e->padding);
+    e->size       = e->rect.size;
+    e->size_kind  = UI_SizeKind_Fixed;
+    e->bg_color   = 0;
+    e->cursor     = rect_tl(e->inner_rect);
+
+    ui_ctx->active_element = e;
+    ui_ctx->active_parent  = e;
+
+    ui_ctx->root = e;
 }
 
 /** V2 */
@@ -536,7 +598,12 @@ _ui_entity_init_root()
 internal void
 ui_begin_vertical()
 {
-    ui_entity_init(UI_ElementKind_Container);
+    UI_Entity* entity = ui_entity_init(UI_ElementKind_Container);
+    entity->direction = UI_AxisVertical;
+    entity->size_kind = UI_SizeKind_SumOfChildren;
+#if BUILD_DEBUG
+    entity->debug_str = string_pushf(ui_ctx->frame_arena, "Vertical");
+#endif
 }
 
 internal void
@@ -544,6 +611,10 @@ ui_begin_horizontal()
 {
     UI_Entity* entity = ui_entity_init(UI_ElementKind_Container);
     entity->direction = UI_AxisHorizontal;
+    entity->size_kind = UI_SizeKind_SumOfChildren;
+#if BUILD_DEBUG
+    entity->debug_str = string_pushf(ui_ctx->frame_arena, "Horizontal");
+#endif
 }
 
 internal void
@@ -603,7 +674,7 @@ ui_set_padding(float32 x, float32 y)
 internal UI_Signal
 ui_button(String label)
 {
-    UI_Entity* entity = ui_entity_init(UI_ElementKind_Clickable);
+    UI_Entity* entity = ui_entity_init_widget(UI_ElementKind_Clickable);
     entity->text      = label;
 
     UI_Signal result = {0};
@@ -614,7 +685,7 @@ ui_button(String label)
 internal UI_Signal
 ui_label(String label)
 {
-    UI_Entity* entity = ui_entity_init(0);
+    UI_Entity* entity = ui_entity_init_widget(UI_ElementKind_Clickable);
     entity->text      = label;
 
     UI_Signal result = {0};

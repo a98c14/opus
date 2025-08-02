@@ -34,8 +34,8 @@ text_line_add(Arena* frame_arena, TextLineList* lines, String str, Vec2 size)
     lines->count++;
 }
 
-internal Rect
-text_calculate_bounds(FontFaceIndex font_face, Vec2 position, Alignment alignment, String str, float32 size)
+internal Vec2
+text_calculate_size(FontFaceIndex font_face, String str, float32 size)
 {
     Vec2   string_size = vec2_zero();
     uint64 processed   = 0;
@@ -48,8 +48,15 @@ text_calculate_bounds(FontFaceIndex font_face, Vec2 position, Alignment alignmen
         processed += utf_char.inc;
     };
 
-    float32 x = string_size.x * AlignmentMultiplierX[alignment];
-    float32 y = size * AlignmentMultiplierY[alignment];
+    return string_size;
+}
+
+internal Rect
+text_calculate_rect(FontFaceIndex font_face, Vec2 position, Alignment alignment, String str, float32 size)
+{
+    Vec2    string_size = text_calculate_size(font_face, str, size);
+    float32 x           = string_size.x * AlignmentMultiplierX[alignment];
+    float32 y           = size * AlignmentMultiplierY[alignment];
     return (Rect){.x = x + position.x, .y = y + position.y, .w = string_size.x, .h = string_size.y};
 }
 

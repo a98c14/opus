@@ -722,6 +722,24 @@ move_vec2(Vec2 from, Vec2 heading, float32 length)
 }
 
 internal Vec2
+min_vec2(Vec2 a, Vec2 b)
+{
+    Vec2 result = {0};
+    result.x    = min(a.x, b.x);
+    result.y    = min(a.y, b.y);
+    return result;
+}
+
+internal Vec2
+max_vec2(Vec2 a, Vec2 b)
+{
+    Vec2 result = {0};
+    result.x    = max(a.x, b.x);
+    result.y    = max(a.y, b.y);
+    return result;
+}
+
+internal Vec2
 rotate_vec2(Vec2 v, float angle)
 {
     Mat2 rotation = mat2_rotation(angle);
