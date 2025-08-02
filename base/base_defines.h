@@ -85,6 +85,11 @@
 #define to_gb(x) ((x) >> 30)
 #define to_tb(x) ((x) >> 40)
 
+#define concat(lhs, rhs, separator)         lhs separator #rhs
+#define concat_wrapper(lhs, rhs, separator) concat(lhs, rhs, separator)
+
+#define line_reference concat_wrapper(__FILE__, __LINE__, ":")
+
 /** Asserts */
 #if _MSC_VER
 #include <intrin.h>

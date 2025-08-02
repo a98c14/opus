@@ -16,7 +16,7 @@ ui_key_cstr(char* str)
     return result;
 }
 
-internal UI_Key
+internal UI_KeyFromLabelResult
 ui_key_from_label(String label)
 {
     ArenaTemp  temp  = scratch_begin(0, 0);
@@ -26,7 +26,12 @@ ui_key_from_label(String label)
     key = parts.count > 1
               ? ui_key_str(parts.first->next->value)
               : ui_key_str(parts.first->value);
-    return key;
+
+    UI_KeyFromLabelResult result = {
+        .label = parts.first->value,
+        .key   = key};
+
+    return result;
 }
 
 internal UI_Key
@@ -48,7 +53,13 @@ ui_init(Arena* arena)
 {
     ui_ctx                   = arena_push_struct_zero(arena, UI_Context);
     ui_ctx->persistent_arena = arena;
-    ui_ctx->frame_arena      = arena_new_reserve(mb(32));
+
+    for (uint32 i = 0; i < array_count(ui_ctx->available_frame_arenas); i++)
+    {
+        ui_ctx->available_frame_arenas[i] = arena_new_reserve(mb(32));
+    }
+    ui_ctx->frame_arena      = ui_ctx->available_frame_arenas[0];
+    ui_ctx->next_frame_arena = ui_ctx->available_frame_arenas[1];
 
     _ui_entity_init_root();
 
@@ -204,6 +215,25 @@ ui_update(float32 dt)
         }
     }
 
+    /** Store Current Values in Hash Map */
+    // TODO: Implement the memory poison stuff because I am not sure if I am violating any access rules. Also check if we need to zero here
+    memory_zero_array(ui_ctx->hash_map);
+    for (UI_EntityNode* node = all_elements.first; node != 0; node = node->next)
+    {
+        UI_Entity* e = node->value;
+
+        bool32 has_unique_key = e->key.value != 0;
+        if (has_unique_key)
+        {
+            UI_EntityNode* insert_node = arena_push_struct_zero(ui_ctx->next_frame_arena, UI_EntityNode);
+            insert_node->value         = arena_push_struct(ui_ctx->next_frame_arena, UI_Entity);
+            memory_copy_struct(insert_node->value, e);
+
+            UI_EntityList* hash_bucket = &ui_ctx->hash_map[e->key.value % UI_HASH_MAP_CAPACITY];
+            dll_push_back(hash_bucket->first, hash_bucket->last, insert_node);
+        }
+    }
+
     /** Render */
     for (UI_EntityNode* node = all_elements.first; node != 0; node = node->next)
     {
@@ -219,10 +249,12 @@ ui_update(float32 dt)
         }
     }
 
+    arena_reset(ui_ctx->frame_arena);
+    arena_reset(ui_ctx->next_frame_arena);
     ui_ctx->frame++;
     ui_ctx->update_t += dt;
-
-    arena_reset(ui_ctx->frame_arena);
+    ui_ctx->frame_arena      = ui_ctx->available_frame_arenas[ui_ctx->frame % array_count(ui_ctx->available_frame_arenas)];
+    ui_ctx->next_frame_arena = ui_ctx->available_frame_arenas[(ui_ctx->frame + 1) % array_count(ui_ctx->available_frame_arenas)];
 
     _ui_entity_init_root();
 }
@@ -401,9 +433,10 @@ ui_slider(String label, float32 min_value, float32 max_value, float32* value)
     // make sure value is always inside the bounds
     *value = clamp(min_value, *value, max_value);
 
-    ArenaTemp temp                = scratch_begin(0, 0);
-    Color     slider_handle_color = ColorSlate100;
-    UI_Key    key                 = ui_key_from_label(label);
+    ArenaTemp             temp                = scratch_begin(0, 0);
+    Color                 slider_handle_color = ColorSlate100;
+    UI_KeyFromLabelResult key_result          = ui_key_from_label(label);
+    UI_Key                key                 = key_result.key;
 
     // layout
     ui_push_cut(key, CutSideTop, ui_line_height);
@@ -674,8 +707,12 @@ ui_set_padding(float32 x, float32 y)
 internal UI_Signal
 ui_button(String label)
 {
-    UI_Entity* entity = ui_entity_init_widget(UI_ElementKind_Clickable);
-    entity->text      = label;
+    UI_Entity*            entity     = ui_entity_init_widget(UI_ElementKind_Clickable);
+    UI_KeyFromLabelResult key_result = ui_key_from_label(label);
+    entity->key                      = key_result.key;
+    entity->text                     = key_result.label;
+
+    // TODO: Fetch previous frame data
 
     UI_Signal result = {0};
 

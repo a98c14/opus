@@ -7,13 +7,20 @@
 
 #define UI_ANIMATION_UPDATE_RATE 24.0f
 #define UI_INPUT_BUFFER_SIZE     32
+#define UI_HASH_MAP_CAPACITY     4096
 
-global read_only String _ui_id_separator = string_comp("###");
+global read_only String _ui_id_separator = string_comp("##");
 
 typedef struct
 {
     uint64 value;
 } UI_Key;
+
+typedef struct
+{
+    UI_Key key;
+    String label;
+} UI_KeyFromLabelResult;
 
 global read_only UI_Key ui_key_null = {0};
 
@@ -24,6 +31,8 @@ typedef struct
 
     bool32 is_hot;
     bool32 is_warm;
+
+    bool32 clicked;
 
     Rect rect;
 } UI_Signal;
@@ -138,12 +147,18 @@ struct UI_LayoutNode
 typedef struct
 {
     Arena* persistent_arena;
+
     Arena* frame_arena;
+    Arena* next_frame_arena;
+
+    Arena* available_frame_arenas[2];
     uint64 frame;
 
     UI_Entity* root;
     UI_Entity* active_element;
     UI_Entity* active_parent;
+
+    UI_EntityList hash_map[UI_HASH_MAP_CAPACITY];
 
     UI_Key hot;
     UI_Key active;
@@ -167,11 +182,11 @@ global float32     ui_line_height;
 /** UI Keys */
 global String key_select;
 
-internal UI_Key ui_key_str(String str);
-internal UI_Key ui_key_cstr(char* str);
-internal UI_Key ui_key_from_label(String label);
-internal UI_Key ui_key(uint64 v);
-internal bool32 ui_key_same(UI_Key a, UI_Key b);
+internal UI_Key                ui_key_str(String str);
+internal UI_Key                ui_key_cstr(char* str);
+internal UI_KeyFromLabelResult ui_key_from_label(String label);
+internal UI_Key                ui_key(uint64 v);
+internal bool32                ui_key_same(UI_Key a, UI_Key b);
 
 internal void   ui_init(Arena* arena);
 internal void   ui_update(float32 dt);
