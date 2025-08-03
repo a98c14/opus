@@ -706,8 +706,17 @@ ui_set_width(float32 w)
 {
     xassert(ui_ctx->active_element != &ui_entity_nil);
 
-    ui_ctx->active_element->size                      = vec2(w, MAX_FLOAT32);
+    ui_ctx->active_element->size.w                    = w;
     ui_ctx->active_element->size_kind[AxisHorizontal] = UI_SizeKind_Fixed;
+}
+
+internal void
+ui_set_height(float32 h)
+{
+    xassert(ui_ctx->active_element != &ui_entity_nil);
+
+    ui_ctx->active_element->size.h                  = h;
+    ui_ctx->active_element->size_kind[AxisVertical] = UI_SizeKind_Fixed;
 }
 
 internal void

@@ -252,7 +252,7 @@ rect_axis_set(Rect rect, Axis axis, float32 min, float32 max)
 
     result.size.w   = rect.size.w * (1 - AxisMultiplierX[axis]) + (max - min) * AxisMultiplierX[axis];
     result.size.h   = rect.size.h * (1 - AxisMultiplierY[axis]) + (max - min) * AxisMultiplierY[axis];
-    result.center.x = rect.center.x + (rect.size.w - result.size.w) / 2.0f;
+    result.center.x = rect.center.x - (rect.size.w - result.size.w) / 2.0f;
     result.center.y = rect.center.y + (rect.size.h - result.size.h) / 2.0f;
     return result;
 }
