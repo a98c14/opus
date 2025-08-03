@@ -149,7 +149,6 @@ typedef struct
     Arena* persistent_arena;
 
     Arena* frame_arena;
-    Arena* next_frame_arena;
 
     Arena* available_frame_arenas[2];
     uint64 frame;
@@ -239,6 +238,7 @@ internal void       ui_entity_add_to_ui(UI_Entity* entity);
 internal UI_Entity* ui_entity_init(UI_ElementKind kind);
 internal UI_Entity* ui_entity_init_widget(UI_ElementKind kind);
 internal void       ui_entity_add_to_list(UI_Entity* entity, UI_EntityList* list);
+internal UI_Entity* ui_entity_previous_frame_data(UI_Key key);
 
 internal void _ui_entity_init_root(void);
 

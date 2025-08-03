@@ -13,6 +13,7 @@ typedef struct
     int32 weekday;  // days since Sunday - [0, 6]
     int32 yearday;  // days since January 1 - [0, 365]
     int32 isdst;    // daylight savings time flag
+    int32 ms;       // milliseconds - [0, 999]
 } DateTime;
 
 internal DateTime date_now();

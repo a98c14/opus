@@ -17,7 +17,12 @@ log_output(LogLevel level, const char* message, ...)
     sprintf_s(print_buffer, LOG_MESSAGE_SIZE_LIMIT, "%-8s%s\n", level_strings[level], out_buffer);
 
 #if LOG_TO_CONSOLE == 1
+#if LOG_DATE == 1
+    DateTime date = date_now();
+    printf("[%02d:%02d:%02d.%03d] %s", date.hour, date.min, date.sec, date.ms, print_buffer);
+#else
     printf("%s", print_buffer);
+#endif
 #endif
 }
 

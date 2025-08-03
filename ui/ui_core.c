@@ -58,8 +58,8 @@ ui_init(Arena* arena)
     {
         ui_ctx->available_frame_arenas[i] = arena_new_reserve(mb(32));
     }
-    ui_ctx->frame_arena      = ui_ctx->available_frame_arenas[0];
-    ui_ctx->next_frame_arena = ui_ctx->available_frame_arenas[1];
+    ui_ctx->frame_arena = ui_ctx->available_frame_arenas[0];
+    // ui_ctx->next_frame_arena = ui_ctx->available_frame_arenas[1];
 
     _ui_entity_init_root();
 
@@ -203,7 +203,7 @@ ui_update(float32 dt)
         Intersection intersection = intersects_rect_point(e->rect, mouse.screen);
 
         bool32 is_clickable = flag_is_set(e->kind, UI_ElementKind_Clickable);
-        if (is_clickable && intersection.intersects && input_is_held(ui_input_select))
+        if (is_clickable && intersection.intersects && input_is_pressed(ui_input_select))
         {
             e->click_t = 1;
         }
@@ -225,8 +225,8 @@ ui_update(float32 dt)
         bool32 has_unique_key = e->key.value != 0;
         if (has_unique_key)
         {
-            UI_EntityNode* insert_node = arena_push_struct_zero(ui_ctx->next_frame_arena, UI_EntityNode);
-            insert_node->value         = arena_push_struct(ui_ctx->next_frame_arena, UI_Entity);
+            UI_EntityNode* insert_node = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
+            insert_node->value         = arena_push_struct(ui_ctx->frame_arena, UI_Entity);
             memory_copy_struct(insert_node->value, e);
 
             UI_EntityList* hash_bucket = &ui_ctx->hash_map[e->key.value % UI_HASH_MAP_CAPACITY];
@@ -249,12 +249,11 @@ ui_update(float32 dt)
         }
     }
 
-    arena_reset(ui_ctx->frame_arena);
-    arena_reset(ui_ctx->next_frame_arena);
     ui_ctx->frame++;
     ui_ctx->update_t += dt;
-    ui_ctx->frame_arena      = ui_ctx->available_frame_arenas[ui_ctx->frame % array_count(ui_ctx->available_frame_arenas)];
-    ui_ctx->next_frame_arena = ui_ctx->available_frame_arenas[(ui_ctx->frame + 1) % array_count(ui_ctx->available_frame_arenas)];
+    ui_ctx->frame_arena = ui_ctx->available_frame_arenas[ui_ctx->frame % array_count(ui_ctx->available_frame_arenas)];
+    arena_reset(ui_ctx->frame_arena);
+    // ui_ctx->next_frame_arena = ui_ctx->available_frame_arenas[(ui_ctx->frame + 1) % array_count(ui_ctx->available_frame_arenas)];
 
     _ui_entity_init_root();
 }
@@ -609,6 +608,21 @@ ui_entity_add_to_list(UI_Entity* entity, UI_EntityList* list)
     dll_push_back(list->first, list->last, node_all_element);
 }
 
+internal UI_Entity*
+ui_entity_previous_frame_data(UI_Key key)
+{
+    UI_EntityList* hash_bucket = &ui_ctx->hash_map[key.value % UI_HASH_MAP_CAPACITY];
+
+    UI_EntityNode* node = {0};
+    for_each(node, hash_bucket->first)
+    {
+        if (node->value->key.value == key.value)
+            return node->value;
+    }
+
+    return &ui_entity_nil;
+}
+
 internal void
 _ui_entity_init_root()
 {
@@ -712,9 +726,13 @@ ui_button(String label)
     entity->key                      = key_result.key;
     entity->text                     = key_result.label;
 
-    // TODO: Fetch previous frame data
-
-    UI_Signal result = {0};
+    UI_Entity* previous_frame_data = ui_entity_previous_frame_data(key_result.key);
+    UI_Signal  result              = {0};
+    if (previous_frame_data != 0)
+    {
+        result.click_t = previous_frame_data->click_t;
+        result.clicked = previous_frame_data->click_t > 0;
+    }
 
     return result;
 }
