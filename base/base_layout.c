@@ -231,3 +231,28 @@ rect_resize_width(Rect r, float32 w, Alignment alignment)
 {
     return rect_resize(r, w, r.h, alignment);
 }
+
+/** Axis Functions */
+internal float32
+rect_axis_min(Rect rect, Axis axis)
+{
+    return axis == AxisVertical ? rect_bottom(rect) : rect_left(rect);
+}
+
+internal float32
+rect_axis_max(Rect rect, Axis axis)
+{
+    return axis == AxisVertical ? rect_top(rect) : rect_right(rect);
+}
+
+internal Rect
+rect_axis_set(Rect rect, Axis axis, float32 min, float32 max)
+{
+    Rect result = {0};
+
+    result.size.w   = rect.size.w * (1 - AxisMultiplierX[axis]) + (max - min) * AxisMultiplierX[axis];
+    result.size.h   = rect.size.h * (1 - AxisMultiplierY[axis]) + (max - min) * AxisMultiplierY[axis];
+    result.center.x = rect.center.x + (rect.size.w - result.size.w) / 2.0f;
+    result.center.y = rect.center.y + (rect.size.h - result.size.h) / 2.0f;
+    return result;
+}

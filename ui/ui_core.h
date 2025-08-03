@@ -53,13 +53,6 @@ typedef enum
     UI_SizeKind_COUNT
 } UI_SizeKind;
 
-typedef enum
-{
-    UI_AxisVertical   = 0,
-    UI_AxisHorizontal = 1,
-    UI_AxisCOUNT
-} UI_Axis;
-
 typedef struct UI_Entity UI_Entity;
 struct UI_Entity
 {
@@ -96,13 +89,13 @@ struct UI_Entity
     Color  fg_color;
 
     /** layout */
-    bool32 grow[UI_AxisCOUNT];
+    bool32 grow[Axis_COUNT];
 
     /** translation */
-    UI_SizeKind size_kind;
+    UI_SizeKind size_kind[Axis_COUNT];
     Vec2        pos;
     Vec2        size;
-    UI_Axis     direction;
+    Axis        direction;
 
     Vec2 margin;
     Vec2 padding;
@@ -251,5 +244,6 @@ internal UI_Signal ui_button(String label);
 internal UI_Signal ui_label(String label);
 
 internal void ui_set_wh(float32 w, float32 h);
+internal void ui_set_width(float32 w);
 internal void ui_set_bg_color(Color color);
 internal void ui_set_margin(float32 x, float32 y);

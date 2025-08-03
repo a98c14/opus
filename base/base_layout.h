@@ -5,6 +5,13 @@
 
 typedef enum
 {
+    AxisHorizontal = 0,
+    AxisVertical   = 1,
+    Axis_COUNT
+} Axis;
+
+typedef enum
+{
     AlignmentCenter,
     AlignmentBottom,
     AlignmentTop,
@@ -23,6 +30,9 @@ typedef struct
     Alignment parent;
     Alignment child;
 } Anchor;
+
+const float32 AxisMultiplierX[Axis_COUNT] = {1., 0.};
+const float32 AxisMultiplierY[Axis_COUNT] = {0., 1.};
 
 //                                                   Center,  Bottom,   Top,  Right,  Left,  BottomLeft,  BottomRight,  TopLeft,  TopRight
 const float32 AlignmentMultiplierX[AlignmentCount] = {0, 0, 0, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5};
@@ -132,3 +142,8 @@ internal Rect rect_move(Rect rect, Vec2 v);
 internal Rect rect_resize(Rect r, float32 w, float32 h, Alignment alignment);
 internal Rect rect_resize_height(Rect r, float32 h, Alignment alignment);
 internal Rect rect_resize_width(Rect r, float32 w, Alignment alignment);
+
+/** Axis Functions */
+internal float32 rect_axis_min(Rect rect, Axis axis);
+internal float32 rect_axis_max(Rect rect, Axis axis);
+internal Rect    rect_axis_set(Rect rect, Axis axis, float32 min, float32 max);
