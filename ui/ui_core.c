@@ -125,7 +125,8 @@ ui_update(float32 dt)
         {
             UI_Entity* e         = node->value;
             Vec2       text_size = text_calculate_size(d_context->active_font, e->text, ui_line_height);
-            e->size              = add_vec2(text_size, e->padding);
+            e->size.x            = (e->size.x) * (1 - AxisMultiplierX[axis]) + (text_size.x + e->padding.x) * AxisMultiplierX[axis];
+            e->size.y            = (e->size.y) * (1 - AxisMultiplierY[axis]) + (text_size.y + e->padding.y) * AxisMultiplierY[axis];
         }
 
     /** Layout */
@@ -656,7 +657,7 @@ ui_begin_vertical()
     entity->size_kind[AxisVertical]   = UI_SizeKind_SumOfChildren;
     entity->size_kind[AxisHorizontal] = UI_SizeKind_SumOfChildren;
 #if BUILD_DEBUG
-    entity->debug_str = string_pushf(ui_ctx->frame_arena, "Vertical");
+    entity->debug_str = string("Vertical");
 #endif
 }
 
@@ -668,7 +669,7 @@ ui_begin_horizontal()
     entity->size_kind[AxisVertical]   = UI_SizeKind_SumOfChildren;
     entity->size_kind[AxisHorizontal] = UI_SizeKind_SumOfChildren;
 #if BUILD_DEBUG
-    entity->debug_str = string_pushf(ui_ctx->frame_arena, "Horizontal");
+    entity->debug_str = string("Horizontal");
 #endif
 }
 
@@ -761,6 +762,10 @@ ui_button(String label)
         result.click_t = previous_frame_data->click_t;
         result.clicked = previous_frame_data->click_t > 0;
     }
+
+#if BUILD_DEBUG
+    entity->debug_str = label;
+#endif
 
     return result;
 }
