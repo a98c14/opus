@@ -100,7 +100,7 @@ internal void d_direction(Vec2 start, Vec2 direction, float32 scale, float32 thi
 internal void d_triangle(Vec2 pos, Vec2 scale, float32 rotation, Color c);
 internal Rect d_rect(Rect r, float32 thickness, Color c);
 internal void d_quad(Quad q, float32 thickness, Color c);
-internal Rect d_raw(Rect r, TextureIndex texture);
+internal Rect d_texture(Rect r, TextureIndex texture);
 internal void d_material_raw(MaterialIndex material, void* shader_data);
 internal void d_circle_scaled(Vec2 pos, float32 radius, Vec2 scale, float32 thickness, Color c);
 internal void d_circle(Vec2 pos, float32 radius, float32 thickness, Color c);
@@ -110,7 +110,8 @@ internal Rect d_string_at(Vec2 pos, String str, float32 size, Color c, Alignment
 internal Rect d_string_raw(FontFaceIndex font, Vec2 pos, String str, float32 size, Color c, Alignment alignment, MaterialIndex material);
 internal Rect d_character(FontFaceIndex font, Vec2 pos, uint64 codepoint, float32 size, Color c, MaterialIndex material);
 internal void d_sprite_many(D_SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
-internal Rect d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
+internal Rect d_sprite_old(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
+internal Rect d_sprite(TextureIndex texture, D_Sprite* sprite, Vec2 position, Vec2 scale, Color c);
 internal void d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);
 internal void d_arrow_pro(Vec2 start, Vec2 end, float32 thickness, float32 head_size, Color color);
 internal void d_arrow(Vec2 start, Vec2 end, float32 size, Color color);

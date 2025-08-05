@@ -186,7 +186,7 @@ internal TextureIndex  gfx_texture_new(uint32 width, uint32 height, uint32 chann
 internal TextureIndex  gfx_texture_array_new(uint32 width, uint32 height, uint32 channels, uint32 filter, uint32 layer_count, TextureData* data);
 internal void          gfx_texture_write(TextureIndex texture_index, void* data);
 internal void          gfx_texture_write_rect(TextureIndex texture_index, Rect rect, void* data);
-internal IVec2         gfx_texture_dims(TextureIndex texture);
+internal IVec2         gfx_texture_size(TextureIndex texture);
 internal uint32        gfx_shader_load(String vertex_shader_text, String fragment_shader_text);
 
 internal uint64 gfx_material_uniform_data_size(MaterialIndex material);

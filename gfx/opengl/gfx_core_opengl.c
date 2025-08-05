@@ -338,7 +338,7 @@ gfx_texture_new(uint32 width, uint32 height, uint32 channels, uint32 filter, voi
 }
 
 internal IVec2
-gfx_texture_dims(TextureIndex texture)
+gfx_texture_size(TextureIndex texture)
 {
     IVec2 result = {0};
     result.x     = _gfx_ogl_ctx->textures[texture].width;

@@ -11,7 +11,7 @@ sprite_atlas_new(TextureIndex texture_index, const D_Animation* animations, cons
     atlas.animation_count        = animation_count;
     atlas.sprite_texture_indices = texture_indices;
 
-    IVec2 texture_wh = gfx_texture_dims(texture_index);
+    IVec2 texture_wh = gfx_texture_size(texture_index);
     atlas.width      = (float32)texture_wh.x;
     atlas.height     = (float32)texture_wh.y;
     return atlas;

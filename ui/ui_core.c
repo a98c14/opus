@@ -31,6 +31,7 @@ ui_key_from_label(String label)
         .label = parts.first->value,
         .key   = key};
 
+    scratch_end(temp);
     return result;
 }
 

@@ -402,3 +402,11 @@ w32_sleep_ms_from_endt_us(uint64 endt_us)
     }
     return (sleep_ms);
 }
+
+/** cursor */
+internal void
+os_cursor_set()
+{
+    HCURSOR hCursor = LoadCursor(NULL, IDC_HAND);
+    SetCursor(hCursor);
+}

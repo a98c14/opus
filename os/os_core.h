@@ -52,6 +52,9 @@ internal uint64 os_now_ns();
 /** utility */
 internal IVec2 os_screen_resolution();
 
+/** cursor */
+internal void os_cursor_set();
+
 /** input */
 typedef enum
 {

@@ -291,7 +291,7 @@ d_quad(Quad q, float32 thickness, Color c)
 }
 
 internal Rect
-d_raw(Rect r, TextureIndex texture)
+d_texture(Rect r, TextureIndex texture)
 {
     GFX_VertexAtrribute_TexturedColored* vertices     = arena_push_array(d_context->frame_arena, GFX_VertexAtrribute_TexturedColored, 6 * 4);
     uint32                               vertex_count = 0;
@@ -308,6 +308,23 @@ d_raw(Rect r, TextureIndex texture)
     batch.uniform_buffer      = 0;
     gfx_batch_commit(batch);
     return r;
+}
+
+internal Rect
+d_texture_region(Rect rect, Rect region, TextureIndex texture)
+{
+    D_ShaderDataSprite* uniform_data = arena_push_array(d_context->frame_arena, D_ShaderDataSprite, 1);
+    uniform_data[0].bounds           = region.v;
+    uniform_data[0].color            = color_v4(ColorRed200);
+    uniform_data[0].model            = transform_quad_aligned(rect.center, rect.size);
+
+    GFX_Batch batch;
+    batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, texture, GFX_MeshTypeQuad, d_context->material_sprite);
+    batch.element_count  = 1;
+    batch.uniform_buffer = uniform_data;
+    gfx_batch_commit(batch);
+
+    return rect;
 }
 
 internal Rect
@@ -413,7 +430,25 @@ d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scal
 }
 
 internal Rect
-d_sprite(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c)
+d_sprite(TextureIndex texture, D_Sprite* sprite, Vec2 position, Vec2 scale, Color c)
+{
+    // TODO(selim): pivot calculations
+    D_ShaderDataSprite* uniform_data = arena_push_array(d_context->frame_arena, D_ShaderDataSprite, 1);
+    uniform_data[0].bounds           = sprite->rect.v;
+    uniform_data[0].color            = color_v4(c);
+    uniform_data[0].model            = transform_quad_aligned(position, scale);
+
+    GFX_Batch batch;
+    batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, texture, GFX_MeshTypeQuad, d_context->material_sprite);
+    batch.element_count  = 1;
+    batch.uniform_buffer = uniform_data;
+    gfx_batch_commit(batch);
+
+    return rect_from_xy_wh(position.x, position.y, scale.x, scale.y);
+}
+
+internal Rect
+d_sprite_old(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c)
 {
     const D_Sprite* sprite = &atlas->sprites[sprite_index];
 
