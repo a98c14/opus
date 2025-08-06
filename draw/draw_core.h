@@ -111,7 +111,7 @@ internal Rect d_string_raw(FontFaceIndex font, Vec2 pos, String str, float32 siz
 internal Rect d_character(FontFaceIndex font, Vec2 pos, uint64 codepoint, float32 size, Color c, MaterialIndex material);
 internal void d_sprite_many(D_SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_count, bool32 sort);
 internal Rect d_sprite_old(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 scale, Anchor anchor, Color c);
-internal Rect d_sprite(TextureIndex texture, D_Sprite* sprite, Vec2 position, Vec2 scale, Color c);
+internal Rect d_sprite(D_Sprite* sprite, Vec2 position, Vec2 scale, Color c);
 internal void d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scale, float32 rotation, Color color);
 internal void d_arrow_pro(Vec2 start, Vec2 end, float32 thickness, float32 head_size, Color color);
 internal void d_arrow(Vec2 start, Vec2 end, float32 size, Color color);

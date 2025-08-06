@@ -41,7 +41,7 @@ gfx_init(GFX_Configuration* configuration)
 #endif
 
     _gfx_ogl_perm_arena  = arena_new_reserve(mb(64));
-    _gfx_ogl_frame_arena = arena_new_reserve(mb(32));
+    _gfx_ogl_frame_arena = arena_new_reserve(mb(16));
     _gfx_ogl_ctx         = arena_push_struct_zero(_gfx_ogl_perm_arena, GFX_OGL_Context);
     _gfx_ogl_ctx->aspect = _gfx_ogl_ctx->window_width / (float)_gfx_ogl_ctx->window_height;
 

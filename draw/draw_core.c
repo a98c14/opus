@@ -153,7 +153,7 @@ d_line(Vec2 start, Vec2 end, float32 thickness, Color c)
 
     d_mesh_push_line(vertices, &vertex_count, start, end, thickness, c);
 
-    GFX_Batch batch;
+    GFX_Batch batch           = {0};
     batch.key                 = gfx_render_key_new(GFX_ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeDynamic, d_context->material_rect);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
@@ -176,7 +176,7 @@ d_triangle(Vec2 pos, Vec2 scale, float32 rotation, Color c)
     uniform_data->model                = transform_quad(pos, vec2(scale.x, scale.y), rotation - 90);
     uniform_data->color                = color_v4(c);
 
-    GFX_Batch batch;
+    GFX_Batch batch      = {0};
     batch.key            = gfx_render_key_new(GFX_ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeTriangle, d_context->material_triangle);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
@@ -191,7 +191,7 @@ d_circle_scaled(Vec2 pos, float32 radius, Vec2 scale, float32 thickness, Color c
     uniform_data->thickness          = thickness;
     uniform_data->color              = color_v4(c);
 
-    GFX_Batch batch;
+    GFX_Batch batch      = {0};
     batch.key            = gfx_render_key_new(GFX_ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeQuad, d_context->material_circle);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
@@ -230,7 +230,7 @@ d_rect(Rect r, float32 thickness, Color c)
         d_mesh_push_line(vertices, &vertex_count, add_vec2(rect_tr(r), vec2(-thickness, 1.5f * -thickness)), add_vec2(rect_br(r), vec2(-thickness, 1.5f * thickness)), thickness, c);
     }
 
-    GFX_Batch batch;
+    GFX_Batch batch           = {0};
     batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeDynamic, d_context->material_rect);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
@@ -251,7 +251,7 @@ d_material_raw(MaterialIndex material, void* shader_data)
         memory_copy(uniform_data, shader_data, size);
     }
 
-    GFX_Batch batch;
+    GFX_Batch batch      = {0};
     batch.key            = gfx_render_key_new(GFX_ViewTypeWorld, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeQuad, material);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
@@ -280,7 +280,7 @@ d_quad(Quad q, float32 thickness, Color c)
     d_mesh_push_line(vertices, &vertex_count, lerp_vec2(tl, tr, 0.5), add_vec2(lerp_vec2(tl, tr, 0.5), mul_vec2_f32(nv, px(30))), thickness, ColorSlate400);
     d_mesh_push_line(vertices, &vertex_count, lerp_vec2(tl, bl, 0.5), add_vec2(lerp_vec2(tl, bl, 0.5), mul_vec2_f32(nh, px(30))), thickness, ColorSlate400);
 
-    GFX_Batch batch;
+    GFX_Batch batch           = {0};
     batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeDynamic, d_context->material_rect);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
@@ -299,7 +299,7 @@ d_texture(Rect r, TextureIndex texture)
     Bounds b = {.bl = vec2(0, 0), .tr = vec2(1, 1)};
     d_mesh_push_rect(vertices, &vertex_count, r, b, ColorWhite);
 
-    GFX_Batch batch;
+    GFX_Batch batch           = {0};
     batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, texture, GFX_MeshTypeDynamic, d_context->material_texture);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
@@ -318,7 +318,7 @@ d_texture_region(Rect rect, Rect region, TextureIndex texture)
     uniform_data[0].color            = color_v4(ColorRed200);
     uniform_data[0].model            = transform_quad_aligned(rect.center, rect.size);
 
-    GFX_Batch batch;
+    GFX_Batch batch      = {0};
     batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, texture, GFX_MeshTypeQuad, d_context->material_sprite);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
@@ -355,7 +355,7 @@ d_string_raw(FontFaceIndex font, Vec2 pos, String str, float32 size, Color c, Al
     AtlasIndex atlas_index = d_mesh_push_string(vertices, &vertex_count, font, str, base_offset, size, c);
     // d_debug_rect(string_bounds);
 
-    GFX_Batch batch;
+    GFX_Batch batch           = {0};
     batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, font_get_atlas_texture(atlas_index), GFX_MeshTypeDynamic, material);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
@@ -373,7 +373,7 @@ d_character(FontFaceIndex font, Vec2 pos, uint64 codepoint, float32 size, Color 
     uint32                               vertex_count = 0;
     AtlasIndex                           atlas_index  = d_mesh_push_character(vertices, &vertex_count, font, codepoint, pos, size, c);
 
-    GFX_Batch batch;
+    GFX_Batch batch           = {0};
     batch.key                 = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, font_get_atlas_texture(atlas_index), GFX_MeshTypeDynamic, material);
     batch.element_count       = 1;
     batch.draw_instance_count = vertex_count;
@@ -409,7 +409,7 @@ d_sprite_many(D_SpriteAtlas atlas, D_DrawDataSprite* draw_data, uint32 sprite_co
                                                      : transform_quad_around_pivot(data->position.xy, scale, data->rotation, pivot);
     }
 
-    GFX_Batch batch;
+    GFX_Batch batch      = {0};
     batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas.texture, GFX_MeshTypeQuad, d_context->material_sprite);
     batch.element_count  = sprite_count;
     batch.uniform_buffer = uniform_data;
@@ -430,7 +430,7 @@ d_sprite_at(D_SpriteAtlas atlas, D_SpriteIndex sprite_index, Vec2 pos, Vec2 scal
 }
 
 internal Rect
-d_sprite(TextureIndex texture, D_Sprite* sprite, Vec2 position, Vec2 scale, Color c)
+d_sprite(D_Sprite* sprite, Vec2 position, Vec2 scale, Color c)
 {
     // TODO(selim): pivot calculations
     D_ShaderDataSprite* uniform_data = arena_push_array(d_context->frame_arena, D_ShaderDataSprite, 1);
@@ -438,8 +438,8 @@ d_sprite(TextureIndex texture, D_Sprite* sprite, Vec2 position, Vec2 scale, Colo
     uniform_data[0].color            = color_v4(c);
     uniform_data[0].model            = transform_quad_aligned(position, scale);
 
-    GFX_Batch batch;
-    batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, texture, GFX_MeshTypeQuad, d_context->material_sprite);
+    GFX_Batch batch      = {0};
+    batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, sprite->texture_index, GFX_MeshTypeQuad, d_context->material_sprite);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
     gfx_batch_commit(batch);
@@ -460,7 +460,7 @@ d_sprite_old(D_SpriteAtlas* atlas, D_SpriteIndex sprite_index, Rect rect, Vec2 s
     uniform_data[0].color            = color_v4(c);
     uniform_data[0].model            = transform_quad_aligned(final.center, final.size);
 
-    GFX_Batch batch;
+    GFX_Batch batch      = {0};
     batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, atlas->texture, GFX_MeshTypeQuad, d_context->material_sprite);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;
@@ -495,7 +495,7 @@ d_ui_element(Rect rect, Color c, float32 border_thickness, Vec4 border_radius)
     uniform_data[0].border_thickness = border_thickness;
     uniform_data[0].size             = rect.size;
 
-    GFX_Batch batch;
+    GFX_Batch batch      = {0};
     batch.key            = gfx_render_key_new(d_context->active_view, d_context->active_layer, d_context->active_pass, 0, GFX_MeshTypeQuad, d_context->material_ui);
     batch.element_count  = 1;
     batch.uniform_buffer = uniform_data;

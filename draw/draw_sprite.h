@@ -16,10 +16,11 @@ enum
 
 typedef struct
 {
-    Rect rect;
-    Rect size;
-    Vec2 pivot;
-    Vec2 source_size;
+    Rect         rect;
+    Rect         size;
+    Vec2         pivot;
+    Vec2         source_size;
+    TextureIndex texture_index;
 } D_Sprite;
 
 typedef struct
