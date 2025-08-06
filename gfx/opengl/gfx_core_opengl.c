@@ -41,7 +41,7 @@ gfx_init(GFX_Configuration* configuration)
 #endif
 
     _gfx_ogl_perm_arena  = arena_new_reserve(mb(64));
-    _gfx_ogl_frame_arena = arena_new_reserve(mb(16));
+    _gfx_ogl_frame_arena = arena_new_reserve(mb(32));
     _gfx_ogl_ctx         = arena_push_struct_zero(_gfx_ogl_perm_arena, GFX_OGL_Context);
     _gfx_ogl_ctx->aspect = _gfx_ogl_ctx->window_width / (float)_gfx_ogl_ctx->window_height;
 
@@ -473,6 +473,7 @@ gfx_render(float32 dt)
     ctx->timer += dt;
     ctx->stat_draw_count   = 0;
     ctx->stat_object_count = 0;
+    ctx->active_key        = 0;
 
     /* setup global shader data */
     Mat4 world_view  = mat4_mvp(mat4_identity(), camera.view, camera.projection);
