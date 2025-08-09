@@ -1,6 +1,6 @@
 #pragma once
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+// #define WIN32_LEAN_AND_MEAN
+// #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -29,7 +29,6 @@ net_init(void)
 internal void
 net_socket_close(void)
 {
-
     // closesocket(SOCKET s)
 }
 
@@ -88,84 +87,94 @@ net_host_to_ip(Arena* arena, String address, String port)
 internal N_Socket*
 net_listen(Arena* arena, String port)
 {
-    N_Socket* result = arena_push_struct_zero(arena, N_Socket);
+    (void)arena;
+    (void)port;
+    return 0;
+    // N_Socket* result = arena_push_struct_zero(arena, N_Socket);
 
-    struct addrinfo hints = {0};
-    hints.ai_family       = AF_UNSPEC;   // IPv4 or IPv6
-    hints.ai_socktype     = SOCK_STREAM; // TCP
-    hints.ai_flags        = AI_PASSIVE;
+    // struct addrinfo hints = {0};
+    // hints.ai_family       = AF_UNSPEC;   // IPv4 or IPv6
+    // hints.ai_socktype     = SOCK_STREAM; // TCP
+    // hints.ai_flags        = AI_PASSIVE;
 
-    struct addrinfo* src_addr;
-    int32            status = getaddrinfo(NULL, port.value, &hints, &src_addr);
-    if (status != 0)
-    {
-        log_error("couldn't get address info for port %s, status: %d", port.value, status);
-        return result;
-    }
+    // struct addrinfo* src_addr;
+    // int32            status = getaddrinfo(NULL, port.value, &hints, &src_addr);
+    // if (status != 0)
+    // {
+    //     log_error("couldn't get address info for port %s, status: %d", port.value, status);
+    //     return result;
+    // }
 
-    result->descriptor = socket(src_addr->ai_family, src_addr->ai_socktype, src_addr->ai_protocol);
-    if (result->descriptor < 0)
-    {
-        log_error("couldn't create socket, %d", WSAGetLastError());
-        return result;
-    }
+    // result->descriptor = socket(src_addr->ai_family, src_addr->ai_socktype, src_addr->ai_protocol);
+    // if (result->descriptor < 0)
+    // {
+    //     log_error("couldn't create socket, %d", WSAGetLastError());
+    //     return result;
+    // }
 
-    status = bind(result->descriptor, src_addr->ai_addr, src_addr->ai_addrlen);
-    if (status != 0)
-    {
-        log_error("couldn't bind socket, status %d, error code: %d", status, WSAGetLastError());
-        return result;
-    }
+    // status = bind(result->descriptor, src_addr->ai_addr, src_addr->ai_addrlen);
+    // if (status != 0)
+    // {
+    //     log_error("couldn't bind socket, status %d, error code: %d", status, WSAGetLastError());
+    //     return result;
+    // }
 
-    status = listen(result->descriptor, N_BACKLOG);
-    if (result->descriptor < 0)
-    {
-        log_error("encountered an error while trying to listen, %d", WSAGetLastError());
-        return result;
-    }
+    // status = listen(result->descriptor, N_BACKLOG);
+    // if (result->descriptor < 0)
+    // {
+    //     log_error("encountered an error while trying to listen, %d", WSAGetLastError());
+    //     return result;
+    // }
 
-    return result;
+    // return result;
 }
 
 internal void
 net_accept(N_Socket* socket)
 {
-    struct sockaddr_storage incoming;
-    socklen_t               addr_size = sizeof(incoming);
+    (void)socket;
+    // struct sockaddr_storage incoming;
+    // socklen_t               addr_size = sizeof(incoming);
 
-    int32 conn_sd = accept(socket->descriptor, (struct sockaddr*)&incoming, &addr_size);
+    // int32 conn_sd = accept(socket->descriptor, (struct sockaddr*)&incoming, &addr_size);
     // TODO(selim):
 }
 
 internal void
 net_send(N_Socket* socket, void* bytes, uint64 length)
 {
+    (void)socket;
+    (void)bytes;
+    (void)length;
     // sendto(socket->descriptor, bytes, length, 0, , sizeof(struct sockaddr_storage));
 }
 
 internal void
 net_connect(Arena* arena, String address, String port)
 {
-    struct addrinfo hints = {0};
-    hints.ai_family       = AF_UNSPEC;   // IPv4 or IPv6
-    hints.ai_socktype     = SOCK_STREAM; // TCP
-    hints.ai_flags        = AI_PASSIVE;
+    (void)arena;
+    (void)address;
+    (void)port;
+    // struct addrinfo hints = {0};
+    // hints.ai_family       = AF_UNSPEC;   // IPv4 or IPv6
+    // hints.ai_socktype     = SOCK_STREAM; // TCP
+    // hints.ai_flags        = AI_PASSIVE;
 
-    struct addrinfo* dst_addr;
-    int32            status = getaddrinfo(address.value, port.value, &hints, &dst_addr);
-    if (status != 0)
-    {
-        log_error("couldn't get address info for, %s:%s, status: %d", address.value, port.value, status);
-        return;
-    }
+    // struct addrinfo* dst_addr;
+    // int32            status = getaddrinfo(address.value, port.value, &hints, &dst_addr);
+    // if (status != 0)
+    // {
+    //     log_error("couldn't get address info for, %s:%s, status: %d", address.value, port.value, status);
+    //     return;
+    // }
 
-    struct addrinfo* src_addr;
-    status = getaddrinfo(NULL, "80", &hints, &src_addr);
-    if (status != 0)
-    {
-        log_error("couldn't get address info for, %s:%s, status: %d", address.value, port.value, status);
-        return;
-    }
+    // struct addrinfo* src_addr;
+    // status = getaddrinfo(NULL, "80", &hints, &src_addr);
+    // if (status != 0)
+    // {
+    //     log_error("couldn't get address info for, %s:%s, status: %d", address.value, port.value, status);
+    //     return;
+    // }
 
     // TODO(selim): we need to validate the dst_info (like in `net_host_to_ip`). not sure
     // how to determine which node in linked list is good though.
@@ -183,17 +192,34 @@ net_connect(Arena* arena, String address, String port)
     //     return;
     // }
 
-    int32 sockfd = socket(dst_addr->ai_family, dst_addr->ai_socktype, dst_addr->ai_protocol);
-    if (sockfd < 0)
-    {
-        log_error("couldn't create socket, %d", WSAGetLastError());
-        return;
-    }
+    // int32 sockfd = socket(dst_addr->ai_family, dst_addr->ai_socktype, dst_addr->ai_protocol);
+    // if (sockfd < 0)
+    // {
+    //     log_error("couldn't create socket, %d", WSAGetLastError());
+    //     return;
+    // }
 
-    status = connect(sockfd, dst_addr->ai_addr, dst_addr->ai_addrlen);
-    if (status != 0)
-    {
-        log_error("couldn't connect to %s:%s, error: %s", address.value, port.value, WSAGetLastError());
-    }
-    log_info("successfully connected to destination");
+    // status = connect(sockfd, dst_addr->ai_addr, dst_addr->ai_addrlen);
+    // if (status != 0)
+    // {
+    //     log_error("couldn't connect to %s:%s, error: %s", address.value, port.value, WSAGetLastError());
+    // }
+    // log_info("successfully connected to destination");
+}
+
+/** V2 */
+internal N_Server
+net_server_new(Arena* arena, String port)
+{
+    (void)arena;
+    (void)port;
+    N_Server result = {0};
+    return result;
+}
+
+internal bool32
+net_server_listen(N_Server* server)
+{
+    (void)server;
+    return true;
 }

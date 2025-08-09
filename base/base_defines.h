@@ -234,6 +234,7 @@ internal int32  safe_cast_int32(int64 x);
 
 /** Atomic */
 #if OS_WINDOWS
+#define WIN32_LEAN_AND_MEAN
 #include <intrin.h>
 #include <tmmintrin.h>
 #include <windows.h>

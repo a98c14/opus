@@ -7,3 +7,4 @@
 #include "opus/draw/draw_inc.h"
 #include "opus/ui/ui_inc.h"
 #include "opus/input/input_inc.h"
+#include "opus/net/net_inc.h"

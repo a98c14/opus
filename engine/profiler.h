@@ -1,7 +1,7 @@
 // clang-format off
 #pragma once
-#include <base/defines.h>
-#include <base/memory.h>
+#include "../base/base_defines.h"
+#include "../base/base_memory.h"
 
 #define PROFILER_COLOR_DEFAULT 0xFFFFFFFF
 #define PROFILER_COLOR_RED     0xFF0000FF

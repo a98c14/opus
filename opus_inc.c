@@ -5,3 +5,4 @@
 #include "opus/draw/draw_inc.c"
 #include "opus/ui/ui_inc.c"
 #include "opus/input/input_inc.c"
+#include "opus/net/net_inc.c"
