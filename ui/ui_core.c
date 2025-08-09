@@ -57,7 +57,7 @@ ui_init(Arena* arena)
 
     for (uint32 i = 0; i < array_count(ui_ctx->available_frame_arenas); i++)
     {
-        ui_ctx->available_frame_arenas[i] = arena_new_reserve(mb(32));
+        ui_ctx->available_frame_arenas[i] = arena_new_reserve(mb(8));
     }
     ui_ctx->frame_arena = ui_ctx->available_frame_arenas[0];
     // ui_ctx->next_frame_arena = ui_ctx->available_frame_arenas[1];
@@ -81,7 +81,6 @@ internal void
 ui_update(float32 dt)
 {
     //** Layout Calculations */
-
     UI_EntityNode* nodes_to_process = 0;
     UI_EntityNode* process_node     = arena_push_struct_zero(ui_ctx->frame_arena, UI_EntityNode);
     process_node->value             = ui_ctx->root;
@@ -124,10 +123,42 @@ ui_update(float32 dt)
     for (Axis axis = 0; axis < Axis_COUNT; axis++)
         for (UI_EntityNode* node = entity_calculation_lists[axis][UI_SizeKind_FitContents].first; node != 0; node = node->next)
         {
-            UI_Entity* e         = node->value;
-            Vec2       text_size = text_calculate_size(d_context->active_font, e->text, ui_line_height);
-            e->size.x            = (e->size.x) * (1 - AxisMultiplierX[axis]) + (text_size.x + e->padding.x) * AxisMultiplierX[axis];
-            e->size.y            = (e->size.y) * (1 - AxisMultiplierY[axis]) + (text_size.y + e->padding.y) * AxisMultiplierY[axis];
+            UI_Entity* e = node->value;
+
+            Vec2 requested_size = vec2_zero();
+
+            if (!string_is_empty(e->text))
+            {
+                requested_size = text_calculate_size(d_context->active_font, e->text, ui_line_height);
+            }
+
+            if (e->image)
+            {
+                requested_size = vec2_max(requested_size, e->image->size.size);
+            }
+
+            for (UI_Entity* child = node->value->first_child; child != &ui_entity_nil; child = child->next)
+            {
+                requested_size = vec2_max(requested_size, child->size);
+            }
+
+            e->size.x = lerp_f32(e->size.x, (requested_size.x + e->padding.x + e->margin.x), AxisMultiplierX[axis]);
+            e->size.y = lerp_f32(e->size.y, (requested_size.y + e->padding.y + e->margin.y), AxisMultiplierY[axis]);
+        }
+
+    /** Grow */
+    for (Axis axis = 0; axis < Axis_COUNT; axis++)
+        for (UI_EntityNode* node = entity_calculation_lists[axis][UI_SizeKind_SumOfChildren].last; node != 0; node = node->prev)
+        {
+            UI_Entity* e = node->value;
+
+            Vec2 size = e->size;
+            for (UI_Entity* child = node->value->first_child; child != &ui_entity_nil; child = child->next)
+            {
+                size = vec2_axis_add(size, child->size, axis);
+                size = vec2_max(size, child->size);
+            }
+            e->size = add_vec2(add_vec2(size, e->padding), e->margin);
         }
 
     /** Layout */
@@ -142,61 +173,57 @@ ui_update(float32 dt)
         Vec2   cursor_move   = {0};
         if (!is_horizontal)
         {
-            cursor_move.h = -e->size.h - e->margin.y / 2.0f;
+            cursor_move.h = -e->size.h;
         }
         else
         {
-            cursor_move.x = e->size.w + e->margin.x / 2.0f;
+            cursor_move.x = e->size.w;
         }
 
-        e->rect       = rect_at(e->parent->cursor, e->size, AlignmentTopLeft);
-        e->outer_rect = rect_expand(e->rect, e->margin);
+        Vec2 parent_cursor = e->parent->cursors[e->anchor.parent];
+
+        e->outer_rect = rect_at(parent_cursor, e->size, e->anchor.child);
+        e->outer_rect = rect_move(e->outer_rect, e->pos);
+        e->rect       = rect_shrink(e->outer_rect, e->margin);
         e->inner_rect = rect_shrink(e->rect, e->padding);
-        e->cursor     = rect_tl(e->inner_rect);
 
-        e->parent->cursor = add_vec2(e->parent->cursor, cursor_move);
+        // if (e->parent == ui_ctx->root)
+        // {
+        //     d_debug_rect(e->outer_rect);
+        //     d_debug_rect(e->rect);
+        //     d_debug_rect2(e->inner_rect);
+        // }
+        // else
+        // {
+        //     d_debug_rect4(e->outer_rect);
+        //     d_debug_rect3(e->rect);
+        //     d_debug_rect3(e->inner_rect);
+        // }
+
+        e->parent->cursors[e->anchor.parent] = add_vec2(parent_cursor, cursor_move);
+        _ui_entity_cursors_reset(e);
     }
-
-    /** Grow */
-    for (Axis axis = 0; axis < Axis_COUNT; axis++)
-        for (UI_EntityNode* node = entity_calculation_lists[axis][UI_SizeKind_SumOfChildren].last; node != 0; node = node->prev)
-        {
-            UI_Entity* e = node->value;
-
-            float32 min_axis = MAX_FLOAT32;
-            float32 max_axis = MIN_FLOAT32;
-
-            for (UI_Entity* child = node->value->first_child; child != &ui_entity_nil; child = child->next)
-            {
-                min_axis = min(min_axis, rect_axis_min(child->outer_rect, axis));
-                max_axis = max(max_axis, rect_axis_max(child->outer_rect, axis));
-            }
-
-            e->rect       = rect_axis_set(e->rect, axis, min_axis, max_axis);
-            e->inner_rect = rect_shrink(e->rect, e->padding);
-            e->outer_rect = rect_expand(e->rect, e->margin);
-        }
 
     /** Fill Parent */
     for (Axis axis = 0; axis < Axis_COUNT; axis++)
         for (UI_EntityNode* node = entity_grow_lists[axis].last; node != 0; node = node->prev)
         {
-            UI_Entity* e = node->value;
+            // UI_Entity* e = node->value;
 
-            if (axis == AxisVertical)
-            {
-                e->size.x     = max(e->size.x, e->parent->inner_rect.w);
-                e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
-                e->outer_rect = rect_expand(e->rect, e->margin);
-                e->inner_rect = rect_shrink(e->rect, e->padding);
-            }
-            else if (axis == AxisHorizontal)
-            {
-                e->size.y     = max(e->size.y, e->parent->inner_rect.h);
-                e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
-                e->outer_rect = rect_expand(e->rect, e->margin);
-                e->inner_rect = rect_shrink(e->rect, e->padding);
-            }
+            // if (axis == AxisVertical)
+            // {
+            //     e->size.x     = max(e->size.x, e->parent->inner_rect.w);
+            //     e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
+            //     e->outer_rect = rect_expand(e->rect, e->margin);
+            //     e->inner_rect = rect_shrink(e->rect, e->padding);
+            // }
+            // else if (axis == AxisHorizontal)
+            // {
+            //     e->size.y     = max(e->size.y, e->parent->inner_rect.h);
+            //     e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
+            //     e->outer_rect = rect_expand(e->rect, e->margin);
+            //     e->inner_rect = rect_shrink(e->rect, e->padding);
+            // }
         }
 
     /** Events */
@@ -251,6 +278,11 @@ ui_update(float32 dt)
         if (!string_is_empty(e->text))
         {
             d_string(e->inner_rect, e->text, ui_line_height, e->fg_color, ANCHOR_L_L);
+        }
+
+        if (e->image)
+        {
+            d_sprite(e->image, e->inner_rect.center, e->inner_rect.size, e->fg_color);
         }
     }
 
@@ -557,7 +589,7 @@ ui_entity_new(UI_ElementKind kind)
     result->key  = ui_key_null;
     result->kind = kind;
 
-    result->bg_color        = ColorSlate400;
+    result->bg_color        = ColorInvisible;
     result->highlight_color = ColorSlate200;
     result->fg_color        = ColorBlack;
 
@@ -567,6 +599,8 @@ ui_entity_new(UI_ElementKind kind)
     result->direction                 = AxisVertical;
     result->size_kind[AxisVertical]   = UI_SizeKind_FitContents;
     result->size_kind[AxisHorizontal] = UI_SizeKind_FitContents;
+
+    result->anchor = ANCHOR_TL_TL;
 
     return result;
 }
@@ -640,23 +674,40 @@ _ui_entity_init_root()
     e->size_kind[AxisHorizontal] = UI_SizeKind_Fixed;
     e->size_kind[AxisVertical]   = UI_SizeKind_Fixed;
     e->bg_color                  = 0;
-    e->cursor                    = rect_tl(e->inner_rect);
 
     ui_ctx->active_element = e;
     ui_ctx->active_parent  = e;
 
+    _ui_entity_cursors_reset(e);
+
     ui_ctx->root = e;
 }
 
-/** V2 */
-
 internal void
-ui_begin_vertical()
+_ui_entity_cursors_reset(UI_Entity* entity)
+{
+    for (int32 i = 0; i < AlignmentCount; i++)
+    {
+        entity->cursors[i] = rect_position_from_alignment(entity->inner_rect, i);
+    }
+}
+
+/** V2 */
+internal void
+ui_begin_vertical(UI_Transform* xform)
 {
     UI_Entity* entity                 = ui_entity_init(UI_ElementKind_Container);
     entity->direction                 = AxisVertical;
     entity->size_kind[AxisVertical]   = UI_SizeKind_SumOfChildren;
-    entity->size_kind[AxisHorizontal] = UI_SizeKind_SumOfChildren;
+    entity->size_kind[AxisHorizontal] = UI_SizeKind_FitContents;
+
+    if (xform)
+    {
+        entity->anchor = xform->anchor;
+        entity->pos    = xform->pos;
+        entity->size   = xform->scale;
+    }
+
 #if BUILD_DEBUG
     entity->debug_str = string("Vertical");
 #endif
@@ -667,7 +718,7 @@ ui_begin_horizontal()
 {
     UI_Entity* entity                 = ui_entity_init(UI_ElementKind_Container);
     entity->direction                 = AxisHorizontal;
-    entity->size_kind[AxisVertical]   = UI_SizeKind_SumOfChildren;
+    entity->size_kind[AxisVertical]   = UI_SizeKind_FitContents;
     entity->size_kind[AxisHorizontal] = UI_SizeKind_SumOfChildren;
 #if BUILD_DEBUG
     entity->debug_str = string("Horizontal");
@@ -677,7 +728,7 @@ ui_begin_horizontal()
 internal void
 ui_end()
 {
-    ui_ctx->active_parent = ui_ctx->active_element->parent;
+    ui_ctx->active_parent = ui_ctx->active_parent->parent;
 }
 
 internal void
@@ -729,6 +780,14 @@ ui_set_bg_color(Color color)
     ui_ctx->active_element->bg_color        = color;
     Color hg_color                          = color_is_dark(color) ? ColorWhite : ColorBlack;
     ui_ctx->active_element->highlight_color = color_lerp(ui_ctx->active_element->bg_color, hg_color, 0.6f);
+}
+
+internal void
+ui_set_fg_color(Color color)
+{
+    xassert(ui_ctx->active_element != &ui_entity_nil);
+
+    ui_ctx->active_element->fg_color = color;
 }
 
 internal void

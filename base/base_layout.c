@@ -113,7 +113,7 @@ rect_aligned(float32 x, float32 y, float32 w, float32 h, Alignment alignment)
 }
 
 internal Vec2
-rect_get(Rect rect, Alignment alignment)
+rect_position_from_alignment(Rect rect, Alignment alignment)
 {
     Vec2 result;
     result.x = rect.x - rect.w * AlignmentMultiplierX[alignment];
@@ -250,9 +250,18 @@ rect_axis_set(Rect rect, Axis axis, float32 min, float32 max)
 {
     Rect result = {0};
 
-    result.size.w   = rect.size.w * (1 - AxisMultiplierX[axis]) + (max - min) * AxisMultiplierX[axis];
+    result.size.w   = rect.size.w * (1 - AxisMultiplierX[axis]) + (max - min) * AxisMultiplierX[axis]; // TODO(selim): use lerp here
     result.size.h   = rect.size.h * (1 - AxisMultiplierY[axis]) + (max - min) * AxisMultiplierY[axis];
     result.center.x = rect.center.x - (rect.size.w - result.size.w) / 2.0f;
     result.center.y = rect.center.y + (rect.size.h - result.size.h) / 2.0f;
+    return result;
+}
+
+internal Vec2
+vec2_axis_add(Vec2 a, Vec2 b, Axis axis)
+{
+    Vec2 result;
+    result.x = lerp_f32(a.x, a.x + b.x, AxisMultiplierX[axis]);
+    result.y = lerp_f32(a.y, a.y + b.y, AxisMultiplierY[axis]);
     return result;
 }

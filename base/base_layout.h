@@ -125,7 +125,7 @@ internal Rect rect_cut_bottom(Rect* r, float32 size);
 
 internal Rect rect_at(Vec2 position, Vec2 size, Alignment alignment);
 internal Rect rect_aligned(float32 x, float32 y, float32 w, float32 h, Alignment alignment);
-internal Vec2 rect_get(Rect rect, Alignment alignment);
+internal Vec2 rect_position_from_alignment(Rect rect, Alignment alignment);
 internal Rect rect_align(Rect rect, Alignment alignment);
 internal Rect rect_anchor(Rect child, Rect parent, Anchor anchor);
 internal Rect rect_at_o(Vec2 position, Vec2 size, Vec2 offset, Alignment alignment);
@@ -147,3 +147,4 @@ internal Rect rect_resize_width(Rect r, float32 w, Alignment alignment);
 internal float32 rect_axis_min(Rect rect, Axis axis);
 internal float32 rect_axis_max(Rect rect, Axis axis);
 internal Rect    rect_axis_set(Rect rect, Axis axis, float32 min, float32 max);
+internal Vec2    vec2_axis_add(Vec2 a, Vec2 b, Axis axis);

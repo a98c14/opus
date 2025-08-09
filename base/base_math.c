@@ -722,7 +722,7 @@ move_vec2(Vec2 from, Vec2 heading, float32 length)
 }
 
 internal Vec2
-min_vec2(Vec2 a, Vec2 b)
+vec2_min(Vec2 a, Vec2 b)
 {
     Vec2 result = {0};
     result.x    = min(a.x, b.x);
@@ -731,7 +731,7 @@ min_vec2(Vec2 a, Vec2 b)
 }
 
 internal Vec2
-max_vec2(Vec2 a, Vec2 b)
+vec2_max(Vec2 a, Vec2 b)
 {
     Vec2 result = {0};
     result.x    = max(a.x, b.x);

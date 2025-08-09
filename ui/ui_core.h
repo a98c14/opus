@@ -53,6 +53,13 @@ typedef enum
     UI_SizeKind_COUNT
 } UI_SizeKind;
 
+typedef struct
+{
+    Vec2   pos;
+    Vec2   scale;
+    Anchor anchor;
+} UI_Transform;
+
 typedef struct UI_Entity UI_Entity;
 struct UI_Entity
 {
@@ -70,9 +77,6 @@ struct UI_Entity
     UI_ElementKind kind;
     UI_Key         key;
 
-    /** cursor */
-    Vec2 cursor;
-
     /** events */
     float32 hot_t;
     float32 click_t;
@@ -83,12 +87,13 @@ struct UI_Entity
     Rect outer_rect;
 
     /** styling */
-    String text;
-    Color  bg_color;
-    Color  highlight_color;
-    Color  fg_color;
+    Color bg_color;
+    Color highlight_color;
+    Color fg_color;
 
     /** layout */
+    Anchor anchor;
+    Vec2   cursors[AlignmentCount];
     bool32 grow[Axis_COUNT];
 
     /** translation */
@@ -99,6 +104,10 @@ struct UI_Entity
 
     Vec2 margin;
     Vec2 padding;
+
+    /** Contents */
+    String    text;
+    D_Sprite* image;
 };
 
 read_only global UI_Entity ui_entity_nil = {
@@ -234,9 +243,10 @@ internal void       ui_entity_add_to_list(UI_Entity* entity, UI_EntityList* list
 internal UI_Entity* ui_entity_previous_frame_data(UI_Key key);
 
 internal void _ui_entity_init_root(void);
+internal void _ui_entity_cursors_reset(UI_Entity* entity);
 
 /** V2 Widgets */
-internal void ui_begin_vertical();
+internal void ui_begin_vertical(UI_Transform* xform);
 internal void ui_begin_horizontal();
 internal void ui_end();
 
@@ -246,4 +256,5 @@ internal UI_Signal ui_label(String label);
 internal void ui_set_wh(float32 w, float32 h);
 internal void ui_set_width(float32 w);
 internal void ui_set_bg_color(Color color);
+internal void ui_set_fg_color(Color color);
 internal void ui_set_margin(float32 x, float32 y);

@@ -330,7 +330,7 @@ d_texture_region(Rect rect, Rect region, TextureIndex texture)
 internal Rect
 d_string(Rect r, String str, float32 size, Color c, Anchor anchor)
 {
-    Vec2 pos = rect_get(r, anchor.parent);
+    Vec2 pos = rect_position_from_alignment(r, anchor.parent);
     return d_string_at(pos, str, size, c, anchor.child);
 }
 
@@ -531,6 +531,18 @@ internal void
 d_debug_rect2(Rect r)
 {
     d_rect(r, px(1.2f), ColorBlue400);
+}
+
+internal void
+d_debug_rect3(Rect r)
+{
+    d_rect(r, px(1.2f), ColorGreen400);
+}
+
+internal void
+d_debug_rect4(Rect r)
+{
+    d_rect(r, px(1.2f), ColorOrange400);
 }
 
 internal int
