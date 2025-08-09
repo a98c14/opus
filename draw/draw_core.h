@@ -123,6 +123,8 @@ internal void d_debug_line(Vec2 start, Vec2 end);
 internal void d_debug_line2(Vec2 start, Vec2 end);
 internal void d_debug_rect(Rect r);
 internal void d_debug_rect2(Rect r);
+internal void d_debug_rect3(Rect r);
+internal void d_debug_rect4(Rect r);
 
 /** sort */
 internal int d_compare_sprite_draw_data(const void* p, const void* q);
