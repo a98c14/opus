@@ -171,6 +171,22 @@ ui_update(float32 dt)
             e->size = add_vec2(add_vec2(size, e->padding), e->margin);
         }
 
+    /** Fill Parent */
+    for (Axis axis = 0; axis < Axis_COUNT; axis++)
+        for (UI_EntityNode* node = entity_grow_lists[axis].last; node != 0; node = node->prev)
+        {
+            UI_Entity* e = node->value;
+
+            if (axis == AxisHorizontal)
+            {
+                e->size.x = max(e->size.x, e->parent->size.x - e->parent->padding.x - e->parent->margin.x);
+            }
+            else if (axis == AxisVertical)
+            {
+                e->size.y = max(e->size.y, e->parent->size.y - e->parent->padding.y - e->parent->margin.y);
+            }
+        }
+
     /** Layout */
     for (UI_EntityNode* node = all_elements.first; node != 0; node = node->next)
     {
@@ -208,28 +224,6 @@ ui_update(float32 dt)
 
         _ui_entity_cursors_reset(e);
     }
-
-    /** Fill Parent */
-    for (Axis axis = 0; axis < Axis_COUNT; axis++)
-        for (UI_EntityNode* node = entity_grow_lists[axis].last; node != 0; node = node->prev)
-        {
-            UI_Entity* e = node->value;
-
-            if (axis == AxisVertical)
-            {
-                e->size.x     = max(e->size.x, e->parent->inner_rect.w);
-                e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
-                e->outer_rect = rect_expand(e->rect, e->margin);
-                e->inner_rect = rect_shrink(e->rect, e->padding);
-            }
-            else if (axis == AxisHorizontal)
-            {
-                e->size.y     = max(e->size.y, e->parent->inner_rect.h);
-                e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
-                e->outer_rect = rect_expand(e->rect, e->margin);
-                e->inner_rect = rect_shrink(e->rect, e->padding);
-            }
-        }
 
     /** Events */
     Input_MouseInfo mouse = input_mouse_info();
@@ -598,7 +592,7 @@ ui_entity_new(UI_ElementKind kind)
     result->highlight_color = ColorSlate200;
     result->fg_color        = ColorBlack;
 
-    result->padding                   = vec2(100, 0);
+    result->padding                   = vec2(0, 0);
     result->margin                    = vec2(0, 0);
     result->direction                 = AxisVertical;
     result->size_kind[AxisVertical]   = UI_SizeKind_FitContents;
@@ -638,10 +632,10 @@ ui_entity_init(UI_ElementKind kind)
 internal UI_Entity*
 ui_entity_init_widget(UI_ElementKind kind)
 {
-    UI_Entity* entity                       = ui_entity_init(kind);
-    entity->size_kind[AxisHorizontal]       = UI_SizeKind_FitContents;
-    entity->size_kind[AxisVertical]         = UI_SizeKind_FitContents;
-    entity->grow[entity->parent->direction] = 1;
+    UI_Entity* entity                                                                         = ui_entity_init(kind);
+    entity->size_kind[AxisHorizontal]                                                         = UI_SizeKind_FitContents;
+    entity->size_kind[AxisVertical]                                                           = UI_SizeKind_FitContents;
+    entity->grow[entity->parent->direction == AxisHorizontal ? AxisVertical : AxisHorizontal] = 1;
     return entity;
 }
 

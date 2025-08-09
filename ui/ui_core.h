@@ -97,10 +97,9 @@ struct UI_Entity
 
     /** translation */
     UI_Transform xform;
-
-    UI_SizeKind size_kind[Axis_COUNT];
-    Vec2        size;
-    Axis        direction;
+    UI_SizeKind  size_kind[Axis_COUNT];
+    Vec2         size;
+    Axis         direction;
 
     Vec2 margin;
     Vec2 padding;
