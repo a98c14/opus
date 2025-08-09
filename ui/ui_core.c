@@ -146,6 +146,16 @@ ui_update(float32 dt)
             e->size.y = lerp_f32(e->size.y, (requested_size.y + e->padding.y + e->margin.y), AxisMultiplierY[axis]);
         }
 
+    /** Size Calculation */
+    for (Axis axis = 0; axis < Axis_COUNT; axis++)
+        for (UI_EntityNode* node = entity_calculation_lists[axis][UI_SizeKind_Fixed].first; node != 0; node = node->next)
+        {
+            UI_Entity* e = node->value;
+
+            e->size.x = lerp_f32(e->size.x, e->xform.pixel_size.x + e->padding.x + e->margin.x, AxisMultiplierX[axis]);
+            e->size.y = lerp_f32(e->size.y, e->xform.pixel_size.y + e->padding.y + e->margin.y, AxisMultiplierY[axis]);
+        }
+
     /** Grow */
     for (Axis axis = 0; axis < Axis_COUNT; axis++)
         for (UI_EntityNode* node = entity_calculation_lists[axis][UI_SizeKind_SumOfChildren].last; node != 0; node = node->prev)
@@ -167,40 +177,35 @@ ui_update(float32 dt)
         UI_Entity* e = node->value;
 
         if (e->parent == &ui_entity_nil)
-            continue;
-
-        bool32 is_horizontal = e->parent->direction == AxisHorizontal;
-        Vec2   cursor_move   = {0};
-        if (!is_horizontal)
         {
-            cursor_move.h = -e->size.h;
+            e->outer_rect = rect_at(vec2_zero(), e->size, e->xform.anchor.child);
+            e->outer_rect = rect_move(e->outer_rect, e->xform.pos);
+            e->rect       = rect_shrink(e->outer_rect, e->margin);
+            e->inner_rect = rect_shrink(e->rect, e->padding);
         }
         else
         {
-            cursor_move.x = e->size.w;
+            bool32 is_horizontal = e->parent->direction == AxisHorizontal;
+            Vec2   cursor_move   = {0};
+            if (!is_horizontal)
+            {
+                cursor_move.h = -e->size.h;
+            }
+            else
+            {
+                cursor_move.x = e->size.w;
+            }
+
+            Vec2 parent_cursor = e->parent->cursors[e->xform.anchor.parent];
+
+            e->outer_rect = rect_at(parent_cursor, e->size, e->xform.anchor.child);
+            e->outer_rect = rect_move(e->outer_rect, e->xform.pos);
+            e->rect       = rect_shrink(e->outer_rect, e->margin);
+            e->inner_rect = rect_shrink(e->rect, e->padding);
+
+            e->parent->cursors[e->xform.anchor.parent] = add_vec2(parent_cursor, cursor_move);
         }
 
-        Vec2 parent_cursor = e->parent->cursors[e->anchor.parent];
-
-        e->outer_rect = rect_at(parent_cursor, e->size, e->anchor.child);
-        e->outer_rect = rect_move(e->outer_rect, e->pos);
-        e->rect       = rect_shrink(e->outer_rect, e->margin);
-        e->inner_rect = rect_shrink(e->rect, e->padding);
-
-        // if (e->parent == ui_ctx->root)
-        // {
-        //     d_debug_rect(e->outer_rect);
-        //     d_debug_rect(e->rect);
-        //     d_debug_rect2(e->inner_rect);
-        // }
-        // else
-        // {
-        //     d_debug_rect4(e->outer_rect);
-        //     d_debug_rect3(e->rect);
-        //     d_debug_rect3(e->inner_rect);
-        // }
-
-        e->parent->cursors[e->anchor.parent] = add_vec2(parent_cursor, cursor_move);
         _ui_entity_cursors_reset(e);
     }
 
@@ -208,22 +213,22 @@ ui_update(float32 dt)
     for (Axis axis = 0; axis < Axis_COUNT; axis++)
         for (UI_EntityNode* node = entity_grow_lists[axis].last; node != 0; node = node->prev)
         {
-            // UI_Entity* e = node->value;
+            UI_Entity* e = node->value;
 
-            // if (axis == AxisVertical)
-            // {
-            //     e->size.x     = max(e->size.x, e->parent->inner_rect.w);
-            //     e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
-            //     e->outer_rect = rect_expand(e->rect, e->margin);
-            //     e->inner_rect = rect_shrink(e->rect, e->padding);
-            // }
-            // else if (axis == AxisHorizontal)
-            // {
-            //     e->size.y     = max(e->size.y, e->parent->inner_rect.h);
-            //     e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
-            //     e->outer_rect = rect_expand(e->rect, e->margin);
-            //     e->inner_rect = rect_shrink(e->rect, e->padding);
-            // }
+            if (axis == AxisVertical)
+            {
+                e->size.x     = max(e->size.x, e->parent->inner_rect.w);
+                e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
+                e->outer_rect = rect_expand(e->rect, e->margin);
+                e->inner_rect = rect_shrink(e->rect, e->padding);
+            }
+            else if (axis == AxisHorizontal)
+            {
+                e->size.y     = max(e->size.y, e->parent->inner_rect.h);
+                e->rect       = rect_at(rect_tl(e->rect), e->size, AlignmentTopLeft);
+                e->outer_rect = rect_expand(e->rect, e->margin);
+                e->inner_rect = rect_shrink(e->rect, e->padding);
+            }
         }
 
     /** Events */
@@ -593,14 +598,13 @@ ui_entity_new(UI_ElementKind kind)
     result->highlight_color = ColorSlate200;
     result->fg_color        = ColorBlack;
 
-    result->padding                   = vec2(8, 8);
-    result->margin                    = vec2(8, 8);
-    result->size                      = vec2(8, ui_line_height * 2);
+    result->padding                   = vec2(100, 0);
+    result->margin                    = vec2(0, 0);
     result->direction                 = AxisVertical;
     result->size_kind[AxisVertical]   = UI_SizeKind_FitContents;
     result->size_kind[AxisHorizontal] = UI_SizeKind_FitContents;
 
-    result->anchor = ANCHOR_TL_TL;
+    result->xform.anchor = ANCHOR_TL_TL;
 
     return result;
 }
@@ -668,19 +672,19 @@ internal void
 _ui_entity_init_root()
 {
     UI_Entity* e                 = ui_entity_new(UI_ElementKind_Container);
-    e->rect                      = screen_rect();
-    e->inner_rect                = rect_shrink(e->rect, e->padding);
-    e->size                      = e->rect.size;
+    e->xform.pixel_size          = screen_rect().size;
+    e->xform.anchor              = ANCHOR_C_C;
     e->size_kind[AxisHorizontal] = UI_SizeKind_Fixed;
     e->size_kind[AxisVertical]   = UI_SizeKind_Fixed;
     e->bg_color                  = 0;
 
+#if BUILD_DEBUG
+    e->debug_str = string("Root");
+#endif
+
     ui_ctx->active_element = e;
     ui_ctx->active_parent  = e;
-
-    _ui_entity_cursors_reset(e);
-
-    ui_ctx->root = e;
+    ui_ctx->root           = e;
 }
 
 internal void
@@ -703,9 +707,7 @@ ui_begin_vertical(UI_Transform* xform)
 
     if (xform)
     {
-        entity->anchor = xform->anchor;
-        entity->pos    = xform->pos;
-        entity->size   = xform->scale;
+        memory_copy_struct(&entity->xform, xform);
     }
 
 #if BUILD_DEBUG
@@ -741,7 +743,7 @@ ui_set_pos(float32 x, float32 y)
 {
     xassert(ui_ctx->active_element != &ui_entity_nil);
 
-    ui_ctx->active_element->pos = vec2(x, y);
+    ui_ctx->active_element->xform.pos = vec2(x, y);
 }
 
 internal void
@@ -808,19 +810,26 @@ ui_set_padding(float32 x, float32 y)
 
 /** V2 Widgets */
 internal UI_Signal
-ui_button(String label)
+ui_button(String label, UI_Transform* xform)
 {
-    UI_Entity*            entity     = ui_entity_init_widget(UI_ElementKind_Clickable);
+    UI_Entity* entity = ui_entity_init_widget(UI_ElementKind_Clickable);
+
     UI_KeyFromLabelResult key_result = ui_key_from_label(label);
     entity->key                      = key_result.key;
     entity->text                     = key_result.label;
 
     UI_Entity* previous_frame_data = ui_entity_previous_frame_data(key_result.key);
     UI_Signal  result              = {0};
+
     if (previous_frame_data != 0)
     {
         result.click_t = previous_frame_data->click_t;
         result.clicked = previous_frame_data->click_t > 0;
+    }
+
+    if (xform)
+    {
+        memory_copy_struct(&entity->xform, xform);
     }
 
 #if BUILD_DEBUG

@@ -56,7 +56,7 @@ typedef enum
 typedef struct
 {
     Vec2   pos;
-    Vec2   scale;
+    Vec2   pixel_size;
     Anchor anchor;
 } UI_Transform;
 
@@ -92,13 +92,13 @@ struct UI_Entity
     Color fg_color;
 
     /** layout */
-    Anchor anchor;
     Vec2   cursors[AlignmentCount];
     bool32 grow[Axis_COUNT];
 
     /** translation */
+    UI_Transform xform;
+
     UI_SizeKind size_kind[Axis_COUNT];
-    Vec2        pos;
     Vec2        size;
     Axis        direction;
 
@@ -250,7 +250,7 @@ internal void ui_begin_vertical(UI_Transform* xform);
 internal void ui_begin_horizontal();
 internal void ui_end();
 
-internal UI_Signal ui_button(String label);
+internal UI_Signal ui_button(String label, UI_Transform* xform);
 internal UI_Signal ui_label(String label);
 
 internal void ui_set_wh(float32 w, float32 h);
