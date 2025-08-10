@@ -592,8 +592,8 @@ ui_entity_new(UI_ElementKind kind)
     result->highlight_color = ColorSlate200;
     result->fg_color        = ColorBlack;
 
-    result->padding                   = vec2(0, 0);
-    result->margin                    = vec2(0, 0);
+    result->padding                   = vec2(8, 8);
+    result->margin                    = vec2(8, 8);
     result->direction                 = AxisVertical;
     result->size_kind[AxisVertical]   = UI_SizeKind_FitContents;
     result->size_kind[AxisHorizontal] = UI_SizeKind_FitContents;
