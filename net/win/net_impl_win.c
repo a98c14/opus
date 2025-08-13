@@ -1,6 +1,8 @@
 #include "net_impl_win.h"
 
-// NOTE(selim): make sure to link against ws2_32.lib for winsock 2
+N_WIN32_CommandBuffer* _n_win32_command_buffer;
+N_WIN32_Context*       _n_win32_ctx;
+
 internal void
 net_init(void)
 {
@@ -20,9 +22,15 @@ net_init(void)
         WSACleanup();
         return;
     }
-
     _n_w32_perm_arena  = arena_new_reserve(mb(8));
     _n_w32_frame_arena = arena_new_reserve(mb(8));
+    _n_win32_ctx       = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_Context);
+
+    _n_win32_command_buffer           = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_CommandBuffer);
+    _n_win32_command_buffer->rw_mutex = os_rw_mutex_alloc();
+    _n_win32_command_buffer->cv       = os_condition_variable_alloc();
+
+    os_thread_launch(_net_win32_network_main_thread, 0);
 }
 
 internal void
@@ -89,191 +97,62 @@ net_host_to_ip(Arena* arena, String address, String port)
     freeaddrinfo(dst_info);
 }
 
-internal N_Server*
-net_server_new(String port)
+internal void
+net_start_listening(String port)
 {
-    N_Server* result = arena_push_struct_zero(_n_w32_perm_arena, N_Server);
-
-    result->state = N_ServerStateType_Ready;
-    result->port  = port;
-    result->mutex = os_mutex_alloc();
-
-    for (uint32 i = 0; i < N_MAX_CLIENT_COUNT; i++)
-    {
-        // TODO(selim): add alloc/release entity functions with locks
-        N_WIN32_Entity* client_entity = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_Entity);
-        client_entity->type           = N_WIN32_EntityType_Socket;
-
-        result->clients[i].socket = (N_Handle){int_from_ptr(client_entity)};
-    }
-
-    return result;
+    N_WIN32_Command c = {.type = N_WIN32_CommandType_StartListening};
+    memory_copy(c.port, port.value, port.length);
+    _net_win32_command_enqueue(c);
 }
 
-static void
-log_gai_error(int rc)
+internal void
+net_stop_listening()
 {
-    const char* msg = gai_strerrorA(rc);
-    fprintf(stderr, "getaddrinfo failed (%d): %s\n", rc, msg ? msg : "(unknown)");
+    N_WIN32_Command c = {.type = N_WIN32_CommandType_StopListening};
+    _net_win32_command_enqueue(c);
 }
 
 internal bool32
-net_server_start(N_Server* server)
+net_server_start()
 {
-    if (!server || server->state != N_ServerStateType_Ready)
-    {
-        log_error("Invalid server state.");
-        return 0;
-    }
-
-    struct addrinfo *address_info = NULL, hints;
-
-    memory_zero(&hints, sizeof(hints));
-    hints.ai_family   = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags    = AI_PASSIVE;
-
-    int32 w32_result = getaddrinfo(NULL, server->port.value, &hints, &address_info);
-    if (w32_result != 0)
-    {
-        _net_win32_log_wsa_error_message();
-        log_error("`getaddrinfo` failed for server");
-        return 0;
-    }
-
-    SOCKET           listening_socket = INVALID_SOCKET;
-    struct addrinfo* current_address  = address_info;
-    for (; current_address != 0; current_address = current_address->ai_next)
-    {
-        listening_socket = socket(address_info->ai_family, address_info->ai_socktype, address_info->ai_protocol);
-        if (listening_socket == INVALID_SOCKET)
-        {
-            continue;
-        }
-
-        w32_result = bind(listening_socket, current_address->ai_addr, (int)current_address->ai_addrlen);
-        if (w32_result == SOCKET_ERROR)
-        {
-            _net_win32_log_wsa_error_message();
-            log_error("Bind failed");
-            closesocket(listening_socket);
-            listening_socket = INVALID_SOCKET;
-
-            continue;
-        }
-
-        break;
-    }
-
-    freeaddrinfo(address_info);
-
-    if (listening_socket == INVALID_SOCKET)
-    {
-        _net_win32_log_wsa_error_message();
-        log_error("Couldn't connect to given address");
-        return 0;
-    }
-
-    if (listen(listening_socket, SOMAXCONN) == SOCKET_ERROR)
-    {
-        _net_win32_log_wsa_error_message();
-        log_error("Listen failed");
-        closesocket(listening_socket);
-        return 0;
-    }
-
-    N_Handle handle = {0};
-
-    N_WIN32_Entity* socket_entity = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_Entity);
-    socket_entity->socket         = listening_socket;
-    socket_entity->type           = N_WIN32_EntityType_Socket;
-    handle.v                      = int_from_ptr(socket_entity);
-
-    server->listening_socket = handle;
-    server->state            = N_ServerStateType_Listening;
-
-    N_WIN32_ServerThreadInfo* server_thread_info = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_ServerThreadInfo);
-    server_thread_info->server                   = server;
-    os_thread_launch(_net_win32_listen_thread, server_thread_info);
-
+    N_WIN32_Command c = {.type = N_WIN32_CommandType_StartListening};
+    _net_win32_command_enqueue(c);
     return true;
 }
 
-internal bool32
-net_server_stop(N_Server* server)
+internal void
+net_client_connect(String address, String port)
 {
-    if (server->state != N_ServerStateType_Listening)
-    {
-        return true;
-    }
-
-    os_mutex_take(server->mutex);
-    _net_win32_close_socket(server->listening_socket);
-    for (uint32 i = 0; i < server->client_count; i++)
-    {
-        N_Connection* connection = &server->clients[i];
-        if (connection->state == N_ConnectionStateType_Connected)
-        {
-            _net_win32_close_socket(connection->socket);
-            connection->state = N_ConnectionStateType_Uninitialized;
-        }
-    }
-
-    server->client_count     = 0;
-    server->state            = N_ServerStateType_Disconnected;
-    server->listening_socket = n_handle_zero;
-    os_mutex_drop(server->mutex);
+    N_WIN32_Command c = {.type = N_WIN32_CommandType_ClientConnect};
+    memory_copy(c.address, address.value, address.length);
+    memory_copy(c.port, port.value, port.length);
+    _net_win32_command_enqueue(c);
 }
 
-internal N_Client*
-net_client_new()
+internal void
+net_client_disconnect()
 {
-
-    N_Client* result = arena_push_struct_zero(_n_w32_perm_arena, N_Client);
-    return result;
+    N_WIN32_Command c = {.type = N_WIN32_CommandType_ClientDisconnect};
+    _net_win32_command_enqueue(c);
 }
 
-internal bool32
-net_client_connect(N_Client* client, String address, String port)
+internal void
+net_send(uint64 connection_id, Buffer buffer)
 {
-    N_Handle socket_handle = _net_win32_connect(address, port);
-    if (socket_handle.v == 0)
-    {
-        return false;
-    }
+    (void)connection_id;
+    (void)buffer;
+    // N_WIN32_Entity* entity = ptr_from_int(socket.socket.v);
 
-    client->conn.socket = socket_handle;
-    client->conn.state  = N_ConnectionStateType_Connected;
-    return true;
-}
+    // int32 send_result = send(entity->socket, buffer.data, (int32)buffer.size, 0);
+    // if (send_result == SOCKET_ERROR)
+    // {
+    //     _net_win32_log_wsa_error_message();
+    //     log_error("Send failed");
+    //     return false;
+    // }
+    // log_info("Sent data successfully, byte count: %d", send_result);
 
-internal bool32
-net_client_disconnect(N_Client* client)
-{
-    if (client->conn.state != N_ConnectionStateType_Connected)
-    {
-        return true;
-    }
-
-    return _net_win32_close_socket(client->conn.socket);
-}
-
-internal bool32
-net_send(N_Connection socket, Buffer buffer)
-{
-    N_WIN32_Entity* entity = ptr_from_int(socket.socket.v);
-
-    int32 send_result = send(entity->socket, buffer.data, (int32)buffer.size, 0);
-    if (send_result == SOCKET_ERROR)
-    {
-        _net_win32_log_wsa_error_message();
-        log_error("Send failed");
-        return false;
-    }
-    log_info("Sent data successfully, byte count: %d", send_result);
-
-    return true;
+    // return true;
 }
 
 /** Implementation Specific */
@@ -337,51 +216,15 @@ _net_win32_connect(String address, String port)
     return handle;
 }
 
-internal bool32
-_net_win32_close_socket(N_Handle socket_handle)
-{
-    N_WIN32_Entity* entity = ptr_from_int(socket_handle.v);
-    if (entity->type != N_WIN32_EntityType_Socket)
-    {
-        log_error("Client socket type is invalid! Should have never happened");
-        return true;
-    }
-
-    int32 w32_result = shutdown(entity->socket, SD_SEND);
-    if (w32_result != 0)
-    {
-        _net_win32_log_wsa_error_message();
-        log_error("Couldn't shutdown socket");
-        return false;
-    }
-
-    w32_result = closesocket(entity->socket);
-    if (w32_result != 0)
-    {
-        _net_win32_log_wsa_error_message();
-        log_error("Couldn't close socket");
-        return false;
-    }
-
-    return true;
-}
-
 internal void
 _net_win32_log_wsa_error_message()
 {
     LPVOID lpMsgBuf;
 
     int32 err = WSAGetLastError();
-    FormatMessageA(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER |
-            FORMAT_MESSAGE_FROM_SYSTEM |
-            FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
-        err,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-        (LPSTR)&lpMsgBuf,
-        0,
-        NULL);
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                   NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                   (LPSTR)&lpMsgBuf, 0, NULL);
 
     log_error("WSA Error %lu: %s", err, (char*)lpMsgBuf);
 
@@ -389,19 +232,198 @@ _net_win32_log_wsa_error_message()
 }
 
 internal void
+_net_win32_network_main_thread(void* data)
+{
+    os_thread_name_set(string("network_main_thread"));
+
+    (void)data;
+
+    N_WIN32_CommandBuffer* cmd_buffer = _n_win32_command_buffer;
+
+    for (;;)
+    {
+        os_rw_mutex_take_w(cmd_buffer->rw_mutex);
+        while (interlocked_uint64_read(&cmd_buffer->command_count) == 0)
+        {
+            os_condition_variable_wait_rw_w(cmd_buffer->cv, cmd_buffer->rw_mutex, UINT64_MAX);
+        }
+        os_rw_mutex_drop_w(cmd_buffer->rw_mutex);
+
+        for (;;)
+        {
+            // SPEED(selim): Test if `head & mask` trick for fast module actually improves speed (needs power of 2 buffer size and `mask = capacity - 1`).
+            N_WIN32_Command* slot = &_n_win32_command_buffer->commands[_n_win32_command_buffer->head % _N_WIN32_COMMAND_BUFFER_SIZE];
+            if (!interlocked_uint32_read(&slot->is_ready))
+            {
+                bool32 expected = 0;
+                os_wait_on_address(&slot->is_ready, &expected, sizeof(expected), -1);
+                continue;
+            }
+
+            log_info("Command received %d.", slot->type);
+            _net_win32_command_process(slot);
+            slot->is_ready = false;
+            log_info("Command processed %d.", slot->type);
+
+            interlocked_uint64_inc(&_n_win32_command_buffer->head);
+            if (interlocked_uint64_add(&_n_win32_command_buffer->command_count, -1) == 0)
+                break;
+        }
+    }
+}
+
+internal void
+_net_win32_command_process(N_WIN32_Command* command)
+{
+    switch (command->type)
+    {
+    case N_WIN32_CommandType_StartListening:
+    {
+        if (_n_win32_ctx->listen_state == N_WIN32_CommandType_StartListening || interlocked_uint32_read(&_n_win32_ctx->listen_thread_is_running))
+        {
+            log_info("Already listening.");
+            return;
+        }
+        struct addrinfo *address_info = NULL, hints;
+        memory_zero(&hints, sizeof(hints));
+
+        hints.ai_family   = AF_INET;
+        hints.ai_socktype = SOCK_STREAM;
+        hints.ai_protocol = IPPROTO_TCP;
+        hints.ai_flags    = AI_PASSIVE;
+
+        int32 w32_result = getaddrinfo(NULL, (char*)command->port, &hints, &address_info);
+        if (w32_result != 0)
+        {
+            _net_win32_log_wsa_error_message();
+            log_error("`getaddrinfo` failed for server");
+            return;
+        }
+
+        SOCKET           listening_socket = INVALID_SOCKET;
+        struct addrinfo* current_address  = address_info;
+        for (; current_address != 0; current_address = current_address->ai_next)
+        {
+            listening_socket = socket(address_info->ai_family, address_info->ai_socktype, address_info->ai_protocol);
+            if (listening_socket == INVALID_SOCKET)
+            {
+                continue;
+            }
+
+            w32_result = bind(listening_socket, current_address->ai_addr, (int)current_address->ai_addrlen);
+            if (w32_result == SOCKET_ERROR)
+            {
+                _net_win32_log_wsa_error_message();
+                log_error("Bind failed");
+                closesocket(listening_socket);
+                listening_socket = INVALID_SOCKET;
+
+                continue;
+            }
+
+            break;
+        }
+
+        freeaddrinfo(address_info);
+
+        if (listening_socket == INVALID_SOCKET)
+        {
+            _net_win32_log_wsa_error_message();
+            log_error("Couldn't connect to given address");
+            return;
+        }
+
+        if (listen(listening_socket, SOMAXCONN) == SOCKET_ERROR)
+        {
+            _net_win32_log_wsa_error_message();
+            log_error("Listen failed");
+            closesocket(listening_socket);
+            return;
+        }
+
+        N_WIN32_ReceiveThreadInfo* listen_thread_info = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_ReceiveThreadInfo);
+        listen_thread_info->listen_socket             = listening_socket;
+        _n_win32_ctx->listen_thread                   = os_thread_launch(_net_win32_listen_thread, listen_thread_info);
+    }
+    break;
+    case N_WIN32_CommandType_StopListening:
+    {
+        if (!_net_win32_close_socket(_n_win32_ctx->listen_socket))
+        {
+            return;
+        }
+
+        for (uint32 i = 0; i < N_MAX_CLIENT_COUNT; i++)
+        {
+            N_WIN32_Connection* conn = &_n_win32_ctx->clients[i];
+            if (interlocked_uint32_read(&conn->state) == N_ConnectionStateType_Connected)
+            {
+                interlocked_uint32_exchange(&conn->should_disconnect, 1);
+            }
+        }
+
+        _n_win32_ctx->listen_state = N_ServerStateType_Stopped;
+        interlocked_uint32_exchange(&_n_win32_ctx->listen_thread_should_quit, 1);
+    }
+    break;
+    case N_WIN32_CommandType_NewConnection:
+    {
+        int32 connection_id = -1;
+
+        for (int32 i = 0; i < N_MAX_CLIENT_COUNT; i++)
+        {
+            if (_n_win32_ctx->clients[i].state == N_ConnectionStateType_Uninitialized)
+            {
+                connection_id = i;
+                break;
+            }
+        }
+
+        if (connection_id == -1)
+        {
+            log_error("No available connection exists.");
+            return;
+        }
+
+        N_WIN32_Connection* conn = &_n_win32_ctx->clients[connection_id];
+        conn->socket             = command->socket_param;
+        conn->state              = N_ConnectionStateType_Connected;
+        conn->connection_id      = (uint64)connection_id;
+
+        N_WIN32_ClientThreadInfo* client_thread_info = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_ClientThreadInfo);
+        client_thread_info->client_socket            = command->socket_param;
+        client_thread_info->connection_id            = connection_id;
+
+        os_thread_launch(_net_win32_recv_thread, client_thread_info);
+    }
+    break;
+    case N_WIN32_CommandType_MessageReceived:
+    {
+        log_info("Message Received! Byte Length: %d, Bytes: %s", command->data_length, command->data);
+    }
+    break;
+    default:
+    {
+        log_error("Invalid Command Type: %d.", command->type);
+    }
+    break;
+    }
+}
+
+internal void
 _net_win32_listen_thread(void* data)
 {
-    N_WIN32_ServerThreadInfo* info = (N_WIN32_ServerThreadInfo*)data;
-    log_info("Server started listening");
+    os_thread_name_set(string("network_listen_thread"));
 
-    N_Server*       server        = info->server;
-    N_WIN32_Entity* listen_socket = ptr_from_int(server->listening_socket.v);
+    N_WIN32_ReceiveThreadInfo* info = (N_WIN32_ReceiveThreadInfo*)data;
+    log_info("Server started listening.");
 
-    while (true)
+    interlocked_uint32_exchange(&_n_win32_ctx->listen_thread_is_running, 1);
+    while (!_n_win32_ctx->listen_thread_should_quit)
     {
         SOCKET client_socket = INVALID_SOCKET;
 
-        client_socket = accept(listen_socket->socket, NULL, NULL);
+        client_socket = accept(info->listen_socket, NULL, NULL);
         log_info("Received connection request.");
 
         if (client_socket == INVALID_SOCKET)
@@ -413,49 +435,90 @@ _net_win32_listen_thread(void* data)
 
         log_info("Accepted connection request.");
 
-        xassert(server->client_count < N_MAX_CLIENT_COUNT);
-        os_mutex_take(server->mutex);
-
-        N_Connection* conn = &server->clients[server->client_count++];
-        conn->state        = N_ConnectionStateType_Connected;
-
-        N_WIN32_Entity* client_socket_entity = ptr_from_int(conn->socket.v);
-        client_socket_entity->socket         = client_socket;
-
-        N_WIN32_ClientThreadInfo* client_thread_info = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_ClientThreadInfo);
-        client_thread_info->client_socket            = client_socket;
-        os_thread_launch(_net_win32_server_connection_thread, client_thread_info);
-
-        os_mutex_drop(server->mutex);
+        N_WIN32_Command c = {.type = N_WIN32_CommandType_NewConnection, .socket_param = client_socket};
+        _net_win32_command_enqueue(c);
     }
 
+    interlocked_uint32_exchange(&_n_win32_ctx->listen_thread_is_running, 0);
+    interlocked_uint32_exchange(&_n_win32_ctx->listen_thread_should_quit, 0);
     log_info("Server stopped listening");
 }
 
 internal void
-_net_win32_server_connection_thread(void* data)
+_net_win32_recv_thread(void* data)
 {
+    os_thread_name_set(string("network_recv_thread"));
+
     N_WIN32_ClientThreadInfo* info = (N_WIN32_ClientThreadInfo*)data;
+    N_WIN32_Connection*       conn = &_n_win32_ctx->clients[info->connection_id];
 
-    char  receive_buffer[256] = {0};
-    int32 receive_result      = 0;
-    do
+    while (!conn->should_disconnect)
     {
-        receive_result = recv(info->client_socket, receive_buffer, 256, 0);
+        N_WIN32_Command c = {.type = N_WIN32_CommandType_MessageReceived};
+        c.data_length     = recv(info->client_socket, (char*)c.data, array_count(c.data), 0);
 
-        if (receive_result > 0)
+        if (c.data_length > 0)
         {
-            log_info("Bytes received: %d", receive_result);
+            log_info("Bytes received: %d", c.data_length);
+            _net_win32_command_enqueue(c);
         }
-        else if (receive_result == 0)
+        else if (c.data_length == 0)
         {
-            log_info("Connection closing.");
+            log_info("Received 0 length.");
+            break;
         }
         else
         {
             _net_win32_log_wsa_error_message();
             log_error("`recv` failed");
-            // closesocket(info->client_socket);
+            break;
         }
-    } while (receive_result > 0);
+    };
+
+    log_info("Connection closing.");
+    _net_win32_close_socket(conn->socket);
+    conn->socket = INVALID_SOCKET;
+    interlocked_uint32_exchange(&conn->should_disconnect, 0);
+    interlocked_uint32_exchange(&conn->state, N_ConnectionStateType_Uninitialized);
+    interlocked_uint32_dec(&_n_win32_ctx->client_count);
+}
+
+/** command bufer */
+internal void
+_net_win32_command_enqueue(N_WIN32_Command command)
+{
+    uint64           index = interlocked_uint64_exchange_add(&_n_win32_command_buffer->tail, 1);
+    N_WIN32_Command* slot  = &_n_win32_command_buffer->commands[index % _N_WIN32_COMMAND_BUFFER_SIZE];
+    memory_copy_struct(slot, &command);
+    uint64 command_count = interlocked_uint64_exchange_add(&_n_win32_command_buffer->command_count, 1);
+    interlocked_uint64_exchange(&slot->is_ready, 1);
+
+    if (command_count == 0)
+    {
+        os_rw_mutex_take_w(_n_win32_command_buffer->rw_mutex);
+        os_condition_variable_signal(_n_win32_command_buffer->cv);
+        os_rw_mutex_drop_w(_n_win32_command_buffer->rw_mutex);
+    }
+}
+
+internal bool32
+_net_win32_close_socket(SOCKET socket)
+{
+    int32 w32_result = shutdown(socket, SD_SEND);
+    if (w32_result != 0)
+    {
+        _net_win32_log_wsa_error_message();
+        log_error("Couldn't shutdown socket");
+        return false;
+    }
+
+    w32_result = closesocket(socket);
+    if (w32_result != 0)
+    {
+        _net_win32_log_wsa_error_message();
+        log_error("Couldn't close socket");
+        return false;
+    }
+
+    return true;
 }

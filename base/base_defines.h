@@ -240,16 +240,19 @@ internal int32  safe_cast_int32(int64 x);
 #include <windows.h>
 #include <wmmintrin.h>
 #if ARCH_X64
-#define interlocked_eval_uint64(x)              InterlockedAdd64((volatile __int64*)(x), 0)
-#define interlocked_inc_uint64(x)               InterlockedIncrement64((volatile __int64*)(x))
-#define interlocked_dec_uint64(x)               InterlockedDecrement64((volatile __int64*)(x))
-#define interlocked_assign_uint64(x, c)         InterlockedExchange64((volatile __int64*)(x), (c))
-#define interlocked_add_uint64(x, c)            InterlockedAdd64((volatile __int64*)(x), c)
-#define interlocked_cond_assign_uint64(x, k, c) InterlockedCompareExchange64((volatile __int64*)(x), (k), (c))
-#define interlocked_eval_uint32(x, c)           InterlockedAdd((volatile LONG*)(x), 0)
-#define interlocked_assign_uint32(x, c)         InterlockedExchange((volatile LONG*)(x), (c))
-#define interlocked_cond_assign_uint32(x, k, c) InterlockedCompareExchange((volatile LONG*)(x), (k), (c))
-#define interlocked_ptr_assign(x, c)            (void*)ins_atomic_uint64_eval_assign((volatile __int64*)(x), (__int64)(c))
+#define interlocked_uint64_read(x)                   InterlockedCompareExchange64((volatile __int64*)(x), 0, 0)
+#define interlocked_uint64_inc(x)                    InterlockedIncrement64((volatile __int64*)(x))
+#define interlocked_uint64_dec(x)                    InterlockedDecrement64((volatile __int64*)(x))
+#define interlocked_uint64_exchange(x, c)            InterlockedExchange64((volatile __int64*)(x), (c))
+#define interlocked_uint64_compare_exchange(x, e, c) InterlockedCompareExchange64((volatile __int64*)(x), e, c)
+#define interlocked_uint64_add(x, c)                 InterlockedAdd64((volatile __int64*)(x), c)
+#define interlocked_uint64_exchange_add(x, c)        InterlockedExchangeAdd64((volatile __int64*)(x), c)
+#define interlocked_uint32_read(x)                   InterlockedCompareExchange((volatile LONG*)(x), 0, 0)
+#define interlocked_uint32_inc(x)                    InterlockedIncrement((volatile LONG*)(x))
+#define interlocked_uint32_dec(x)                    InterlockedDecrement((volatile LONG*)(x))
+#define interlocked_uint32_exchange(x, c)            InterlockedExchange((volatile LONG*)(x), (c))
+#define interlocked_uint32_add(x, c)                 InterlockedAdd((volatile LONG*)(x), c)
+#define interlocked_uint32_exchange_add(x, c)        InterlockedExchangeAdd((volatile LONG*)(x), c)
 #else
 #error Atomic intrinsics not defined for this operating system / architecture combination.
 #endif

@@ -73,7 +73,7 @@ os_thread_join(OS_Handle handle, int32 timeout_ms)
 {
     W32_Entity* entity = (W32_Entity*)ptr_from_int(handle.v);
 
-    DWORD sleep_ms    = w32_sleep_ms_from_timeout(timeout_ms);
+    DWORD sleep_ms    = w32_sleep_ms_from_ms(timeout_ms);
     DWORD wait_result = WAIT_OBJECT_0;
     if (entity != 0)
     {
@@ -82,6 +82,17 @@ os_thread_join(OS_Handle handle, int32 timeout_ms)
         w32_free_entity(entity);
     }
     return wait_result == WAIT_OBJECT_0;
+}
+
+internal void
+os_thread_detach(OS_Handle thread)
+{
+    W32_Entity* entity = (W32_Entity*)ptr_from_int(thread.v);
+    if (entity != 0)
+    {
+        CloseHandle(entity->thread.handle);
+        w32_free_entity(entity);
+    }
 }
 
 internal void
@@ -98,10 +109,13 @@ os_thread_release(OS_Handle handle)
 internal void
 os_thread_name_set(String name)
 {
+    ArenaTemp scratch = scratch_begin(0, 0);
     if (w32_set_thread_description_func)
     {
-        w32_set_thread_description_func(GetCurrentThread(), (WCHAR*)name.value);
+        String16 name16 = str16_from_8(scratch.arena, name);
+        w32_set_thread_description_func(GetCurrentThread(), (WCHAR*)name16.value);
     }
+    scratch_end(scratch);
 }
 
 internal void
@@ -259,6 +273,68 @@ os_condition_variable_broadcast(OS_Handle cv)
     WakeAllConditionVariable(&entity->cv);
 }
 
+/** semaphores */
+internal OS_Handle
+os_semaphore_alloc(uint32 initial_count, uint32 max_count, String name)
+{
+    ArenaTemp scratch = scratch_begin(0, 0);
+    String16  name16  = str16_from_8(scratch.arena, name);
+    HANDLE    handle  = CreateSemaphoreW(0, initial_count, max_count, (WCHAR*)name16.value);
+    OS_Handle result  = {(uint64)handle};
+    scratch_end(scratch);
+    return result;
+}
+
+internal void
+os_semaphore_release(OS_Handle semaphore)
+{
+    HANDLE handle = (HANDLE)semaphore.v;
+    CloseHandle(handle);
+}
+
+internal OS_Handle
+os_semaphore_open(String name)
+{
+    ArenaTemp scratch = scratch_begin(0, 0);
+    String16  name16  = str16_from_8(scratch.arena, name);
+    HANDLE    handle  = OpenSemaphoreW(SEMAPHORE_ALL_ACCESS, 0, (WCHAR*)name16.value);
+    OS_Handle result  = {(uint64)handle};
+    scratch_end(scratch);
+    return result;
+}
+
+internal void
+os_semaphore_close(OS_Handle semaphore)
+{
+    HANDLE handle = (HANDLE)semaphore.v;
+    CloseHandle(handle);
+}
+
+internal bool32
+os_semaphore_take(OS_Handle semaphore, uint64 endt_us)
+{
+    uint32 sleep_ms    = w32_sleep_ms_from_endt_us(endt_us);
+    HANDLE handle      = (HANDLE)semaphore.v;
+    DWORD  wait_result = WaitForSingleObject(handle, sleep_ms);
+    bool32 result      = (wait_result == WAIT_OBJECT_0);
+    return result;
+}
+
+internal void
+os_semaphore_drop(OS_Handle semaphore)
+{
+    HANDLE handle = (HANDLE)semaphore.v;
+    ReleaseSemaphore(handle, 1, 0);
+}
+
+/** waits */
+internal bool32
+os_wait_on_address(volatile void* address, void* expected, uint32 size, int32 wait_ms)
+{
+    uint32 ms = w32_sleep_ms_from_ms(wait_ms);
+    return WaitOnAddress(address, expected, size, ms);
+}
+
 /** timers */
 internal uint64
 os_now_ms(void)
@@ -275,7 +351,7 @@ os_now_ms(void)
 internal uint64
 os_now_us(void)
 {
-    uint64        result;
+    uint64        result = 0;
     LARGE_INTEGER counter;
     if (QueryPerformanceCounter(&counter))
     {
@@ -356,7 +432,7 @@ w32_free_entity(W32_Entity* entity)
 }
 
 internal uint32
-w32_sleep_ms_from_timeout(int32 timeout_ms)
+w32_sleep_ms_from_ms(int32 timeout_ms)
 {
     uint32 sleep_ms = 0;
     if (timeout_ms == -1)

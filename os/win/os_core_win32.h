@@ -6,6 +6,7 @@
 #include <timeapi.h>
 #include <tlhelp32.h>
 #include <Shlobj.h>
+#include <synchapi.h>
 #include <processthreadsapi.h>
 // clang-format on
 
@@ -50,4 +51,4 @@ internal void        w32_free_entity(W32_Entity* entity);
 
 /** helpers */
 internal uint32 w32_sleep_ms_from_endt_us(uint64 endt_us);
-internal uint32 w32_sleep_ms_from_timeout(int32 timeout_ms);
+internal uint32 w32_sleep_ms_from_ms(int32 timeout_ms);

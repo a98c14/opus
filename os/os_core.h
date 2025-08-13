@@ -11,6 +11,7 @@ typedef struct
 internal void      os_init(void);
 internal OS_Handle os_thread_launch(OS_ThreadFunctionType* func, void* data);
 internal bool32    os_thread_join(OS_Handle handle, int32 timeout_ms);
+internal void      os_thread_detach(OS_Handle thread);
 internal void      os_thread_name_set(String name);
 internal void      os_sleep(uint64 time_ms);
 
@@ -30,7 +31,7 @@ internal void      os_rw_mutex_drop_r(OS_Handle rw_mutex);
 internal void      os_rw_mutex_take_w(OS_Handle rw_mutex);
 internal void      os_rw_mutex_drop_w(OS_Handle rw_mutex);
 
-// returns false on timeout, true on signal, (max_wait_ms = max_U64) -> no timeout
+// returns false on timeout, true on signal, (max_wait_ms = max_uint64) -> no timeout
 internal OS_Handle os_condition_variable_alloc(void);
 internal void      os_condition_variable_release(OS_Handle cv);
 internal bool32    os_condition_variable_wait(OS_Handle cv, OS_Handle mutex, uint64 endt_us);
@@ -38,6 +39,17 @@ internal bool32    os_condition_variable_wait_rw_r(OS_Handle cv, OS_Handle mutex
 internal bool32    os_condition_variable_wait_rw_w(OS_Handle cv, OS_Handle mutex_rw, uint64 endt_us);
 internal void      os_condition_variable_signal(OS_Handle cv);
 internal void      os_condition_variable_broadcast(OS_Handle cv);
+
+/** semaphore */
+internal OS_Handle os_semaphore_alloc(uint32 initial_count, uint32 max_count, String name);
+internal void      os_semaphore_release(OS_Handle semaphore);
+internal OS_Handle os_semaphore_open(String name);
+internal void      os_semaphore_close(OS_Handle semaphore);
+internal bool32    os_semaphore_take(OS_Handle semaphore, uint64 endt_us);
+internal void      os_semaphore_drop(OS_Handle semaphore);
+
+/** waits */
+internal bool32 os_wait_on_address(volatile void* address, void* expected, uint32 size, int32 wait_ms);
 
 #define os_mutex_scope(mutex)            defer_loop(os_mutex_take(mutex), os_mutex_drop(mutex))
 #define os_mutex_scope_r(mutex)          defer_loop(os_rw_mutex_take_r(mutex), os_rw_mutex_drop_r(mutex))
