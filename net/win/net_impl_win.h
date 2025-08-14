@@ -35,20 +35,13 @@ typedef struct
 typedef struct
 {
     /** Server */
-    bool32            listen_thread_should_quit;
-    bool32            listen_thread_is_running;
-    OS_Handle         listen_thread;
-    N_ServerStateType listen_state;
-    SOCKET            listen_socket;
-    String            listen_port;
+    N_NetworkStateType network_state;
+
+    SOCKET listen_socket;
+    String listen_port;
 
     uint32             client_count;
     N_WIN32_Connection clients[_N_WIN32_MAX_CLIENT_COUNT];
-
-    /** Client */
-    N_ConnectionStateType client_state;
-    SOCKET                client_socket;
-
 } N_WIN32_Context;
 
 typedef enum
@@ -56,12 +49,23 @@ typedef enum
     N_WIN32_CommandType_NewConnection,
     N_WIN32_CommandType_DisconnectConnection,
     N_WIN32_CommandType_MessageReceived,
-    N_WIN32_CommandType_MessageSend,
+    N_WIN32_CommandType_Send,
     N_WIN32_CommandType_StartListening,
     N_WIN32_CommandType_StopListening,
     N_WIN32_CommandType_ClientConnect,
     N_WIN32_CommandType_ClientDisconnect,
+    N_WIN32_CommandType_COUNT,
 } N_WIN32_CommandType;
+
+global String n_win32_command_names[N_WIN32_CommandType_COUNT] = {
+    string_comp("NewConnection"),
+    string_comp("DisconnectConnection"),
+    string_comp("MessageReceived"),
+    string_comp("MessageSend"),
+    string_comp("StartListening"),
+    string_comp("StopListening"),
+    string_comp("ClientConnect"),
+    string_comp("ClientDisconnect")};
 
 typedef struct
 {
@@ -69,9 +73,11 @@ typedef struct
 
     /** params */
     bool32 is_ready;
-    SOCKET socket_param;
-    uint64 data_length;
+    int32  data_length;
     uint8  data[256];
+
+    SOCKET socket_param;
+    uint64 connection_id;
 
     uint8 address[32];
     uint8 port[4];
@@ -96,13 +102,11 @@ typedef struct
 
 typedef struct
 {
-    uint64 connection_id;
-    SOCKET client_socket;
+    N_WIN32_Connection* conn;
 } N_WIN32_ClientThreadInfo;
 
-internal N_Handle _net_win32_connect(String address, String port);
-internal bool32   _net_win32_close_socket(SOCKET socket);
-internal void     _net_win32_log_wsa_error_message();
+internal bool32 _net_win32_close_socket(SOCKET socket);
+internal void   _net_win32_log_wsa_error_message();
 
 internal void _net_win32_network_main_thread(void* data);
 internal void _net_win32_listen_thread(void* data);

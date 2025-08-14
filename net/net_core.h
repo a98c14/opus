@@ -28,12 +28,14 @@ typedef enum
 
 typedef enum
 {
-    N_ServerStateType_Uninitialized = 0,
-    N_ServerStateType_Ready         = 1,
-    N_ServerStateType_Listening     = 2,
-    N_ServerStateType_Stopped       = 3,
-    N_ServerStateType_COUNT
-} N_ServerStateType;
+    N_NetworkStateType_Uninitialized     = 0,
+    N_NetworkStateType_Ready             = 1,
+    N_NetworkStateType_Listening         = 2,
+    N_NetworkStateType_Disconnecting     = 3,
+    N_NetworkStateType_Stopped           = 4,
+    N_NetworkStateType_ConnectedToServer = 5,
+    N_NetworkStateType_COUNT
+} N_NetworkStateType;
 
 internal void net_init();
 internal void net_cleanup();
