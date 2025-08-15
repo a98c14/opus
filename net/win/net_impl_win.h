@@ -26,23 +26,26 @@ typedef struct
 
 typedef struct
 {
-    N_ConnectionStateType state;
-    SOCKET                socket;
-    uint64                connection_id;
-    bool32                should_disconnect;
+    NET_ConnectionStateType state;
+    SOCKET                  socket;
+    uint64                  connection_id;
+    bool32                  should_disconnect;
 } N_WIN32_Connection;
 
 typedef struct
 {
     /** Server */
-    N_NetworkStateType network_state;
+    NET_NetworkStateType network_state;
 
     SOCKET listen_socket;
     String listen_port;
 
     uint32             client_count;
     N_WIN32_Connection clients[_N_WIN32_MAX_CLIENT_COUNT];
-} N_WIN32_Context;
+
+    /** Event Handlers */
+    NET_OnMessageEventHandlerType* on_message;
+} NET_WIN32_Context;
 
 typedef enum
 {
@@ -73,8 +76,8 @@ typedef struct
 
     /** params */
     bool32 is_ready;
-    int32  data_length;
-    uint8  data[256];
+    uint64 data_length;
+    uint8  data[4096];
 
     SOCKET socket_param;
     uint64 connection_id;
@@ -93,7 +96,7 @@ typedef struct
     uint64          tail;
     uint64          tail_reserved;
     N_WIN32_Command commands[_N_WIN32_COMMAND_BUFFER_SIZE];
-} N_WIN32_CommandBuffer;
+} NET_WIN32_CommandBuffer;
 
 typedef struct
 {

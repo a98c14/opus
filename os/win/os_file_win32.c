@@ -126,7 +126,7 @@ os_file_write(OS_Handle file, uint64 offset, uint64 size, void* data)
     if (os_handle_match(file, os_handle_zero()))
         return 0;
 
-    HANDLE win_handle           = (HANDLE)file.v;
+    HANDLE wiNET_Handle         = (HANDLE)file.v;
     uint64 src_off              = 0;
     uint64 dst_off              = offset;
     uint64 bytes_to_write_total = size;
@@ -141,7 +141,7 @@ os_file_write(OS_Handle file, uint64 offset, uint64 size, void* data)
         OVERLAPPED overlapped    = {0};
         overlapped.Offset        = (dst_off & 0x00000000ffffffffull);
         overlapped.OffsetHigh    = (dst_off & 0xffffffff00000000ull) >> 32;
-        BOOL success             = WriteFile(win_handle, bytes_src, remaining32, (DWORD*)&bytes_written, &overlapped);
+        BOOL success             = WriteFile(wiNET_Handle, bytes_src, remaining32, (DWORD*)&bytes_written, &overlapped);
         if (success == 0)
             break;
         src_off += bytes_written;

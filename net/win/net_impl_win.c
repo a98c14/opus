@@ -1,11 +1,16 @@
 #include "net_impl_win.h"
 
-N_WIN32_CommandBuffer* _n_win32_command_buffer;
-N_WIN32_Context*       _n_win32_ctx;
+NET_WIN32_CommandBuffer* _n_win32_command_buffer;
+NET_WIN32_Context*       _n_win32_ctx;
 
 internal void
-net_init(void)
+net_init(NET_OnMessageEventHandlerType* on_message)
 {
+    if (_n_win32_ctx)
+    {
+        log_error("[NET] Network layer is already initialized");
+    }
+
     WSADATA wsa_data;
 
     if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
@@ -22,13 +27,19 @@ net_init(void)
         WSACleanup();
         return;
     }
+
     _n_w32_perm_arena  = arena_new_reserve(mb(8));
     _n_w32_frame_arena = arena_new_reserve(mb(8));
-    _n_win32_ctx       = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_Context);
+    _n_win32_ctx       = arena_push_struct_zero(_n_w32_perm_arena, NET_WIN32_Context);
 
-    _n_win32_command_buffer           = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_CommandBuffer);
+    _n_win32_command_buffer           = arena_push_struct_zero(_n_w32_perm_arena, NET_WIN32_CommandBuffer);
     _n_win32_command_buffer->rw_mutex = os_rw_mutex_alloc();
     _n_win32_command_buffer->cv       = os_condition_variable_alloc();
+
+    if (on_message)
+    {
+        _n_win32_ctx->on_message = on_message;
+    }
 
     os_thread_launch(_net_win32_network_main_thread, 0);
 }
@@ -137,12 +148,12 @@ net_client_disconnect()
 }
 
 internal void
-net_send(uint64 connection_id, Buffer buffer)
+net_send(uint64 connection_id, uint8* buffer, uint64 length)
 {
     N_WIN32_Command c = {.type = N_WIN32_CommandType_Send, .connection_id = connection_id};
-    xassert(buffer.size < array_count(c.data));
-    memory_copy(c.data, buffer.data, buffer.size);
-    c.data_length = (int32)buffer.size;
+    xassert(length < array_count(c.data));
+    memory_copy(c.data, buffer, length);
+    c.data_length = (int32)length;
     _net_win32_command_enqueue(c);
 }
 
@@ -169,7 +180,7 @@ _net_win32_network_main_thread(void* data)
 
     (void)data;
 
-    N_WIN32_CommandBuffer* cmd_buffer = _n_win32_command_buffer;
+    NET_WIN32_CommandBuffer* cmd_buffer = _n_win32_command_buffer;
 
     for (;;)
     {
@@ -210,7 +221,7 @@ _net_win32_command_process(N_WIN32_Command* command)
     {
     case N_WIN32_CommandType_StartListening:
     {
-        if (interlocked_uint32_read(&_n_win32_ctx->network_state) == N_NetworkStateType_Listening)
+        if (interlocked_uint32_read(&_n_win32_ctx->network_state) == NET_NetworkStateType_Listening)
         {
             log_info("[NET] Already listening.");
             return;
@@ -285,26 +296,26 @@ _net_win32_command_process(N_WIN32_Command* command)
             return;
         }
 
-        for (uint32 i = 0; i < N_MAX_CLIENT_COUNT; i++)
+        for (uint32 i = 0; i < NET_MAX_CLIENT_COUNT; i++)
         {
             N_WIN32_Connection* conn = &_n_win32_ctx->clients[i];
-            if (interlocked_uint32_read(&conn->state) == N_ConnectionStateType_Connected)
+            if (interlocked_uint32_read(&conn->state) == NET_ConnectionStateType_Connected)
             {
                 interlocked_uint32_exchange(&conn->should_disconnect, 1);
             }
         }
 
-        _n_win32_ctx->network_state = N_NetworkStateType_Stopped;
-        interlocked_uint32_exchange(&_n_win32_ctx->network_state, N_NetworkStateType_Disconnecting);
+        _n_win32_ctx->network_state = NET_NetworkStateType_Stopped;
+        interlocked_uint32_exchange(&_n_win32_ctx->network_state, NET_NetworkStateType_Disconnecting);
     }
     break;
     case N_WIN32_CommandType_NewConnection:
     {
         int32 connection_id = -1;
 
-        for (int32 i = 0; i < N_MAX_CLIENT_COUNT; i++)
+        for (int32 i = 0; i < NET_MAX_CLIENT_COUNT; i++)
         {
-            if (_n_win32_ctx->clients[i].state == N_ConnectionStateType_Uninitialized)
+            if (_n_win32_ctx->clients[i].state == NET_ConnectionStateType_Uninitialized)
             {
                 connection_id = i;
                 break;
@@ -319,7 +330,7 @@ _net_win32_command_process(N_WIN32_Command* command)
 
         N_WIN32_Connection* conn = &_n_win32_ctx->clients[connection_id];
         conn->socket             = command->socket_param;
-        conn->state              = N_ConnectionStateType_Connected;
+        conn->state              = NET_ConnectionStateType_Connected;
         conn->connection_id      = (uint64)connection_id;
 
         N_WIN32_ClientThreadInfo* client_thread_info = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_ClientThreadInfo);
@@ -330,7 +341,7 @@ _net_win32_command_process(N_WIN32_Command* command)
     break;
     case N_WIN32_CommandType_ClientConnect:
     {
-        if (_n_win32_ctx->network_state == N_NetworkStateType_ConnectedToServer)
+        if (_n_win32_ctx->network_state == NET_NetworkStateType_ConnectedToServer)
         {
             // TODO(selim): Maybe here we can disconnect and reconnect to the new address
             log_warn("[NET] Already connected to server");
@@ -381,10 +392,10 @@ _net_win32_command_process(N_WIN32_Command* command)
             return;
         }
 
-        _n_win32_ctx->network_state = N_NetworkStateType_ConnectedToServer;
+        _n_win32_ctx->network_state = NET_NetworkStateType_ConnectedToServer;
         N_WIN32_Connection* conn    = &_n_win32_ctx->clients[0];
         conn->socket                = connect_socket;
-        conn->state                 = N_ConnectionStateType_Connected;
+        conn->state                 = NET_ConnectionStateType_Connected;
         conn->connection_id         = (uint64)0;
 
         N_WIN32_ClientThreadInfo* client_thread_info = arena_push_struct_zero(_n_w32_perm_arena, N_WIN32_ClientThreadInfo);
@@ -398,12 +409,13 @@ _net_win32_command_process(N_WIN32_Command* command)
     case N_WIN32_CommandType_MessageReceived:
     {
         log_info("[NET] Message Received! Byte Length: %d, Bytes: %s", command->data_length, command->data);
+        _n_win32_ctx->on_message(command->connection_id, command->data, command->data_length);
         break;
     }
     case N_WIN32_CommandType_Send:
     {
         N_WIN32_Connection* conn = &_n_win32_ctx->clients[command->connection_id];
-        if (conn->state != N_ConnectionStateType_Connected)
+        if (conn->state != NET_ConnectionStateType_Connected)
         {
             log_error("[Net] Connection not active. Id: %llu", command->connection_id);
             return;
@@ -436,8 +448,8 @@ _net_win32_listen_thread(void* data)
     N_WIN32_ReceiveThreadInfo* info = (N_WIN32_ReceiveThreadInfo*)data;
     log_info("[NET] Server started listening.");
 
-    interlocked_uint32_exchange(&_n_win32_ctx->network_state, N_NetworkStateType_Listening);
-    while (interlocked_uint32_read(&_n_win32_ctx->network_state) == N_NetworkStateType_Listening)
+    interlocked_uint32_exchange(&_n_win32_ctx->network_state, NET_NetworkStateType_Listening);
+    while (interlocked_uint32_read(&_n_win32_ctx->network_state) == NET_NetworkStateType_Listening)
     {
         SOCKET client_socket = INVALID_SOCKET;
 
@@ -457,7 +469,7 @@ _net_win32_listen_thread(void* data)
         _net_win32_command_enqueue(c);
     }
 
-    interlocked_uint32_exchange(&_n_win32_ctx->network_state, N_NetworkStateType_Stopped);
+    interlocked_uint32_exchange(&_n_win32_ctx->network_state, NET_NetworkStateType_Stopped);
     log_info("[NET] Server stopped listening");
 }
 
@@ -473,15 +485,17 @@ _net_win32_recv_thread(void* data)
 
     while (!interlocked_uint32_read(&conn->should_disconnect))
     {
-        N_WIN32_Command c = {.type = N_WIN32_CommandType_MessageReceived};
-        c.data_length     = recv(conn->socket, (char*)c.data, array_count(c.data), 0);
+        N_WIN32_Command c           = {.type = N_WIN32_CommandType_MessageReceived};
+        int32           data_length = recv(conn->socket, (char*)c.data, array_count(c.data), 0);
 
-        if (c.data_length > 0)
+        if (data_length > 0)
         {
-            log_info("[NET] Bytes received: %d", c.data_length);
+            log_info("[NET] Bytes received: %d", data_length);
+            c.connection_id = conn->connection_id;
+            c.data_length   = (uint64)data_length;
             _net_win32_command_enqueue(c);
         }
-        else if (c.data_length == 0)
+        else if (data_length == 0)
         {
             log_info("[NET] Received 0 length.");
             break;
@@ -498,7 +512,7 @@ _net_win32_recv_thread(void* data)
     _net_win32_close_socket(conn->socket);
     conn->socket = INVALID_SOCKET;
     interlocked_uint32_exchange(&conn->should_disconnect, 0);
-    interlocked_uint32_exchange(&conn->state, N_ConnectionStateType_Uninitialized);
+    interlocked_uint32_exchange(&conn->state, NET_ConnectionStateType_Uninitialized);
     interlocked_uint32_dec(&_n_win32_ctx->client_count);
 }
 
